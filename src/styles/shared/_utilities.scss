@@ -70,6 +70,18 @@
   border-color: rgba(220, 38, 38, 0.4);
 }
 
+.status-chip--draft {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--color-info);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.status-chip--reviewed {
+  background: rgba(79, 70, 229, 0.12);
+  color: var(--color-primary);
+  border-color: rgba(79, 70, 229, 0.4);
+}
+
 .combo {
   --combo-indicator: var(--color-muted);
   width: 100%;
@@ -122,6 +134,13 @@
   background-color: rgba(220, 38, 38, 0.12);
   border-color: rgba(220, 38, 38, 0.35);
   color: var(--color-danger);
+}
+
+.combo--draft {
+  --combo-indicator: var(--color-info);
+  background-color: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: var(--color-info);
 }
 
 .combo--admin {

@@ -13,6 +13,13 @@
   color: var(--color-primary);
   padding: 0.85rem 1rem;
   border-radius: 0.75rem;
+  border: 1px solid transparent;
+}
+
+.application__feedback--error {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--color-danger);
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
 .application__summary {
@@ -24,6 +31,15 @@
 
 .application__summary-title {
   margin-bottom: 1rem;
+}
+
+.application__draft-note {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(234, 179, 8, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(234, 179, 8, 0.3);
 }
 
 .application__summary dl {
@@ -78,6 +94,38 @@
   padding: 0.75rem 1rem;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+}
+
+.field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.field-required {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.field--error input,
+.field--error select,
+.field--error textarea,
+.input--error,
+.form-full.field--error textarea {
+  border-color: var(--color-danger);
+}
+
+.input--error:focus,
+.field--error input:focus,
+.field--error select:focus,
+.field--error textarea:focus,
+.form-full.field--error textarea:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 .form-grid input:focus,

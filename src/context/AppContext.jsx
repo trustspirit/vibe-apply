@@ -197,13 +197,20 @@ export const AppProvider = ({ children }) => {
     setState((prev) => {
       const existing = prev.applications.find((app) => app.userId === userId);
       const timestamp = new Date().toISOString();
+      const { status: requestedStatus, ...applicationData } = payload;
+      const normalizedStatus = requestedStatus === 'draft' ? 'draft' : 'awaiting';
+
       if (existing) {
+        const nextStatus =
+          existing.status === 'approved' || existing.status === 'rejected' ? existing.status : normalizedStatus;
+
         const updated = {
           ...existing,
-          ...payload,
-          status: existing.status === 'approved' || existing.status === 'rejected' ? existing.status : 'awaiting',
+          ...applicationData,
+          status: nextStatus,
           updatedAt: timestamp,
         };
+
         return {
           ...prev,
           applications: prev.applications.map((app) => (app.id === existing.id ? updated : app)),
@@ -213,8 +220,8 @@ export const AppProvider = ({ children }) => {
       const newApplication = {
         id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `app-${Date.now()}`,
         userId,
-        ...payload,
-        status: 'awaiting',
+        ...applicationData,
+        status: normalizedStatus,
         createdAt: timestamp,
         updatedAt: timestamp,
       };
