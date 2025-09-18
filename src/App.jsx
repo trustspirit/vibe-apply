@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AppLayout from './components/AppLayout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
+import UserRoute from './components/UserRoute.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ApplicationProvider } from './context/ApplicationContext.jsx';
 import SignIn from './pages/SignIn.jsx';
@@ -30,7 +31,9 @@ const AppRoutes = () => (
       <Route path="signin" element={<SignIn />} />
       <Route path="signup" element={<SignUp />} />
       <Route element={<ProtectedRoute />}>
-        <Route path="application" element={<UserApplication />} />
+        <Route element={<UserRoute />}>
+          <Route path="application" element={<UserApplication />} />
+        </Route>
         <Route element={<AdminRoute />}>
           <Route path="admin/dashboard" element={<Dashboard />} />
           <Route path="admin/review" element={<ReviewApplications />} />
