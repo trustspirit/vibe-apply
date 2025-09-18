@@ -1,0 +1,139 @@
+.btn {
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  color: var(--color-text);
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.2rem;
+  font-weight: 500;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: rgba(107, 114, 128, 0.08);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn--success {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: rgba(22, 163, 74, 0.3);
+  color: var(--color-success);
+}
+
+.btn--danger {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: var(--color-danger);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+.status-chip--awaiting {
+  background: rgba(234, 179, 8, 0.12);
+  color: #b45309;
+  border-color: rgba(234, 179, 8, 0.4);
+}
+
+.status-chip--approved {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--color-success);
+  border-color: rgba(22, 163, 74, 0.4);
+}
+
+.status-chip--rejected {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--color-danger);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.combo {
+  --combo-indicator: var(--color-muted);
+  width: 100%;
+  max-width: 220px;
+  border: 1px solid #d0d5dd;
+  border-radius: 0.6rem;
+  padding: 0.45rem 2.1rem 0.45rem 1.4rem;
+  background-color: #ffffff;
+  color: var(--color-text);
+  font-weight: 500;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #5e6c84 50%),
+    linear-gradient(135deg, #5e6c84 50%, transparent 50%);
+  background-position: calc(100% - 1rem) 50%, calc(100% - 0.6rem) 50%;
+  background-size: 0.45rem 0.45rem, 0.45rem 0.45rem;
+  background-repeat: no-repeat;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.combo:focus {
+  outline: none;
+  border-color: #0052cc;
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.3);
+}
+
+.combo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.combo--awaiting {
+  --combo-indicator: #d97706;
+  background-color: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.35);
+  color: #b45309;
+}
+
+.combo--approved {
+  --combo-indicator: var(--color-success);
+  background-color: rgba(22, 163, 74, 0.12);
+  border-color: rgba(22, 163, 74, 0.35);
+  color: var(--color-success);
+}
+
+.combo--rejected {
+  --combo-indicator: var(--color-danger);
+  background-color: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.35);
+  color: var(--color-danger);
+}
+
+.combo--admin {
+  --combo-indicator: var(--color-primary);
+  background-color: rgba(79, 70, 229, 0.12);
+  border-color: rgba(79, 70, 229, 0.35);
+  color: var(--color-primary);
+}
+
+.combo--user {
+  --combo-indicator: var(--color-info);
+  background-color: rgba(2, 132, 199, 0.12);
+  border-color: rgba(2, 132, 199, 0.35);
+  color: var(--color-info);
+}

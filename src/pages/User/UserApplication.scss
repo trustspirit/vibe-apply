@@ -1,0 +1,121 @@
+.application {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.application__header {
+  margin-bottom: 0.5rem;
+}
+
+.application__feedback {
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--color-primary);
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+}
+
+.application__summary {
+  background: var(--color-surface);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+.application__summary-title {
+  margin-bottom: 1rem;
+}
+
+.application__summary dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.application__summary dt {
+  font-weight: 600;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.application__summary dd {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.application__locked {
+  margin-top: 1rem;
+  color: var(--color-muted);
+}
+
+.application__form {
+  background: var(--color-surface);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.form-grid label,
+.form-full {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--color-text);
+}
+
+.form-grid input,
+.form-grid select,
+.form-full textarea {
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-full textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.form-full textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.application__form-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.application__start {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+  .application__summary dl {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .application__summary,
+  .application__form {
+    border-radius: 0.75rem;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

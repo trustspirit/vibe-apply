@@ -1,0 +1,75 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard__title {
+  font-size: 2rem;
+}
+
+.dashboard__subtitle {
+  margin-bottom: 0;
+}
+
+.dashboard__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background: var(--color-surface);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summary-card__label {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.summary-card__value {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.panel {
+  background: var(--color-surface);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel__title {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.panel__chart {
+  flex: 1;
+  min-height: 200px;
+}
+
+.panel--wide {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .summary-card,
+  .panel {
+    border-radius: 0.75rem;
+  }
+}

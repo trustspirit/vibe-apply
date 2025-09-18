@@ -1,56 +1,89 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import AppLayout from './components/AppLayout.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
-import AdminRoute from './components/AdminRoute.jsx';
-import UserRoute from './components/UserRoute.jsx';
-import { AuthProvider, useAuth } from './context/AuthContext.jsx';
-import { ApplicationProvider } from './context/ApplicationContext.jsx';
-import SignIn from './pages/SignIn.jsx';
-import SignUp from './pages/SignUp.jsx';
-import NotFound from './pages/NotFound.jsx';
-import Dashboard from './pages/admin/Dashboard.jsx';
-import ReviewApplications from './pages/admin/ReviewApplications.jsx';
-import ManageRoles from './pages/admin/ManageRoles.jsx';
-import UserApplication from './pages/user/UserApplication.jsx';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { RequireAdmin, RequireAuth, PublicOnly, RequireUser } from './components/RouteGuards.jsx';
+import AppLayout from './layouts/AppLayout.jsx';
+import { useApp } from './context/AppContext.jsx';
+import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
+import AdminReview from './pages/Admin/AdminReview.jsx';
+import AdminRoles from './pages/Admin/AdminRoles.jsx';
+import SignIn from './pages/Auth/SignIn.jsx';
+import SignUp from './pages/Auth/SignUp.jsx';
+import UserApplication from './pages/User/UserApplication.jsx';
 
-const HomeRedirect = () => {
-  const { user } = useAuth();
-  const location = useLocation();
+const App = () => {
+  const { currentUser } = useApp();
 
-  if (!user) {
-    return <Navigate to="/signin" replace state={{ from: location }} />;
-  }
+  const defaultAuthedPath = currentUser?.role === 'admin' ? '/admin/dashboard' : '/application';
 
-  return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/application'} replace />;
-};
-
-const AppRoutes = () => (
-  <Routes>
-    <Route element={<AppLayout />}>
-      <Route index element={<HomeRedirect />} />
-      <Route path="signin" element={<SignIn />} />
-      <Route path="signup" element={<SignUp />} />
-      <Route element={<ProtectedRoute />}>
-        <Route element={<UserRoute />}>
-          <Route path="application" element={<UserApplication />} />
-        </Route>
-        <Route element={<AdminRoute />}>
-          <Route path="admin/dashboard" element={<Dashboard />} />
-          <Route path="admin/review" element={<ReviewApplications />} />
-          <Route path="admin/manage-roles" element={<ManageRoles />} />
-        </Route>
+  return (
+    <Routes>
+      <Route
+        path="/signin"
+        element={
+          <PublicOnly>
+            <SignIn />
+          </PublicOnly>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <PublicOnly>
+            <SignUp />
+          </PublicOnly>
+        }
+      />
+      <Route
+        element={
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<Navigate to={defaultAuthedPath} replace />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <Navigate to="/admin/dashboard" replace />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <RequireAdmin>
+              <AdminDashboard />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/review"
+          element={
+            <RequireAdmin>
+              <AdminReview />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <RequireAdmin>
+              <AdminRoles />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/application"
+          element={
+            <RequireUser>
+              <UserApplication />
+            </RequireUser>
+          }
+        />
       </Route>
-      <Route path="*" element={<NotFound />} />
-    </Route>
-  </Routes>
-);
-
-const App = () => (
-  <AuthProvider>
-    <ApplicationProvider>
-      <AppRoutes />
-    </ApplicationProvider>
-  </AuthProvider>
-);
+      <Route path="*" element={<Navigate to={currentUser ? defaultAuthedPath : '/signin'} replace />} />
+    </Routes>
+  );
+};
 
 export default App;
