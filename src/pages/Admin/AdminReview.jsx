@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
+import { Button, StatusChip } from '../../components/ui';
 import './AdminReview.scss';
 
 const TABS = [
@@ -184,14 +185,15 @@ const AdminReview = () => {
           <p className="review__subtitle">Manage incoming applications and update their statuses.</p>
         </div>
         {activeTab === 'approved' && (
-          <button
+          <Button
             type="button"
-            className="btn btn--primary review__export"
+            variant="primary"
+            className="review__export"
             onClick={handleExportApproved}
             disabled={!approvedApplications.length}
           >
             Export as CSV
-          </button>
+          </Button>
         )}
       </div>
 
@@ -234,9 +236,7 @@ const AdminReview = () => {
                   >
                     <div className="review__list-top">
                       <span className="review__list-name">{app.name}</span>
-                      <span className={`status-chip status-chip--${app.status}`}>
-                        {getStatusLabel(app.status)}
-                      </span>
+                      <StatusChip status={app.status} label={getStatusLabel(app.status)} />
                     </div>
                     <div className="review__list-bottom">
                       <span className="review__list-meta">{app.stake}</span>

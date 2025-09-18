@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
+import { Button } from '../../components/ui';
 import './SignUp.scss';
 
 const SignUp = () => {
@@ -88,9 +89,9 @@ const SignUp = () => {
             />
           </label>
           {error && <p className="auth__error">{error}</p>}
-          <button type="submit" className="btn btn--primary auth__submit" disabled={isSubmitting}>
+          <Button type="submit" variant="primary" className="auth__submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating Account...' : 'Sign Up'}
-          </button>
+          </Button>
         </form>
         <p className="auth__footer">
           Already have an account? <Link to="/signin">Sign in</Link>

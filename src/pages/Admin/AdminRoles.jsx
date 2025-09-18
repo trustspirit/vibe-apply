@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useApp } from '../../context/AppContext.jsx';
+import { StatusChip } from '../../components/ui';
 import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [
@@ -53,9 +54,11 @@ const AdminRoles = () => {
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>
-                  <span className={`status-chip status-chip--${user.role === 'admin' ? 'approved' : 'awaiting'}`}>
-                    {user.role}
-                  </span>
+                  <StatusChip
+                    status={user.role}
+                    tone={user.role === 'admin' ? 'approved' : 'awaiting'}
+                    label={user.role === 'admin' ? 'Admin' : 'User'}
+                  />
                 </td>
                 <td>
                   <select

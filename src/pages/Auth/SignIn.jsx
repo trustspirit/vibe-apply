@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
+import { Button } from '../../components/ui';
 import './SignIn.scss';
 
 const SignIn = () => {
@@ -61,9 +62,9 @@ const SignIn = () => {
             />
           </label>
           {error && <p className="auth__error">{error}</p>}
-          <button type="submit" className="btn btn--primary auth__submit" disabled={isSubmitting}>
+          <Button type="submit" variant="primary" className="auth__submit" disabled={isSubmitting}>
             {isSubmitting ? 'Signing In...' : 'Sign In'}
-          </button>
+          </Button>
         </form>
         <p className="auth__footer">
           New here? <Link to="/signup">Create an account</Link>

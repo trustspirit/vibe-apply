@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext.jsx';
+import { Button, StatusChip } from '../../components/ui';
 import './UserApplication.scss';
 
 const emptyForm = {
@@ -241,9 +242,11 @@ const UserApplication = () => {
                     tone: existingApplication.status,
                   };
                   return (
-                    <span className={`status-chip status-chip--${display.tone}`}>
-                      {display.label}
-                    </span>
+                    <StatusChip
+                      status={existingApplication.status}
+                      tone={display.tone}
+                      label={display.label}
+                    />
                   );
                 })()}
               </dd>
@@ -278,9 +281,9 @@ const UserApplication = () => {
             </div>
           </dl>
           {isEditable ? (
-            <button type="button" className="btn btn--primary" onClick={() => setIsEditing(true)}>
+            <Button type="button" variant="primary" onClick={() => setIsEditing(true)}>
               Edit Submission
-            </button>
+            </Button>
           ) : (
             <p className="application__locked">Edits are unavailable because your submission is being finalized.</p>
           )}
@@ -447,16 +450,16 @@ const UserApplication = () => {
             />
           </label>
           <div className="application__form-actions">
-            <button type="submit" className="btn btn--primary">
+            <Button type="submit" variant="primary">
               Submit Application
-            </button>
-            <button type="button" className="btn" onClick={handleSaveDraft}>
+            </Button>
+            <Button type="button" onClick={handleSaveDraft}>
               Save Draft
-            </button>
+            </Button>
             {existingApplication && (
-              <button type="button" className="btn btn--danger" onClick={() => setIsEditing(false)}>
+              <Button type="button" variant="danger" onClick={() => setIsEditing(false)}>
                 Cancel
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -464,9 +467,9 @@ const UserApplication = () => {
 
       {!existingApplication && !isEditing && (
         <div className="application__start">
-          <button type="button" className="btn btn--primary" onClick={() => setIsEditing(true)}>
+          <Button type="button" variant="primary" onClick={() => setIsEditing(true)}>
             Start Application
-          </button>
+          </Button>
         </div>
       )}
     </section>
