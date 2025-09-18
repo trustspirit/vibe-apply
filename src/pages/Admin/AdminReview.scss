@@ -181,6 +181,27 @@
   font-variant-numeric: tabular-nums;
 }
 
+.review__list-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.12rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.review__list-tag--application {
+  background: rgba(2, 132, 199, 0.15);
+  color: #0369a1;
+}
+
+.review__list-tag--recommendation {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
 .review__empty {
   padding: 1rem;
   color: var(--color-muted);
@@ -208,8 +229,42 @@
   gap: 1rem;
 }
 
+.review__details-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.review__details-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .review__details h2 {
   margin: 0;
+}
+
+.review__details-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.review__details-tag--application {
+  background: rgba(2, 132, 199, 0.15);
+  color: #0369a1;
+}
+
+.review__details-tag--recommendation {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
 }
 
 .review__details-meta {
@@ -296,6 +351,39 @@
 
 .review-card__meta {
   font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.review-card__tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.35rem 0;
+}
+
+.review-card__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.review-card__tag--application {
+  background: rgba(2, 132, 199, 0.15);
+  color: #0369a1;
+}
+
+.review-card__tag--recommendation {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
+.review-card__source,
+.review__details-origin {
+  font-size: 0.75rem;
   color: var(--color-muted);
 }
 
@@ -394,4 +482,8 @@
     border-radius: 0.75rem;
     padding: 1rem;
   }
+}
+.review__details-origin {
+  font-size: 0.85rem;
+  color: var(--color-muted);
 }

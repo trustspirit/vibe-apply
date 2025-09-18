@@ -11,14 +11,15 @@ const STATUS_TONES = {
 
 const STATUS_LABELS = {
   draft: 'Draft',
-  awaiting: 'Awaiting Review',
+  awaiting: 'Awaiting',
   submitted: 'Submitted',
   approved: 'Approved',
   rejected: 'Rejected',
   reviewed: 'Reviewed',
 };
 
-const normalizeKey = (value) => (typeof value === 'string' ? value.toLowerCase() : undefined);
+const normalizeKey = (value) =>
+  typeof value === 'string' ? value.toLowerCase() : undefined;
 
 const StatusChip = ({ status, tone, label, className = '', children, ...props }) => {
   const key = normalizeKey(status);
@@ -26,7 +27,10 @@ const StatusChip = ({ status, tone, label, className = '', children, ...props })
   const content = label ?? (key ? STATUS_LABELS[key] : undefined) ?? children ?? status;
 
   return (
-    <span className={classNames('status-chip', `status-chip--${resolvedTone}`, className)} {...props}>
+    <span
+      className={classNames('status-chip', `status-chip--${resolvedTone}`, className)}
+      {...props}
+    >
       {content}
     </span>
   );

@@ -12,7 +12,7 @@ const TABS = [
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'awaiting', label: 'Awaiting Review' },
+  { value: 'awaiting', label: 'Awaiting' },
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
 ];
@@ -43,11 +43,15 @@ const AdminReview = () => {
 
   const [activeTab, setActiveTab] = useState(() => {
     const requestedTab = location.state?.initialTab;
-    return requestedTab && TABS.some((tab) => tab.id === requestedTab) ? requestedTab : 'awaiting';
+    return requestedTab && TABS.some((tab) => tab.id === requestedTab)
+      ? requestedTab
+      : 'awaiting';
   });
   const [selectedId, setSelectedId] = useState(null);
   const [statusSelection, setStatusSelection] = useState(null);
-  const [showTodayOnly, setShowTodayOnly] = useState(() => location.state?.focus === 'today');
+  const [showTodayOnly, setShowTodayOnly] = useState(
+    () => location.state?.focus === 'today'
+  );
   const todayTimestamp = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -66,7 +70,8 @@ const AdminReview = () => {
     setShowTodayOnly(location.state?.focus === 'today');
   }, [location.state]);
 
-  const getStatusLabel = (status) => STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
+  const getStatusLabel = (status) =>
+    STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 
   const reviewItems = useMemo(() => {
     const applicationItems = applications.map((app) => ({
@@ -111,13 +116,13 @@ const AdminReview = () => {
       });
 
     return [...applicationItems, ...recommendationItems].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }, [applications, leaderRecommendations]);
 
   const approvedApplications = useMemo(
     () => applications.filter((app) => app.status === 'approved'),
-    [applications],
+    [applications]
   );
 
   const statusCounts = useMemo(() => {
@@ -137,7 +142,10 @@ const AdminReview = () => {
   }, [reviewItems]);
 
   const filteredItems = useMemo(() => {
-    let items = activeTab === 'all' ? reviewItems : reviewItems.filter((item) => item.status === activeTab);
+    let items =
+      activeTab === 'all'
+        ? reviewItems
+        : reviewItems.filter((item) => item.status === activeTab);
     if (showTodayOnly) {
       items = items.filter((item) => {
         const created = new Date(item.createdAt);
@@ -169,7 +177,9 @@ const AdminReview = () => {
   }, [selectedItem]);
 
   const currentStatus = selectedItem ? statusSelection ?? selectedItem.status : null;
-  const statusSelectId = selectedItem ? `review-status-${selectedItem.key}` : 'review-status-select';
+  const statusSelectId = selectedItem
+    ? `review-status-${selectedItem.key}`
+    : 'review-status-select';
 
   const handleStatusSelect = (event) => {
     if (!selectedItem) {
@@ -180,7 +190,10 @@ const AdminReview = () => {
     if (selectedItem.type === 'application') {
       updateApplicationStatus(selectedItem.entityId, nextStatus);
     } else {
-      updateLeaderRecommendationStatus(selectedItem.entityId, remapStatusForRecommendation(nextStatus));
+      updateLeaderRecommendationStatus(
+        selectedItem.entityId,
+        remapStatusForRecommendation(nextStatus)
+      );
     }
   };
 
@@ -201,7 +214,10 @@ const AdminReview = () => {
     if (item.type === 'application') {
       updateApplicationStatus(item.entityId, status);
     } else {
-      updateLeaderRecommendationStatus(item.entityId, remapStatusForRecommendation(status));
+      updateLeaderRecommendationStatus(
+        item.entityId,
+        remapStatusForRecommendation(status)
+      );
     }
 
     if (selectedItem?.key === entryKey) {
@@ -267,17 +283,19 @@ const AdminReview = () => {
   };
 
   return (
-    <section className="review">
-      <div className="review__header">
-        <div className="review__header-copy">
-          <h1 className="review__title">Review Applications</h1>
-          <p className="review__subtitle">Manage incoming applications and update their statuses.</p>
+    <section className='review'>
+      <div className='review__header'>
+        <div className='review__header-copy'>
+          <h1 className='review__title'>Review Applications</h1>
+          <p className='review__subtitle'>
+            Manage incoming applications and update their statuses.
+          </p>
         </div>
         {activeTab === 'approved' && (
           <Button
-            type="button"
-            variant="primary"
-            className="review__export"
+            type='button'
+            variant='primary'
+            className='review__export'
             onClick={handleExportApproved}
             disabled={!approvedApplications.length}
           >
@@ -290,92 +308,118 @@ const AdminReview = () => {
         items={TABS}
         activeId={activeTab}
         onChange={handleTabClick}
-        className="review__tabs"
-        tabClassName="review__tab"
-        activeTabClassName="review__tab--active"
-        labelClassName="review__tab-label"
-        badgeClassName="review__tab-pill"
-        ariaLabel="Application status filters"
+        className='review__tabs'
+        tabClassName='review__tab'
+        activeTabClassName='review__tab--active'
+        labelClassName='review__tab-label'
+        badgeClassName='review__tab-pill'
+        ariaLabel='Application status filters'
         getBadge={(tab) =>
           tab.id === 'all' ? statusCounts.all : statusCounts[tab.id] ?? statusCounts.all
         }
       />
 
       {showTodayOnly && (
-        <div className="review__filter-chip">
+        <div className='review__filter-chip'>
           Showing submissions from today
-          <button type="button" onClick={() => setShowTodayOnly(false)}>
+          <button type='button' onClick={() => setShowTodayOnly(false)}>
             Clear
           </button>
         </div>
       )}
 
-      <div className="review__body">
-        <aside className="review__list" aria-label="Application list">
+      <div className='review__body'>
+        <aside className='review__list' aria-label='Application list'>
           {filteredItems.length ? (
             <ul>
               {filteredItems.map((item) => (
                 <li key={item.key}>
                   <button
-                    type="button"
-                    className={item.key === selectedId ? 'review__list-item review__list-item--active' : 'review__list-item'}
+                    type='button'
+                    className={
+                      item.key === selectedId
+                        ? 'review__list-item review__list-item--active'
+                        : 'review__list-item'
+                    }
                     onClick={() => setSelectedId(item.key)}
                     aria-current={item.key === selectedId ? 'true' : 'false'}
                   >
-                    <div className="review__list-top">
-                      <span className="review__list-name">{item.name}</span>
-                      <StatusChip status={item.status} label={getStatusLabel(item.status)} />
+                    <div className='review__list-top'>
+                      <span className='review__list-name'>{item.name}</span>
+                      <StatusChip
+                        status={item.status}
+                        label={getStatusLabel(item.status)}
+                      />
                     </div>
-                    <div className="review__list-bottom">
-                      <span className="review__list-meta">{item.stake}</span>
-                      <span className="review__list-meta">{item.ward}</span>
-                      <span className="review__list-meta review__list-date">
+                    <div className='review__list-bottom'>
+                      <span className='review__list-meta'>{item.stake}</span>
+                      <span className='review__list-meta'>{item.ward}</span>
+                      <span className='review__list-meta review__list-date'>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
-                      {item.type === 'recommendation' && (
-                        <span className="review__list-meta review__list-origin">Leader Recommendation</span>
-                      )}
+                      <span
+                        className={
+                          item.type === 'recommendation'
+                            ? 'review__list-tag review__list-tag--recommendation'
+                            : 'review__list-tag review__list-tag--application'
+                        }
+                      >
+                        {item.type === 'recommendation' ? 'Recommended' : 'Applied'}
+                      </span>
                     </div>
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="review__empty">No applications found for this tab.</p>
+            <p className='review__empty'>No applications found for this tab.</p>
           )}
         </aside>
 
-        <div className="review__details" aria-live="polite">
+        <div className='review__details' aria-live='polite'>
           {selectedItem ? (
-            <div className="review__details-card">
-              <header className="review__details-header">
-                <div>
-                  <h2>{selectedItem.name}</h2>
+            <div className='review__details-card'>
+              <header className='review__details-header'>
+                <div className='review__details-info'>
+                  <div className='review__details-heading'>
+                    <h2>{selectedItem.name}</h2>
+                    <span
+                      className={
+                        selectedItem.type === 'recommendation'
+                          ? 'review__details-tag review__details-tag--recommendation'
+                          : 'review__details-tag review__details-tag--application'
+                      }
+                    >
+                      {selectedItem.type === 'recommendation' ? 'Recommended' : 'Applied'}
+                    </span>
+                  </div>
                   {selectedItem.type === 'recommendation' && (
-                    <p className="review__details-origin">Leader Recommendation</p>
+                    <p className='review__details-origin'>Leader Recommendation</p>
                   )}
-                  <p className="review__details-meta">
+                  <p className='review__details-meta'>
                     Submitted {new Date(selectedItem.createdAt).toLocaleString()}
                   </p>
                 </div>
 
-                <div className="review__status-control">
+                <div className='review__status-control'>
                   <ComboBox
                     id={statusSelectId}
-                    name="status"
-                    label="Status"
+                    name='status'
+                    label='Status'
                     value={currentStatus ?? 'awaiting'}
                     onChange={handleStatusSelect}
                     tone={currentStatus ?? 'awaiting'}
                     options={STATUS_OPTIONS}
-                    wrapperClassName="review__status-label"
-                    labelClassName="review__status-text"
+                    wrapperClassName='review__status-label'
+                    labelClassName='review__status-text'
                   />
-                  <span className="review__status-hint">Selecting updates instantly.</span>
+                  <span className='review__status-hint'>
+                    Selecting updates instantly.
+                  </span>
                 </div>
               </header>
 
-              <dl className="review__grid">
+              <dl className='review__grid'>
                 <div>
                   <dt>Email</dt>
                   <dd>{selectedItem.email}</dd>
@@ -402,41 +446,61 @@ const AdminReview = () => {
                 </div>
               </dl>
 
-              <div className="review__notes">
+              <div className='review__notes'>
                 <h3>Additional Information</h3>
                 <p>{selectedItem.moreInfo || 'No additional information provided.'}</p>
               </div>
             </div>
           ) : (
-            <div className="review__placeholder">Select an application to review its details.</div>
+            <div className='review__placeholder'>
+              Select an application to review its details.
+            </div>
           )}
         </div>
       </div>
 
-      <div className="review__mobile" aria-live="polite">
+      <div className='review__mobile' aria-live='polite'>
         {filteredItems.length ? (
           filteredItems.map((item) => (
-            <article key={item.key} className="review-card">
-              <div className="review-card__header">
+            <article key={item.key} className='review-card'>
+              <div className='review-card__header'>
                 <div>
                   <h2>{item.name}</h2>
-                  {item.type === 'recommendation' && <p className="review-card__origin">Leader Recommendation</p>}
-                  <p className="review-card__meta">Submitted {new Date(item.createdAt).toLocaleString()}</p>
+                  <p className='review-card__meta'>
+                    Submitted {new Date(item.createdAt).toLocaleString()}
+                  </p>
                 </div>
                 <ComboBox
                   name={`mobile-status-${item.key}`}
-                  label="Status"
+                  label='Status'
                   value={item.status}
-                  onChange={(event) => handleInlineStatusChange(item.key, event.target.value)}
+                  onChange={(event) =>
+                    handleInlineStatusChange(item.key, event.target.value)
+                  }
                   options={STATUS_OPTIONS}
                   tone={item.status}
-                  wrapperClassName="review-card__status"
-                  labelClassName="review-card__status-label"
+                  wrapperClassName='review-card__status'
+                  labelClassName='review-card__status-label'
                   ariaLabel={`Update status for ${item.name}`}
                 />
               </div>
 
-              <dl className="review-card__grid">
+              <div className='review-card__tags'>
+                <span
+                  className={
+                    item.type === 'recommendation'
+                      ? 'review-card__tag review-card__tag--recommendation'
+                      : 'review-card__tag review-card__tag--application'
+                  }
+                >
+                  {item.type === 'recommendation' ? 'Recommended' : 'Applied'}
+                </span>
+                {item.type === 'recommendation' && (
+                  <span className='review-card__source'>Leader Recommendation</span>
+                )}
+              </div>
+
+              <dl className='review-card__grid'>
                 <div>
                   <dt>Email</dt>
                   <dd>{item.email}</dd>
@@ -463,14 +527,14 @@ const AdminReview = () => {
                 </div>
               </dl>
 
-              <div className="review-card__notes">
+              <div className='review-card__notes'>
                 <h3>Additional Information</h3>
                 <p>{item.moreInfo || 'No additional information provided.'}</p>
               </div>
             </article>
           ))
         ) : (
-          <p className="review__empty">No applications found for this tab.</p>
+          <p className='review__empty'>No applications found for this tab.</p>
         )}
       </div>
     </section>

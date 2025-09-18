@@ -49,7 +49,10 @@ const AdminDashboard = () => {
     });
 
     const weeklyTrendData = days.map((date) => {
-      const dayLabel = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const dayLabel = date.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      });
       const count = applications.filter((app) => {
         const created = new Date(app.createdAt);
         created.setHours(0, 0, 0, 0);
@@ -60,11 +63,12 @@ const AdminDashboard = () => {
 
     const genderCounts = applications.reduce(
       (acc, app) => {
-        const key = app.gender && ['male', 'female'].includes(app.gender) ? app.gender : 'other';
+        const key =
+          app.gender && ['male', 'female'].includes(app.gender) ? app.gender : 'other';
         acc[key] += 1;
         return acc;
       },
-      { male: 0, female: 0, other: 0 },
+      { male: 0, female: 0, other: 0 }
     );
 
     const genderSplitData = Object.entries(genderCounts)
@@ -112,92 +116,108 @@ const AdminDashboard = () => {
   };
 
   return (
-    <section className="dashboard">
-      <h1 className="dashboard__title">Dashboard</h1>
-      <p className="dashboard__subtitle">Overview of application activity</p>
+    <section className='dashboard'>
+      <h1 className='dashboard__title'>Dashboard</h1>
+      <p className='dashboard__subtitle'>Overview of application activity</p>
 
-      <div className="dashboard__summary">
-        <div className="summary-card summary-card--primary">
-          <div className="summary-card__icon" aria-hidden>
+      <div className='dashboard__summary'>
+        <div className='summary-card summary-card--primary'>
+          <div className='summary-card__icon' aria-hidden>
             <span>📥</span>
           </div>
-          <div className="summary-card__content">
-            <span className="summary-card__label">Total Applications</span>
-            <span className="summary-card__value">{totals.totalApplications}</span>
+          <div className='summary-card__content'>
+            <span className='summary-card__label'>Total Applications</span>
+            <span className='summary-card__value'>{totals.totalApplications}</span>
           </div>
-          <span className="summary-card__spark">All time</span>
+          <span className='summary-card__spark'>All time</span>
         </div>
         <button
-          type="button"
-          className="summary-card summary-card--warning summary-card--clickable"
+          type='button'
+          className='summary-card summary-card--warning summary-card--clickable'
           onClick={goToAwaiting}
-          aria-label="View awaiting review applications"
+          aria-label='View awaiting review applications'
         >
-          <div className="summary-card__icon" aria-hidden>
+          <div className='summary-card__icon' aria-hidden>
             <span>⏳</span>
           </div>
-          <div className="summary-card__content">
-            <span className="summary-card__label">Awaiting Review</span>
-            <span className="summary-card__value">{totals.awaitingCount}</span>
+          <div className='summary-card__content'>
+            <span className='summary-card__label'>Awaiting</span>
+            <span className='summary-card__value'>{totals.awaitingCount}</span>
           </div>
-          <span className="summary-card__spark">Needs action</span>
+          <span className='summary-card__spark'>Needs action</span>
         </button>
         <button
-          type="button"
-          className="summary-card summary-card--success summary-card--clickable"
+          type='button'
+          className='summary-card summary-card--success summary-card--clickable'
           onClick={goToApproved}
-          aria-label="View approved applications"
+          aria-label='View approved applications'
         >
-          <div className="summary-card__icon" aria-hidden>
+          <div className='summary-card__icon' aria-hidden>
             <span>🏅</span>
           </div>
-          <div className="summary-card__content">
-            <span className="summary-card__label">Approved</span>
-            <span className="summary-card__value">{totals.approvedCount}</span>
+          <div className='summary-card__content'>
+            <span className='summary-card__label'>Approved</span>
+            <span className='summary-card__value'>{totals.approvedCount}</span>
           </div>
-          <span className="summary-card__spark">Approved applicants</span>
+          <span className='summary-card__spark'>Approved applicants</span>
         </button>
         <button
-          type="button"
-          className="summary-card summary-card--accent summary-card--clickable"
+          type='button'
+          className='summary-card summary-card--accent summary-card--clickable'
           onClick={goToNewToday}
-          aria-label="View applications submitted today"
+          aria-label='View applications submitted today'
         >
-          <div className="summary-card__icon" aria-hidden>
+          <div className='summary-card__icon' aria-hidden>
             <span>✨</span>
           </div>
-          <div className="summary-card__content">
-            <span className="summary-card__label">New Today</span>
-            <span className="summary-card__value">{totals.todaysCount}</span>
+          <div className='summary-card__content'>
+            <span className='summary-card__label'>New Today</span>
+            <span className='summary-card__value'>{totals.todaysCount}</span>
           </div>
-          <span className="summary-card__spark">Since midnight</span>
+          <span className='summary-card__spark'>Since midnight</span>
         </button>
       </div>
 
-      <div className="dashboard__grid">
-        <div className="panel">
-          <h2 className="panel__title">Past 7 Days</h2>
-          <div className="panel__chart">
-            <ResponsiveContainer width="100%" height={240}>
+      <div className='dashboard__grid'>
+        <div className='panel'>
+          <h2 className='panel__title'>Past 7 Days</h2>
+          <div className='panel__chart'>
+            <ResponsiveContainer width='100%' height={240}>
               <LineChart data={weeklyTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="day" stroke="#4b5563" />
-                <YAxis allowDecimals={false} stroke="#4b5563" />
+                <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
+                <XAxis dataKey='day' stroke='#4b5563' />
+                <YAxis allowDecimals={false} stroke='#4b5563' />
                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                <Line type="monotone" dataKey="applications" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} />
+                <Line
+                  type='monotone'
+                  dataKey='applications'
+                  stroke='#2563eb'
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="panel">
-          <h2 className="panel__title">Gender Split</h2>
-          <div className="panel__chart">
-            <ResponsiveContainer width="100%" height={240}>
+        <div className='panel'>
+          <h2 className='panel__title'>Gender Split</h2>
+          <div className='panel__chart'>
+            <ResponsiveContainer width='100%' height={240}>
               <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={4}>
+                <Pie
+                  data={pieData}
+                  dataKey='value'
+                  nameKey='name'
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={4}
+                >
                   {pieData.map((entry) => (
-                    <Cell key={entry.name} fill={GENDER_COLORS[entry.name] ?? '#9ca3af'} />
+                    <Cell
+                      key={entry.name}
+                      fill={GENDER_COLORS[entry.name] ?? '#9ca3af'}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -208,17 +228,17 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="panel panel--wide">
-        <h2 className="panel__title">Stake &amp; Ward Distribution</h2>
-        <div className="panel__chart">
-          <ResponsiveContainer width="100%" height={260}>
+      <div className='panel panel--wide'>
+        <h2 className='panel__title'>Stake &amp; Ward Distribution</h2>
+        <div className='panel__chart'>
+          <ResponsiveContainer width='100%' height={260}>
             <BarChart data={stakeWardCounts}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="label" stroke="#4b5563" />
-              <YAxis allowDecimals={false} stroke="#4b5563" />
+              <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
+              <XAxis dataKey='label' stroke='#4b5563' />
+              <YAxis allowDecimals={false} stroke='#4b5563' />
               <Tooltip />
               <Legend />
-              <Bar dataKey="applications" fill="#34d399" name="Applications" />
+              <Bar dataKey='applications' fill='#34d399' name='Applications' />
             </BarChart>
           </ResponsiveContainer>
         </div>
