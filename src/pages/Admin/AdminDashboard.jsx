@@ -19,7 +19,7 @@ import { useApp } from '../../context/AppContext.jsx';
 import './AdminDashboard.scss';
 
 const GENDER_COLORS = {
-  male: '#4f46e5',
+  male: '#1d4ed8',
   female: '#f97316',
   other: '#6b7280',
   'No Data': '#d1d5db',
@@ -184,7 +184,7 @@ const AdminDashboard = () => {
                 <XAxis dataKey="day" stroke="#4b5563" />
                 <YAxis allowDecimals={false} stroke="#4b5563" />
                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                <Line type="monotone" dataKey="applications" stroke="#6366f1" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="applications" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

@@ -4,11 +4,11 @@
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  background: radial-gradient(circle at top, rgba(79, 70, 229, 0.08), transparent);
+  background: radial-gradient(circle at top, rgba(29, 78, 216, 0.08), transparent);
 }
 
 .auth--centered {
-  background: radial-gradient(circle at top, rgba(79, 70, 229, 0.06), transparent);
+  background: radial-gradient(circle at top, rgba(29, 78, 216, 0.06), transparent);
 }
 
 .auth__panel {
@@ -49,7 +49,7 @@
 
 .auth__input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
 }
 
 .auth__error {
