@@ -46,7 +46,7 @@ const ComboBox = forwardRef(
 
     return (
       <label
-        className={classNames(wrapperClassName, error && 'field--error')}
+        className={classNames('form-control', wrapperClassName, error && 'field--error')}
         htmlFor={fieldId}
       >
         {label && (

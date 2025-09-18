@@ -1,17 +1,12 @@
 import { useMemo } from 'react';
 import { useApp } from '../../context/AppContext.jsx';
-import { ComboBox, StatusChip } from '../../components/ui';
+import { ComboBox, StatusChip, ToggleButton } from '../../components/ui';
 import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Admin' },
   { value: 'leader', label: 'Leader' },
   { value: 'applicant', label: 'Applicant' },
-];
-
-const LEADER_STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending Approval' },
-  { value: 'approved', label: 'Approved' },
 ];
 
 const AdminRoles = () => {
@@ -40,8 +35,8 @@ const AdminRoles = () => {
     updateUserRole(userId, role);
   };
 
-  const handleLeaderStatusChange = (userId, status) => {
-    updateLeaderStatus(userId, status);
+  const handleLeaderToggle = (userId, isApproved) => {
+    updateLeaderStatus(userId, isApproved ? 'approved' : 'pending');
   };
 
   return (
@@ -99,14 +94,13 @@ const AdminRoles = () => {
                 </td>
                 <td>
                   {user.role === 'leader' ? (
-                    <ComboBox
-                      name={`leader-status-${user.id}`}
-                      value={user.leaderStatus ?? 'pending'}
-                      onChange={(event) => handleLeaderStatusChange(user.id, event.target.value)}
-                      options={LEADER_STATUS_OPTIONS}
-                      tone={user.leaderStatus === 'approved' ? 'approved' : 'awaiting'}
-                      wrapperClassName="roles__combo"
-                      ariaLabel={`Select leader status for ${user.name}`}
+                    <ToggleButton
+                      checked={user.leaderStatus === 'approved'}
+                      onChange={(next) => handleLeaderToggle(user.id, next)}
+                      labelOn="Approved"
+                      labelOff="Pending"
+                      confirmOnMessage="Approve this leader account?"
+                      className="roles__toggle"
                     />
                   ) : (
                     <span className="roles__status-hint">N/A</span>

@@ -1,0 +1,60 @@
+.toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.toggle-button__track {
+  width: 2.3rem;
+  height: 1.2rem;
+  background: rgba(156, 163, 175, 0.35);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.toggle-button__thumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.2rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.toggle-button__status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.toggle-button--on .toggle-button__track {
+  background: rgba(37, 99, 235, 0.55);
+}
+
+.toggle-button--on .toggle-button__thumb {
+  transform: translateX(1.05rem);
+}
+
+.toggle-button--on .toggle-button__status {
+  color: var(--color-primary);
+}
+
+.toggle-button:hover:not(.is-disabled) {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.toggle-button.is-disabled,
+.toggle-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

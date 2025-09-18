@@ -44,6 +44,10 @@
   color: var(--color-muted);
 }
 
+.roles__toggle {
+  display: inline-flex;
+}
+
 .roles__self-hint {
   display: inline-block;
   margin-left: 0.5rem;

@@ -4,3 +4,4 @@ export { default as MenuButton } from './MenuButton.jsx';
 export { default as StatusChip } from './StatusChip.jsx';
 export { default as Tabs } from './Tabs.jsx';
 export { default as TextField } from './TextField.jsx';
+export { default as ToggleButton } from './ToggleButton.jsx';
