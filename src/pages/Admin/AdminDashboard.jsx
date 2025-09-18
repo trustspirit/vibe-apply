@@ -32,6 +32,7 @@ const AdminDashboard = () => {
   const { totals, weeklyTrend, genderSplit, stakeWardCounts } = useMemo(() => {
     const totalApplications = applications.length;
     const awaitingCount = applications.filter((app) => app.status === 'awaiting').length;
+    const approvedCount = applications.filter((app) => app.status === 'approved').length;
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
     const todaysCount = applications.filter((app) => {
@@ -87,6 +88,7 @@ const AdminDashboard = () => {
       totals: {
         totalApplications,
         awaitingCount,
+        approvedCount,
         todaysCount,
       },
       weeklyTrend: weeklyTrendData,
@@ -99,6 +101,10 @@ const AdminDashboard = () => {
 
   const goToAwaiting = () => {
     navigate('/admin/review', { state: { initialTab: 'awaiting' } });
+  };
+
+  const goToApproved = () => {
+    navigate('/admin/review', { state: { initialTab: 'approved' } });
   };
 
   const goToNewToday = () => {
@@ -135,6 +141,21 @@ const AdminDashboard = () => {
             <span className="summary-card__value">{totals.awaitingCount}</span>
           </div>
           <span className="summary-card__spark">Needs action</span>
+        </button>
+        <button
+          type="button"
+          className="summary-card summary-card--success summary-card--clickable"
+          onClick={goToApproved}
+          aria-label="View approved applications"
+        >
+          <div className="summary-card__icon" aria-hidden>
+            <span>🏅</span>
+          </div>
+          <div className="summary-card__content">
+            <span className="summary-card__label">Approved</span>
+            <span className="summary-card__value">{totals.approvedCount}</span>
+          </div>
+          <span className="summary-card__spark">Approved applicants</span>
         </button>
         <button
           type="button"
