@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Bar,
   BarChart,
@@ -26,10 +27,18 @@ const GENDER_COLORS = {
 
 const AdminDashboard = () => {
   const { applications } = useApp();
+  const navigate = useNavigate();
 
   const { totals, weeklyTrend, genderSplit, stakeWardCounts } = useMemo(() => {
     const totalApplications = applications.length;
     const awaitingCount = applications.filter((app) => app.status === 'awaiting').length;
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const todaysCount = applications.filter((app) => {
+      const created = new Date(app.createdAt);
+      created.setHours(0, 0, 0, 0);
+      return created.getTime() === todayDate.getTime();
+    }).length;
 
     const days = Array.from({ length: 7 }).map((_, index) => {
       const date = new Date();
@@ -78,6 +87,7 @@ const AdminDashboard = () => {
       totals: {
         totalApplications,
         awaitingCount,
+        todaysCount,
       },
       weeklyTrend: weeklyTrendData,
       genderSplit: genderSplitData,
@@ -87,20 +97,60 @@ const AdminDashboard = () => {
 
   const pieData = genderSplit.length ? genderSplit : [{ name: 'No Data', value: 1 }];
 
+  const goToAwaiting = () => {
+    navigate('/admin/review', { state: { initialTab: 'awaiting' } });
+  };
+
+  const goToNewToday = () => {
+    navigate('/admin/review', { state: { initialTab: 'all', focus: 'today' } });
+  };
+
   return (
     <section className="dashboard">
       <h1 className="dashboard__title">Dashboard</h1>
       <p className="dashboard__subtitle">Overview of application activity</p>
 
       <div className="dashboard__summary">
-        <div className="summary-card">
-          <span className="summary-card__label">Total Applications</span>
-          <span className="summary-card__value">{totals.totalApplications}</span>
+        <div className="summary-card summary-card--primary">
+          <div className="summary-card__icon" aria-hidden>
+            <span>📥</span>
+          </div>
+          <div className="summary-card__content">
+            <span className="summary-card__label">Total Applications</span>
+            <span className="summary-card__value">{totals.totalApplications}</span>
+          </div>
+          <span className="summary-card__spark">All time</span>
         </div>
-        <div className="summary-card">
-          <span className="summary-card__label">Awaiting Review</span>
-          <span className="summary-card__value">{totals.awaitingCount}</span>
-        </div>
+        <button
+          type="button"
+          className="summary-card summary-card--warning summary-card--clickable"
+          onClick={goToAwaiting}
+          aria-label="View awaiting review applications"
+        >
+          <div className="summary-card__icon" aria-hidden>
+            <span>⏳</span>
+          </div>
+          <div className="summary-card__content">
+            <span className="summary-card__label">Awaiting Review</span>
+            <span className="summary-card__value">{totals.awaitingCount}</span>
+          </div>
+          <span className="summary-card__spark">Needs action</span>
+        </button>
+        <button
+          type="button"
+          className="summary-card summary-card--accent summary-card--clickable"
+          onClick={goToNewToday}
+          aria-label="View applications submitted today"
+        >
+          <div className="summary-card__icon" aria-hidden>
+            <span>✨</span>
+          </div>
+          <div className="summary-card__content">
+            <span className="summary-card__label">New Today</span>
+            <span className="summary-card__value">{totals.todaysCount}</span>
+          </div>
+          <span className="summary-card__spark">Since midnight</span>
+        </button>
       </div>
 
       <div className="dashboard__grid">

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
 import './AdminReview.scss';
 
@@ -17,9 +18,33 @@ const STATUS_OPTIONS = [
 
 const AdminReview = () => {
   const { applications, updateApplicationStatus } = useApp();
-  const [activeTab, setActiveTab] = useState('awaiting');
+  const location = useLocation();
+  const locationStateRef = useRef(null);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const requestedTab = location.state?.initialTab;
+    return requestedTab && TABS.some((tab) => tab.id === requestedTab) ? requestedTab : 'awaiting';
+  });
   const [selectedId, setSelectedId] = useState(null);
   const [statusSelection, setStatusSelection] = useState(null);
+  const [showTodayOnly, setShowTodayOnly] = useState(() => location.state?.focus === 'today');
+  const todayTimestamp = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.getTime();
+  }, []);
+
+  useEffect(() => {
+    if (locationStateRef.current === location.state) {
+      return;
+    }
+    locationStateRef.current = location.state;
+    const requestedTab = location.state?.initialTab;
+    if (requestedTab && TABS.some((tab) => tab.id === requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+    setShowTodayOnly(location.state?.focus === 'today');
+  }, [location.state]);
 
   const getStatusLabel = (status) => STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 
@@ -39,11 +64,16 @@ const AdminReview = () => {
   );
 
   const filteredApplications = useMemo(() => {
-    if (activeTab === 'all') {
-      return applications;
+    let items = activeTab === 'all' ? applications : applications.filter((app) => app.status === activeTab);
+    if (showTodayOnly) {
+      items = items.filter((app) => {
+        const created = new Date(app.createdAt);
+        created.setHours(0, 0, 0, 0);
+        return created.getTime() === todayTimestamp;
+      });
     }
-    return applications.filter((app) => app.status === activeTab);
-  }, [applications, activeTab]);
+    return items;
+  }, [applications, activeTab, showTodayOnly, todayTimestamp]);
 
   useEffect(() => {
     if (!filteredApplications.length) {
@@ -75,6 +105,11 @@ const AdminReview = () => {
     const nextStatus = event.target.value;
     setStatusSelection(nextStatus);
     updateApplicationStatus(selectedApplication.id, nextStatus);
+  };
+
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    setShowTodayOnly(false);
   };
 
   const handleInlineStatusChange = (applicationId, status) => {
@@ -168,13 +203,22 @@ const AdminReview = () => {
             role="tab"
             aria-selected={tab.id === activeTab}
             className={tab.id === activeTab ? 'review__tab review__tab--active' : 'review__tab'}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabClick(tab.id)}
           >
             <span className="review__tab-label">{tab.label}</span>
             <span className="review__tab-pill">{statusCounts[tab.id] ?? statusCounts.all}</span>
           </button>
         ))}
       </div>
+
+      {showTodayOnly && (
+        <div className="review__filter-chip">
+          Showing submissions from today
+          <button type="button" onClick={() => setShowTodayOnly(false)}>
+            Clear
+          </button>
+        </div>
+      )}
 
       <div className="review__body">
         <aside className="review__list" aria-label="Application list">

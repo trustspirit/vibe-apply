@@ -91,6 +91,33 @@
   color: var(--color-primary);
 }
 
+.review__filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: #0369a1;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.review__filter-chip button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.review__filter-chip button:hover {
+  opacity: 0.8;
+}
+
 .review__body {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) 2fr;
