@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext.jsx';
-import { Button, StatusChip } from '../../components/ui';
+import { Button, ComboBox, StatusChip, TextField } from '../../components/ui';
 import './UserApplication.scss';
 
 const emptyForm = {
@@ -20,12 +20,6 @@ const STATUS_DISPLAY = {
   approved: { label: 'Reviewed', tone: 'reviewed' },
   rejected: { label: 'Reviewed', tone: 'reviewed' },
 };
-
-const RequiredIndicator = () => (
-  <span className="field-required" aria-hidden="true">
-    *
-  </span>
-);
 
 const UserApplication = () => {
   const { applications, currentUser, submitApplication } = useApp();
@@ -293,162 +287,85 @@ const UserApplication = () => {
       {isEditing && isEditable && (
         <form className="application__form" onSubmit={handleSubmitApplication}>
           <div className="form-grid">
-            <label className={errors.name ? 'field--error' : ''}>
-              <span className="field-label">
-                Name
-                <RequiredIndicator />
-              </span>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className={errors.name ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? 'application-name-error' : undefined}
-              />
-              {errors.name && (
-                <span id="application-name-error" className="form-error">
-                  {errors.name}
-                </span>
-              )}
-            </label>
-            <label className={errors.age ? 'field--error' : ''}>
-              <span className="field-label">
-                Age
-                <RequiredIndicator />
-              </span>
-              <input
-                type="number"
-                name="age"
-                value={form.age}
-                onChange={handleChange}
-                min={16}
-                max={120}
-                className={errors.age ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.age)}
-                aria-describedby={errors.age ? 'application-age-error' : undefined}
-              />
-              {errors.age && (
-                <span id="application-age-error" className="form-error">
-                  {errors.age}
-                </span>
-              )}
-            </label>
-            <label className={errors.email ? 'field--error' : ''}>
-              <span className="field-label">
-                Email
-                <RequiredIndicator />
-              </span>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                className={errors.email ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? 'application-email-error' : undefined}
-              />
-              {errors.email && (
-                <span id="application-email-error" className="form-error">
-                  {errors.email}
-                </span>
-              )}
-            </label>
-            <label className={errors.phone ? 'field--error' : ''}>
-              <span className="field-label">
-                Phone
-                <RequiredIndicator />
-              </span>
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className={errors.phone ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.phone)}
-                aria-describedby={errors.phone ? 'application-phone-error' : undefined}
-              />
-              {errors.phone && (
-                <span id="application-phone-error" className="form-error">
-                  {errors.phone}
-                </span>
-              )}
-            </label>
-            <label className={errors.stake ? 'field--error' : ''}>
-              <span className="field-label">
-                Stake
-                <RequiredIndicator />
-              </span>
-              <input
-                type="text"
-                name="stake"
-                value={form.stake}
-                onChange={handleChange}
-                className={errors.stake ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.stake)}
-                aria-describedby={errors.stake ? 'application-stake-error' : undefined}
-              />
-              {errors.stake && (
-                <span id="application-stake-error" className="form-error">
-                  {errors.stake}
-                </span>
-              )}
-            </label>
-            <label className={errors.ward ? 'field--error' : ''}>
-              <span className="field-label">
-                Ward
-                <RequiredIndicator />
-              </span>
-              <input
-                type="text"
-                name="ward"
-                value={form.ward}
-                onChange={handleChange}
-                className={errors.ward ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.ward)}
-                aria-describedby={errors.ward ? 'application-ward-error' : undefined}
-              />
-              {errors.ward && (
-                <span id="application-ward-error" className="form-error">
-                  {errors.ward}
-                </span>
-              )}
-            </label>
-            <label className={errors.gender ? 'field--error' : ''}>
-              <span className="field-label">
-                Gender
-                <RequiredIndicator />
-              </span>
-              <select
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                className={errors.gender ? 'input--error' : ''}
-                aria-invalid={Boolean(errors.gender)}
-                aria-describedby={errors.gender ? 'application-gender-error' : undefined}
-              >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-              {errors.gender && (
-                <span id="application-gender-error" className="form-error">
-                  {errors.gender}
-                </span>
-              )}
-            </label>
-          </div>
-          <label className={`form-full${errors.moreInfo ? ' field--error' : ''}`}>
-            Additional Information
-            <textarea
-              name="moreInfo"
-              value={form.moreInfo}
+            <TextField
+              name="name"
+              label="Name"
+              value={form.name}
               onChange={handleChange}
-              rows={4}
-              placeholder="Share any relevant experience or context."
+              required
+              error={errors.name}
             />
-          </label>
+            <TextField
+              name="age"
+              label="Age"
+              type="number"
+              value={form.age}
+              onChange={handleChange}
+              required
+              error={errors.age}
+              min={16}
+              max={120}
+            />
+            <TextField
+              name="email"
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              error={errors.email}
+            />
+            <TextField
+              name="phone"
+              label="Phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              error={errors.phone}
+            />
+            <TextField
+              name="stake"
+              label="Stake"
+              value={form.stake}
+              onChange={handleChange}
+              required
+              error={errors.stake}
+            />
+            <TextField
+              name="ward"
+              label="Ward"
+              value={form.ward}
+              onChange={handleChange}
+              required
+              error={errors.ward}
+            />
+            <ComboBox
+              name="gender"
+              label="Gender (optional)"
+              value={form.gender}
+              onChange={handleChange}
+              showRequiredIndicator={false}
+              error={errors.gender}
+              variant="input"
+              options={[
+                { value: '', label: 'Select gender', disabled: true },
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' },
+              ]}
+            />
+          </div>
+          <TextField
+            name="moreInfo"
+            label="Additional Information"
+            value={form.moreInfo}
+            onChange={handleChange}
+            placeholder="Share any relevant experience or context."
+            multiline
+            rows={4}
+            wrapperClassName="form-full"
+            showRequiredIndicator={false}
+          />
           <div className="application__form-actions">
             <Button type="submit" variant="primary">
               Submit Application

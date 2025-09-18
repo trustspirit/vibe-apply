@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
-import { Button, StatusChip } from '../../components/ui';
+import { Button, ComboBox, StatusChip, Tabs } from '../../components/ui';
 import './AdminReview.scss';
 
 const TABS = [
@@ -197,21 +197,20 @@ const AdminReview = () => {
         )}
       </div>
 
-      <div className="review__tabs" role="tablist" aria-label="Application status filters">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={tab.id === activeTab}
-            className={tab.id === activeTab ? 'review__tab review__tab--active' : 'review__tab'}
-            onClick={() => handleTabClick(tab.id)}
-          >
-            <span className="review__tab-label">{tab.label}</span>
-            <span className="review__tab-pill">{statusCounts[tab.id] ?? statusCounts.all}</span>
-          </button>
-        ))}
-      </div>
+      <Tabs
+        items={TABS}
+        activeId={activeTab}
+        onChange={handleTabClick}
+        className="review__tabs"
+        tabClassName="review__tab"
+        activeTabClassName="review__tab--active"
+        labelClassName="review__tab-label"
+        badgeClassName="review__tab-pill"
+        ariaLabel="Application status filters"
+        getBadge={(tab) =>
+          tab.id === 'all' ? statusCounts.all : statusCounts[tab.id] ?? statusCounts.all
+        }
+      />
 
       {showTodayOnly && (
         <div className="review__filter-chip">
@@ -266,21 +265,17 @@ const AdminReview = () => {
                 </div>
 
                 <div className="review__status-control">
-                  <label className="review__status-label" htmlFor={statusSelectId}>
-                    <span className="review__status-text">Status</span>
-                    <select
-                      id={statusSelectId}
-                      value={currentStatus ?? 'awaiting'}
-                      onChange={handleStatusSelect}
-                      className={`combo combo--${currentStatus ?? 'awaiting'}`}
-                    >
-                      {STATUS_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <ComboBox
+                    id={statusSelectId}
+                    name="status"
+                    label="Status"
+                    value={currentStatus ?? 'awaiting'}
+                    onChange={handleStatusSelect}
+                    tone={currentStatus ?? 'awaiting'}
+                    options={STATUS_OPTIONS}
+                    wrapperClassName="review__status-label"
+                    labelClassName="review__status-text"
+                  />
                   <span className="review__status-hint">Selecting updates instantly.</span>
                 </div>
               </header>
@@ -332,21 +327,17 @@ const AdminReview = () => {
                   <h2>{app.name}</h2>
                   <p className="review-card__meta">Submitted {new Date(app.createdAt).toLocaleString()}</p>
                 </div>
-                <label className="review-card__status">
-                  <span className="review-card__status-label">Status</span>
-                  <select
-                    className={`combo combo--${app.status}`}
-                    value={app.status}
-                    onChange={(event) => handleInlineStatusChange(app.id, event.target.value)}
-                    aria-label={`Update status for ${app.name}`}
-                  >
-                    {STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <ComboBox
+                  name={`mobile-status-${app.id}`}
+                  label="Status"
+                  value={app.status}
+                  onChange={(event) => handleInlineStatusChange(app.id, event.target.value)}
+                  options={STATUS_OPTIONS}
+                  tone={app.status}
+                  wrapperClassName="review-card__status"
+                  labelClassName="review-card__status-label"
+                  ariaLabel={`Update status for ${app.name}`}
+                />
               </div>
 
               <dl className="review-card__grid">

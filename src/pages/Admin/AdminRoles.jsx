@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useApp } from '../../context/AppContext.jsx';
-import { StatusChip } from '../../components/ui';
+import { ComboBox, StatusChip } from '../../components/ui';
 import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [
@@ -61,19 +61,16 @@ const AdminRoles = () => {
                   />
                 </td>
                 <td>
-                  <select
-                    className={`combo combo--${user.role}`}
+                  <ComboBox
+                    name={`role-${user.id}`}
                     value={user.role}
                     onChange={(event) => handleRoleChange(user.id, event.target.value)}
+                    options={ROLE_OPTIONS}
+                    tone={user.role}
+                    wrapperClassName="roles__combo"
+                    ariaLabel={`Select role for ${user.name}`}
                     disabled={user.id === currentUser?.id}
-                    aria-label={`Select role for ${user.name}`}
-                  >
-                    {ROLE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {user.id === currentUser?.id && <span className="roles__self-hint">Cannot change your role</span>}
                 </td>
               </tr>

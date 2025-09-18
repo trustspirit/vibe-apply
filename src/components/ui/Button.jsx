@@ -1,12 +1,11 @@
 import { forwardRef } from 'react';
+import classNames from '../../utils/classNames.js';
 
 const VARIANT_CLASSNAMES = {
   default: '',
   primary: 'btn--primary',
   danger: 'btn--danger',
 };
-
-const classNames = (...values) => values.filter(Boolean).join(' ');
 
 const Button = forwardRef(({ variant = 'default', className = '', type = 'button', ...props }, ref) => {
   const variantClass = VARIANT_CLASSNAMES[variant] ?? variant;

@@ -39,6 +39,16 @@
   color: var(--color-danger);
 }
 
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+}
+
+.form-help {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
 .status-chip {
   display: inline-flex;
   align-items: center;

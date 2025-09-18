@@ -1,3 +1,5 @@
+import classNames from '../../utils/classNames.js';
+
 const STATUS_TONES = {
   draft: 'draft',
   awaiting: 'awaiting',
@@ -15,8 +17,6 @@ const STATUS_LABELS = {
   rejected: 'Rejected',
   reviewed: 'Reviewed',
 };
-
-const classNames = (...values) => values.filter(Boolean).join(' ');
 
 const normalizeKey = (value) => (typeof value === 'string' ? value.toLowerCase() : undefined);
 

@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
+import { Button } from './ui';
 import './GlobalNav.scss';
 
 const GlobalNav = () => {
@@ -18,6 +19,7 @@ const GlobalNav = () => {
           { to: '/admin/roles', label: 'Manage Roles' },
         ]
       : [];
+  const hasNav = navItems.length > 0;
 
   const handleSignOut = () => {
     signOut();
@@ -27,10 +29,11 @@ const GlobalNav = () => {
   return (
     <header className="gnb">
       <div className="gnb__inner">
-        <button type="button" className="gnb__logout" onClick={handleSignOut}>
-          Logout
-        </button>
-        {navItems.length ? (
+        <div
+          className={hasNav ? 'gnb__placeholder gnb__placeholder--active' : 'gnb__placeholder'}
+          aria-hidden
+        />
+        {hasNav ? (
           <nav className="gnb__nav" aria-label="Main navigation">
             {navItems.map((item) => (
               <NavLink
@@ -42,12 +45,15 @@ const GlobalNav = () => {
               </NavLink>
             ))}
           </nav>
-        ) : (
-          <div className="gnb__spacer" aria-hidden />
-        )}
+        ) : null}
         <div className="gnb__profile">
-          <span className="gnb__greeting">Hi, {currentUser.name}</span>
-          <span className="gnb__role">{currentUser.role}</span>
+          <div className="gnb__profile-info">
+            <span className="gnb__greeting">Hi, {currentUser.name}</span>
+            <span className="gnb__role">{currentUser.role}</span>
+          </div>
+          <Button type="button" className="gnb__logout" onClick={handleSignOut}>
+            Logout
+          </Button>
         </div>
       </div>
     </header>

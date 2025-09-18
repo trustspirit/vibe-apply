@@ -31,6 +31,14 @@
   border-bottom: none;
 }
 
+.roles__combo {
+  display: block;
+}
+
+.roles__combo select {
+  width: 100%;
+}
+
 .roles__self-hint {
   display: inline-block;
   margin-left: 0.5rem;
