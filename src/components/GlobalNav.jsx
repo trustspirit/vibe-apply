@@ -11,15 +11,33 @@ const GlobalNav = () => {
     return null;
   }
 
-  const navItems =
-    currentUser.role === 'admin'
-      ? [
-          { to: '/admin/dashboard', label: 'Dashboard' },
-          { to: '/admin/review', label: 'Review Applications' },
-          { to: '/admin/roles', label: 'Manage Roles' },
-        ]
-      : [];
+  const navItems = (() => {
+    if (currentUser.role === 'admin') {
+      return [
+        { to: '/admin/dashboard', label: 'Dashboard' },
+        { to: '/admin/review', label: 'Review Applications' },
+        { to: '/admin/roles', label: 'Manage Roles' },
+      ];
+    }
+    if (currentUser.role === 'leader' && currentUser.leaderStatus === 'approved') {
+      return [{ to: '/leader/dashboard', label: 'Leader Dashboard' }];
+    }
+    if (currentUser.role === 'applicant') {
+      return [{ to: '/application', label: 'Application' }];
+    }
+    return [];
+  })();
   const hasNav = navItems.length > 0;
+
+  const roleLabel = (() => {
+    if (currentUser.role === 'admin') {
+      return 'Admin';
+    }
+    if (currentUser.role === 'leader') {
+      return currentUser.leaderStatus === 'approved' ? 'Leader' : 'Leader (Pending)';
+    }
+    return 'Applicant';
+  })();
 
   const handleSignOut = () => {
     signOut();
@@ -49,7 +67,7 @@ const GlobalNav = () => {
         <div className="gnb__profile">
           <div className="gnb__profile-info">
             <span className="gnb__greeting">Hi, {currentUser.name}</span>
-            <span className="gnb__role">{currentUser.role}</span>
+            <span className="gnb__role">{roleLabel}</span>
           </div>
           <Button type="button" className="gnb__logout" onClick={handleSignOut}>
             Logout

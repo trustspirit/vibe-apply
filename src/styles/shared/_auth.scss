@@ -57,6 +57,31 @@
   font-size: 0.9rem;
 }
 
+.auth__label--inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--color-text);
+}
+
+.auth__options {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.auth__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+}
+
+.auth__choice-hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
 .auth__submit {
   margin-top: 0.5rem;
 }

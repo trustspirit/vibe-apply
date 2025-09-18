@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
 import { Button } from '../../components/ui';
+import { getDefaultPathForUser } from '../../utils/navigation.js';
 import './SignIn.scss';
 
 const SignIn = () => {
@@ -24,7 +25,7 @@ const SignIn = () => {
 
     try {
       const user = await signIn({ ...form });
-      const redirectTo = location.state?.from?.pathname ?? (user.role === 'admin' ? '/admin/dashboard' : '/application');
+      const redirectTo = location.state?.from?.pathname ?? getDefaultPathForUser(user);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err.message);

@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { RequireAdmin, RequireAuth, PublicOnly, RequireUser } from './components/RouteGuards.jsx';
+import { RequireAdmin, RequireAuth, PublicOnly, RequireUser, RequireLeader } from './components/RouteGuards.jsx';
 import AppLayout from './layouts/AppLayout.jsx';
 import { useApp } from './context/AppContext.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
@@ -8,11 +8,14 @@ import AdminRoles from './pages/Admin/AdminRoles.jsx';
 import SignIn from './pages/Auth/SignIn.jsx';
 import SignUp from './pages/Auth/SignUp.jsx';
 import UserApplication from './pages/User/UserApplication.jsx';
+import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
+import LeaderPending from './pages/Leader/LeaderPending.jsx';
+import { getDefaultPathForUser } from './utils/navigation.js';
 
 const App = () => {
   const { currentUser } = useApp();
 
-  const defaultAuthedPath = currentUser?.role === 'admin' ? '/admin/dashboard' : '/application';
+  const defaultAuthedPath = getDefaultPathForUser(currentUser);
 
   return (
     <Routes>
@@ -78,6 +81,22 @@ const App = () => {
             <RequireUser>
               <UserApplication />
             </RequireUser>
+          }
+        />
+        <Route
+          path="/leader/dashboard"
+          element={
+            <RequireLeader requireApproved>
+              <LeaderDashboard />
+            </RequireLeader>
+          }
+        />
+        <Route
+          path="/leader/pending"
+          element={
+            <RequireLeader>
+              <LeaderPending />
+            </RequireLeader>
           }
         />
       </Route>

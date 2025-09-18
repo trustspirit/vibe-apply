@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
 import { Button } from '../../components/ui';
+import { getDefaultPathForUser } from '../../utils/navigation.js';
 import './SignUp.scss';
 
 const SignUp = () => {
   const { signUp } = useApp();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'applicant' });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,8 +28,13 @@ const SignUp = () => {
 
     setIsSubmitting(true);
     try {
-      const user = await signUp({ name: form.name, email: form.email, password: form.password });
-      navigate(user.role === 'admin' ? '/admin/dashboard' : '/application', { replace: true });
+      const user = await signUp({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
+      navigate(getDefaultPathForUser(user), { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -88,6 +94,32 @@ const SignUp = () => {
               minLength={6}
             />
           </label>
+          <div className="auth__label auth__label--inline">
+            <span>Account Type</span>
+            <div className="auth__options">
+              <label className="auth__option">
+                <input
+                  type="radio"
+                  name="role"
+                  value="applicant"
+                  checked={form.role === 'applicant'}
+                  onChange={handleChange}
+                />
+                Applicant
+              </label>
+              <label className="auth__option">
+                <input
+                  type="radio"
+                  name="role"
+                  value="leader"
+                  checked={form.role === 'leader'}
+                  onChange={handleChange}
+                />
+                Leader
+              </label>
+            </div>
+            <p className="auth__choice-hint">Leader access requires admin approval before activation.</p>
+          </div>
           {error && <p className="auth__error">{error}</p>}
           <Button type="submit" variant="primary" className="auth__submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating Account...' : 'Sign Up'}

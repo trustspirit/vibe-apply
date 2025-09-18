@@ -39,6 +39,11 @@
   width: 100%;
 }
 
+.roles__status-hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
 .roles__self-hint {
   display: inline-block;
   margin-left: 0.5rem;
