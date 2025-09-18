@@ -17,8 +17,27 @@ const STATUS_OPTIONS = [
   { value: 'rejected', label: 'Rejected' },
 ];
 
+const normalizeRecommendationStatus = (status) => {
+  if (status === 'submitted') {
+    return 'awaiting';
+  }
+  return status;
+};
+
+const remapStatusForRecommendation = (status) => {
+  if (status === 'awaiting') {
+    return 'submitted';
+  }
+  return status;
+};
+
 const AdminReview = () => {
-  const { applications, updateApplicationStatus } = useApp();
+  const {
+    applications,
+    leaderRecommendations,
+    updateApplicationStatus,
+    updateLeaderRecommendationStatus,
+  } = useApp();
   const location = useLocation();
   const locationStateRef = useRef(null);
 
@@ -49,63 +68,120 @@ const AdminReview = () => {
 
   const getStatusLabel = (status) => STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 
+  const reviewItems = useMemo(() => {
+    const applicationItems = applications.map((app) => ({
+      key: `app-${app.id}`,
+      type: 'application',
+      entityId: app.id,
+      status: app.status,
+      rawStatus: app.status,
+      name: app.name,
+      email: app.email,
+      phone: app.phone,
+      age: app.age,
+      gender: app.gender,
+      stake: app.stake,
+      ward: app.ward,
+      moreInfo: app.moreInfo,
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+    }));
+
+    const recommendationItems = leaderRecommendations
+      .filter((recommendation) => recommendation.status !== 'draft')
+      .map((recommendation) => {
+        const mappedStatus = normalizeRecommendationStatus(recommendation.status);
+        return {
+          key: `rec-${recommendation.id}`,
+          type: 'recommendation',
+          entityId: recommendation.id,
+          status: mappedStatus,
+          rawStatus: recommendation.status,
+          name: recommendation.name,
+          email: recommendation.email,
+          phone: recommendation.phone,
+          age: recommendation.age,
+          gender: recommendation.gender,
+          stake: recommendation.stake,
+          ward: recommendation.ward,
+          moreInfo: recommendation.moreInfo,
+          createdAt: recommendation.createdAt,
+          updatedAt: recommendation.updatedAt,
+        };
+      });
+
+    return [...applicationItems, ...recommendationItems].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [applications, leaderRecommendations]);
+
   const approvedApplications = useMemo(
     () => applications.filter((app) => app.status === 'approved'),
     [applications],
   );
 
-  const statusCounts = useMemo(
-    () => ({
-      all: applications.length,
-      awaiting: applications.filter((app) => app.status === 'awaiting').length,
-      approved: applications.filter((app) => app.status === 'approved').length,
-      rejected: applications.filter((app) => app.status === 'rejected').length,
-    }),
-    [applications],
-  );
+  const statusCounts = useMemo(() => {
+    const counts = { all: reviewItems.length, awaiting: 0, approved: 0, rejected: 0 };
+    reviewItems.forEach((item) => {
+      if (item.status === 'awaiting') {
+        counts.awaiting += 1;
+      }
+      if (item.status === 'approved') {
+        counts.approved += 1;
+      }
+      if (item.status === 'rejected') {
+        counts.rejected += 1;
+      }
+    });
+    return counts;
+  }, [reviewItems]);
 
-  const filteredApplications = useMemo(() => {
-    let items = activeTab === 'all' ? applications : applications.filter((app) => app.status === activeTab);
+  const filteredItems = useMemo(() => {
+    let items = activeTab === 'all' ? reviewItems : reviewItems.filter((item) => item.status === activeTab);
     if (showTodayOnly) {
-      items = items.filter((app) => {
-        const created = new Date(app.createdAt);
+      items = items.filter((item) => {
+        const created = new Date(item.createdAt);
         created.setHours(0, 0, 0, 0);
         return created.getTime() === todayTimestamp;
       });
     }
     return items;
-  }, [applications, activeTab, showTodayOnly, todayTimestamp]);
+  }, [reviewItems, activeTab, showTodayOnly, todayTimestamp]);
 
   useEffect(() => {
-    if (!filteredApplications.length) {
+    if (!filteredItems.length) {
       setSelectedId(null);
       return;
     }
-    if (!selectedId || !filteredApplications.some((app) => app.id === selectedId)) {
-      setSelectedId(filteredApplications[0].id);
+    if (!selectedId || !filteredItems.some((item) => item.key === selectedId)) {
+      setSelectedId(filteredItems[0].key);
     }
-  }, [filteredApplications, selectedId]);
+  }, [filteredItems, selectedId]);
 
-  const selectedApplication = filteredApplications.find((app) => app.id === selectedId) ?? null;
+  const selectedItem = filteredItems.find((item) => item.key === selectedId) ?? null;
 
   useEffect(() => {
-    if (selectedApplication) {
-      setStatusSelection(selectedApplication.status);
+    if (selectedItem) {
+      setStatusSelection(selectedItem.status);
     } else {
       setStatusSelection(null);
     }
-  }, [selectedApplication]);
+  }, [selectedItem]);
 
-  const currentStatus = selectedApplication ? statusSelection ?? selectedApplication.status : null;
-  const statusSelectId = selectedApplication ? `review-status-${selectedApplication.id}` : 'review-status-select';
+  const currentStatus = selectedItem ? statusSelection ?? selectedItem.status : null;
+  const statusSelectId = selectedItem ? `review-status-${selectedItem.key}` : 'review-status-select';
 
   const handleStatusSelect = (event) => {
-    if (!selectedApplication) {
+    if (!selectedItem) {
       return;
     }
     const nextStatus = event.target.value;
     setStatusSelection(nextStatus);
-    updateApplicationStatus(selectedApplication.id, nextStatus);
+    if (selectedItem.type === 'application') {
+      updateApplicationStatus(selectedItem.entityId, nextStatus);
+    } else {
+      updateLeaderRecommendationStatus(selectedItem.entityId, remapStatusForRecommendation(nextStatus));
+    }
   };
 
   const handleTabClick = (tabId) => {
@@ -113,12 +189,25 @@ const AdminReview = () => {
     setShowTodayOnly(false);
   };
 
-  const handleInlineStatusChange = (applicationId, status) => {
-    updateApplicationStatus(applicationId, status);
-    if (selectedApplication?.id === applicationId) {
+  const handleInlineStatusChange = (entryKey, status) => {
+    if (!status) {
+      return;
+    }
+    const item = reviewItems.find((entry) => entry.key === entryKey);
+    if (!item) {
+      return;
+    }
+
+    if (item.type === 'application') {
+      updateApplicationStatus(item.entityId, status);
+    } else {
+      updateLeaderRecommendationStatus(item.entityId, remapStatusForRecommendation(status));
+    }
+
+    if (selectedItem?.key === entryKey) {
       setStatusSelection(status);
     }
-    setSelectedId(applicationId);
+    setSelectedId(entryKey);
   };
 
   const handleExportApproved = () => {
@@ -223,26 +312,29 @@ const AdminReview = () => {
 
       <div className="review__body">
         <aside className="review__list" aria-label="Application list">
-          {filteredApplications.length ? (
+          {filteredItems.length ? (
             <ul>
-              {filteredApplications.map((app) => (
-                <li key={app.id}>
+              {filteredItems.map((item) => (
+                <li key={item.key}>
                   <button
                     type="button"
-                    className={app.id === selectedId ? 'review__list-item review__list-item--active' : 'review__list-item'}
-                    onClick={() => setSelectedId(app.id)}
-                    aria-current={app.id === selectedId ? 'true' : 'false'}
+                    className={item.key === selectedId ? 'review__list-item review__list-item--active' : 'review__list-item'}
+                    onClick={() => setSelectedId(item.key)}
+                    aria-current={item.key === selectedId ? 'true' : 'false'}
                   >
                     <div className="review__list-top">
-                      <span className="review__list-name">{app.name}</span>
-                      <StatusChip status={app.status} label={getStatusLabel(app.status)} />
+                      <span className="review__list-name">{item.name}</span>
+                      <StatusChip status={item.status} label={getStatusLabel(item.status)} />
                     </div>
                     <div className="review__list-bottom">
-                      <span className="review__list-meta">{app.stake}</span>
-                      <span className="review__list-meta">{app.ward}</span>
+                      <span className="review__list-meta">{item.stake}</span>
+                      <span className="review__list-meta">{item.ward}</span>
                       <span className="review__list-meta review__list-date">
-                        {new Date(app.createdAt).toLocaleDateString()}
+                        {new Date(item.createdAt).toLocaleDateString()}
                       </span>
+                      {item.type === 'recommendation' && (
+                        <span className="review__list-meta review__list-origin">Leader Recommendation</span>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -254,13 +346,16 @@ const AdminReview = () => {
         </aside>
 
         <div className="review__details" aria-live="polite">
-          {selectedApplication ? (
+          {selectedItem ? (
             <div className="review__details-card">
               <header className="review__details-header">
                 <div>
-                  <h2>{selectedApplication.name}</h2>
+                  <h2>{selectedItem.name}</h2>
+                  {selectedItem.type === 'recommendation' && (
+                    <p className="review__details-origin">Leader Recommendation</p>
+                  )}
                   <p className="review__details-meta">
-                    Submitted {new Date(selectedApplication.createdAt).toLocaleString()}
+                    Submitted {new Date(selectedItem.createdAt).toLocaleString()}
                   </p>
                 </div>
 
@@ -283,33 +378,33 @@ const AdminReview = () => {
               <dl className="review__grid">
                 <div>
                   <dt>Email</dt>
-                  <dd>{selectedApplication.email}</dd>
+                  <dd>{selectedItem.email}</dd>
                 </div>
                 <div>
                   <dt>Phone</dt>
-                  <dd>{selectedApplication.phone}</dd>
+                  <dd>{selectedItem.phone}</dd>
                 </div>
                 <div>
                   <dt>Age</dt>
-                  <dd>{selectedApplication.age ?? "N/A"}</dd>
+                  <dd>{selectedItem.age ?? 'N/A'}</dd>
                 </div>
                 <div>
                   <dt>Stake</dt>
-                  <dd>{selectedApplication.stake}</dd>
+                  <dd>{selectedItem.stake}</dd>
                 </div>
                 <div>
                   <dt>Ward</dt>
-                  <dd>{selectedApplication.ward}</dd>
+                  <dd>{selectedItem.ward}</dd>
                 </div>
                 <div>
                   <dt>Gender</dt>
-                  <dd>{selectedApplication.gender ?? 'N/A'}</dd>
+                  <dd>{selectedItem.gender ?? 'N/A'}</dd>
                 </div>
               </dl>
 
               <div className="review__notes">
                 <h3>Additional Information</h3>
-                <p>{selectedApplication.moreInfo || 'No additional information provided.'}</p>
+                <p>{selectedItem.moreInfo || 'No additional information provided.'}</p>
               </div>
             </div>
           ) : (
@@ -319,57 +414,58 @@ const AdminReview = () => {
       </div>
 
       <div className="review__mobile" aria-live="polite">
-        {filteredApplications.length ? (
-          filteredApplications.map((app) => (
-            <article key={app.id} className="review-card">
+        {filteredItems.length ? (
+          filteredItems.map((item) => (
+            <article key={item.key} className="review-card">
               <div className="review-card__header">
                 <div>
-                  <h2>{app.name}</h2>
-                  <p className="review-card__meta">Submitted {new Date(app.createdAt).toLocaleString()}</p>
+                  <h2>{item.name}</h2>
+                  {item.type === 'recommendation' && <p className="review-card__origin">Leader Recommendation</p>}
+                  <p className="review-card__meta">Submitted {new Date(item.createdAt).toLocaleString()}</p>
                 </div>
                 <ComboBox
-                  name={`mobile-status-${app.id}`}
+                  name={`mobile-status-${item.key}`}
                   label="Status"
-                  value={app.status}
-                  onChange={(event) => handleInlineStatusChange(app.id, event.target.value)}
+                  value={item.status}
+                  onChange={(event) => handleInlineStatusChange(item.key, event.target.value)}
                   options={STATUS_OPTIONS}
-                  tone={app.status}
+                  tone={item.status}
                   wrapperClassName="review-card__status"
                   labelClassName="review-card__status-label"
-                  ariaLabel={`Update status for ${app.name}`}
+                  ariaLabel={`Update status for ${item.name}`}
                 />
               </div>
 
               <dl className="review-card__grid">
                 <div>
                   <dt>Email</dt>
-                  <dd>{app.email}</dd>
+                  <dd>{item.email}</dd>
                 </div>
                 <div>
                   <dt>Phone</dt>
-                  <dd>{app.phone}</dd>
+                  <dd>{item.phone}</dd>
                 </div>
                 <div>
                   <dt>Age</dt>
-                  <dd>{app.age ?? 'N/A'}</dd>
+                  <dd>{item.age ?? 'N/A'}</dd>
                 </div>
                 <div>
                   <dt>Stake</dt>
-                  <dd>{app.stake}</dd>
+                  <dd>{item.stake}</dd>
                 </div>
                 <div>
                   <dt>Ward</dt>
-                  <dd>{app.ward}</dd>
+                  <dd>{item.ward}</dd>
                 </div>
                 <div>
                   <dt>Gender</dt>
-                  <dd>{app.gender ?? 'N/A'}</dd>
+                  <dd>{item.gender ?? 'N/A'}</dd>
                 </div>
               </dl>
 
               <div className="review-card__notes">
                 <h3>Additional Information</h3>
-                <p>{app.moreInfo || 'No additional information provided.'}</p>
+                <p>{item.moreInfo || 'No additional information provided.'}</p>
               </div>
             </article>
           ))

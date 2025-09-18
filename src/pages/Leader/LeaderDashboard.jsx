@@ -1,22 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Cell,
+} from 'recharts';
 import { useApp } from '../../context/AppContext.jsx';
-import { Button, ComboBox, StatusChip, TextField } from '../../components/ui';
+import { Button } from '../../components/ui';
 import './LeaderDashboard.scss';
 
-const emptyForm = {
-  id: null,
-  name: '',
-  age: '',
-  email: '',
-  phone: '',
-  gender: '',
-  stake: '',
-  ward: '',
-  moreInfo: '',
-};
+const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];
 
 const LeaderDashboard = () => {
-  const { currentUser, leaderRecommendations, submitLeaderRecommendation } = useApp();
+  const navigate = useNavigate();
+  const { currentUser, leaderRecommendations } = useApp();
   const leaderId = currentUser?.id ?? null;
 
   const recommendations = useMemo(
@@ -27,7 +32,7 @@ const LeaderDashboard = () => {
     [leaderRecommendations, leaderId],
   );
 
-  const stats = useMemo(
+  const statusCounts = useMemo(
     () => ({
       draft: recommendations.filter((recommendation) => recommendation.status === 'draft').length,
       submitted: recommendations.filter((recommendation) => recommendation.status === 'submitted').length,
@@ -35,337 +40,93 @@ const LeaderDashboard = () => {
     [recommendations],
   );
 
-  const [selectedId, setSelectedId] = useState(null);
-  const selectedRecommendation = selectedId
-    ? recommendations.find((recommendation) => recommendation.id === selectedId) ?? null
-    : null;
+  const locationCounts = useMemo(() => {
+    const groups = recommendations.reduce((acc, recommendation) => {
+      const stake = recommendation.stake || 'Unknown Stake';
+      const ward = recommendation.ward || 'Unknown Ward';
+      const key = `${stake} • ${ward}`;
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(groups).map(([name, total]) => ({ name, total }));
+  }, [recommendations]);
 
-  const [form, setForm] = useState(emptyForm);
-  const [errors, setErrors] = useState({});
-  const [formError, setFormError] = useState('');
-  const [feedback, setFeedback] = useState('');
+  const genderCounts = useMemo(() => {
+    const map = recommendations.reduce(
+      (acc, recommendation) => {
+        const key = recommendation.gender === 'male' || recommendation.gender === 'female'
+          ? recommendation.gender
+          : 'Unspecified';
+        acc[key] = (acc[key] ?? 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [recommendations]);
 
-  useEffect(() => {
-    if (selectedId && !selectedRecommendation) {
-      setSelectedId(null);
-    }
-  }, [selectedId, selectedRecommendation]);
+  const pieData = genderCounts.length ? genderCounts : [{ name: 'No Data', value: 1 }];
 
-  useEffect(() => {
-    if (selectedRecommendation) {
-      setForm({
-        id: selectedRecommendation.id,
-        name: selectedRecommendation.name,
-        age: selectedRecommendation.age?.toString() ?? '',
-        email: selectedRecommendation.email,
-        phone: selectedRecommendation.phone,
-        gender: selectedRecommendation.gender ?? '',
-        stake: selectedRecommendation.stake,
-        ward: selectedRecommendation.ward,
-        moreInfo: selectedRecommendation.moreInfo ?? '',
-      });
-    } else {
-      setForm(emptyForm);
-    }
-    setErrors({});
-    setFormError('');
-  }, [selectedRecommendation]);
-
-  const handleSelect = (recommendationId) => {
-    setSelectedId((prev) => (prev === recommendationId ? null : recommendationId));
-    setFeedback('');
-    setFormError('');
-  };
-
-  const handleFormChange = (event) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
-    if (formError) {
-      setFormError('');
-    }
-    if (feedback) {
-      setFeedback('');
-    }
-  };
-
-  const validateForm = () => {
-    const nextErrors = {};
-    const trimmedName = form.name.trim();
-    const trimmedEmail = form.email.trim();
-    const trimmedPhone = form.phone.trim();
-    const trimmedStake = form.stake.trim();
-    const trimmedWard = form.ward.trim();
-    const normalizedAge = Number.parseInt(form.age, 10);
-    const normalizedGender = form.gender === 'male' || form.gender === 'female' ? form.gender : '';
-
-    if (!trimmedName) {
-      nextErrors.name = 'Name is required.';
-    }
-    if (Number.isNaN(normalizedAge) || normalizedAge < 16 || normalizedAge > 120) {
-      nextErrors.age = 'Age must be between 16 and 120.';
-    }
-    if (!trimmedEmail) {
-      nextErrors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      nextErrors.email = 'Enter a valid email address.';
-    }
-    if (!trimmedPhone) {
-      nextErrors.phone = 'Phone number is required.';
-    }
-    if (!trimmedStake) {
-      nextErrors.stake = 'Stake is required.';
-    }
-    if (!trimmedWard) {
-      nextErrors.ward = 'Ward is required.';
-    }
-    if (!normalizedGender) {
-      nextErrors.gender = 'Select male or female.';
-    }
-
-    return {
-      nextErrors,
-      normalizedAge,
-      trimmedName,
-      trimmedEmail,
-      trimmedPhone,
-      trimmedStake,
-      trimmedWard,
-      normalizedGender,
-    };
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!leaderId) {
-      return;
-    }
-
-    const {
-      nextErrors,
-      normalizedAge,
-      trimmedName,
-      trimmedEmail,
-      trimmedPhone,
-      trimmedStake,
-      trimmedWard,
-      normalizedGender,
-    } = validateForm();
-
-    if (Object.keys(nextErrors).length) {
-      setErrors(nextErrors);
-      setFormError('Please resolve the highlighted fields before submitting.');
-      return;
-    }
-
-    submitLeaderRecommendation(leaderId, {
-      id: form.id,
-      status: 'submitted',
-      name: trimmedName,
-      age: normalizedAge,
-      email: trimmedEmail,
-      phone: trimmedPhone,
-      gender: normalizedGender,
-      stake: trimmedStake,
-      ward: trimmedWard,
-      moreInfo: form.moreInfo.trim(),
-    });
-
-    setFeedback('Recommendation submitted to the stake leaders.');
-    setSelectedId(null);
-    setForm(emptyForm);
-    setErrors({});
-  };
-
-  const handleSaveDraft = () => {
-    if (!leaderId) {
-      return;
-    }
-
-    const normalizedAge = Number.parseInt(form.age, 10);
-
-    submitLeaderRecommendation(leaderId, {
-      id: form.id,
-      status: 'draft',
-      name: form.name.trim(),
-      age: Number.isNaN(normalizedAge) ? null : normalizedAge,
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      gender: form.gender,
-      stake: form.stake.trim(),
-      ward: form.ward.trim(),
-      moreInfo: form.moreInfo.trim(),
-    });
-
-    setFeedback('Draft saved. You can revisit and submit whenever you are ready.');
-    if (!form.id) {
-      setSelectedId(null);
-      setForm(emptyForm);
-    }
-  };
-
-  const handleStartNew = () => {
-    setSelectedId(null);
-    setForm(emptyForm);
-    setErrors({});
-    setFormError('');
-    setFeedback('');
+  const handleCreateRecommendation = () => {
+    navigate('/leader/recommendations', { state: { action: 'create' } });
   };
 
   return (
     <section className="leader-dashboard">
       <header className="leader-dashboard__header">
-        <div>
+        <div className="leader-dashboard__intro">
           <h1 className="leader-dashboard__title">Leader Dashboard</h1>
           <p className="leader-dashboard__subtitle">
-            Track your recommendations and submit applicants for consideration.
+            Monitor your recommendations and see where your applicants are coming from.
           </p>
         </div>
-        <div className="leader-dashboard__stats">
-          <div className="leader-dashboard__stat-card">
-            <span className="leader-dashboard__stat-label">Drafts</span>
-            <span className="leader-dashboard__stat-value">{stats.draft}</span>
-          </div>
-          <div className="leader-dashboard__stat-card">
-            <span className="leader-dashboard__stat-label">Submitted</span>
-            <span className="leader-dashboard__stat-value">{stats.submitted}</span>
-          </div>
-        </div>
+        <Button type="button" variant="primary" onClick={handleCreateRecommendation}>
+          Create Recommendation
+        </Button>
       </header>
 
-      <div className="leader-dashboard__layout">
-        <aside className="leader-dashboard__list">
-          <div className="leader-dashboard__list-header">
-            <h2>Recommendations</h2>
-            <Button type="button" variant="primary" onClick={handleStartNew}>
-              New Recommendation
-            </Button>
-          </div>
-          {recommendations.length ? (
-            <ul>
-              {recommendations.map((recommendation) => (
-                <li key={recommendation.id}>
-                  <button
-                    type="button"
-                    className={
-                      recommendation.id === selectedId
-                        ? 'leader-dashboard__list-item leader-dashboard__list-item--active'
-                        : 'leader-dashboard__list-item'
-                    }
-                    onClick={() => handleSelect(recommendation.id)}
-                  >
-                    <div>
-                      <span className="leader-dashboard__list-name">{recommendation.name}</span>
-                      <span className="leader-dashboard__list-email">{recommendation.email}</span>
-                    </div>
-                    <StatusChip status={recommendation.status} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="leader-dashboard__empty">You have not created any recommendations yet.</p>
-          )}
-        </aside>
+      <div className="leader-dashboard__stats">
+        <div className="leader-dashboard__stat-card">
+          <span className="leader-dashboard__stat-label">Draft Recommendations</span>
+          <span className="leader-dashboard__stat-value">{statusCounts.draft}</span>
+        </div>
+        <div className="leader-dashboard__stat-card">
+          <span className="leader-dashboard__stat-label">Submitted Recommendations</span>
+          <span className="leader-dashboard__stat-value">{statusCounts.submitted}</span>
+        </div>
+      </div>
 
-        <div className="leader-dashboard__form-wrapper">
-          <form className="leader-dashboard__form" onSubmit={handleSubmit}>
-            {formError && <p className="leader-dashboard__alert leader-dashboard__alert--error">{formError}</p>}
-            {feedback && <p className="leader-dashboard__alert">{feedback}</p>}
-            <div className="leader-dashboard__grid">
-              <TextField
-                name="name"
-                label="Applicant Name"
-                value={form.name}
-                onChange={handleFormChange}
-                required
-                error={errors.name}
-              />
-              <TextField
-                name="age"
-                label="Age"
-                type="number"
-                value={form.age}
-                onChange={handleFormChange}
-                required
-                error={errors.age}
-                min={16}
-                max={120}
-              />
-              <TextField
-                name="email"
-                label="Email"
-                type="email"
-                value={form.email}
-                onChange={handleFormChange}
-                required
-                error={errors.email}
-              />
-              <TextField
-                name="phone"
-                label="Phone"
-                type="tel"
-                value={form.phone}
-                onChange={handleFormChange}
-                required
-                error={errors.phone}
-              />
-              <TextField
-                name="stake"
-                label="Stake"
-                value={form.stake}
-                onChange={handleFormChange}
-                required
-                error={errors.stake}
-              />
-              <TextField
-                name="ward"
-                label="Ward"
-                value={form.ward}
-                onChange={handleFormChange}
-                required
-                error={errors.ward}
-              />
-              <ComboBox
-                name="gender"
-                label="Gender"
-                value={form.gender}
-                onChange={handleFormChange}
-                error={errors.gender}
-                options={[
-                  { value: '', label: 'Select gender', disabled: true },
-                  { value: 'male', label: 'Male' },
-                  { value: 'female', label: 'Female' },
-                ]}
-                variant="input"
-              />
-            </div>
-            <TextField
-              name="moreInfo"
-              label="Additional Information"
-              value={form.moreInfo}
-              onChange={handleFormChange}
-              placeholder="Share any context or strengths that make this applicant a great fit."
-              multiline
-              rows={4}
-              wrapperClassName="leader-dashboard__form-full"
-              showRequiredIndicator={false}
-            />
-            <div className="leader-dashboard__actions">
-              <Button type="submit" variant="primary">
-                Submit Recommendation
-              </Button>
-              <Button type="button" onClick={handleSaveDraft}>
-                Save Draft
-              </Button>
-            </div>
-          </form>
+      <div className="leader-dashboard__charts">
+        <div className="leader-dashboard__chart">
+          <h2 className="leader-dashboard__chart-title">Stake &amp; Ward Distribution</h2>
+          {locationCounts.length ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={locationCounts}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" stroke="#64748b" />
+                <YAxis allowDecimals={false} stroke="#64748b" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="total" fill="#2563eb" name="Recommendations" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="leader-dashboard__empty">No recommendations yet to show location data.</p>
+          )}
+        </div>
+        <div className="leader-dashboard__chart">
+          <h2 className="leader-dashboard__chart-title">Gender Breakdown</h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={4}>
+                {pieData.map((entry, index) => (
+                  <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </section>

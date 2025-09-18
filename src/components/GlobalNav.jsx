@@ -19,8 +19,17 @@ const GlobalNav = () => {
         { to: '/admin/roles', label: 'Manage Roles' },
       ];
     }
-    if (currentUser.role === 'leader' && currentUser.leaderStatus === 'approved') {
-      return [{ to: '/leader/dashboard', label: 'Leader Dashboard' }];
+    if (currentUser.role === 'leader') {
+      if (currentUser.leaderStatus === 'approved') {
+        return [
+          { to: '/leader/dashboard', label: 'Leader Dashboard' },
+          { to: '/leader/recommendations', label: 'Recommendations' },
+        ];
+      }
+      return [
+        { to: '/leader/pending', label: 'Leader Access' },
+        { to: '/leader/recommendations', label: 'Recommendations' },
+      ];
     }
     if (currentUser.role === 'applicant') {
       return [{ to: '/application', label: 'Application' }];

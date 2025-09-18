@@ -10,6 +10,7 @@ import SignUp from './pages/Auth/SignUp.jsx';
 import UserApplication from './pages/User/UserApplication.jsx';
 import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
 import LeaderPending from './pages/Leader/LeaderPending.jsx';
+import LeaderRecommendations from './pages/Leader/LeaderRecommendations.jsx';
 import { getDefaultPathForUser } from './utils/navigation.js';
 
 const App = () => {
@@ -88,6 +89,14 @@ const App = () => {
           element={
             <RequireLeader requireApproved>
               <LeaderDashboard />
+            </RequireLeader>
+          }
+        />
+        <Route
+          path="/leader/recommendations"
+          element={
+            <RequireLeader>
+              <LeaderRecommendations />
             </RequireLeader>
           }
         />

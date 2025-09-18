@@ -369,6 +369,16 @@ export const AppProvider = ({ children }) => {
     });
   };
 
+  const deleteLeaderRecommendation = (leaderId, recommendationId) => {
+    setState((prev) => ({
+      ...prev,
+      leaderRecommendations: prev.leaderRecommendations.filter(
+        (recommendation) =>
+          !(recommendation.id === recommendationId && recommendation.leaderId === leaderId),
+      ),
+    }));
+  };
+
   const updateApplicationStatus = (applicationId, status) => {
     setState((prev) => ({
       ...prev,
@@ -380,6 +390,21 @@ export const AppProvider = ({ children }) => {
               updatedAt: new Date().toISOString(),
             }
           : app,
+      ),
+    }));
+  };
+
+  const updateLeaderRecommendationStatus = (recommendationId, status) => {
+    setState((prev) => ({
+      ...prev,
+      leaderRecommendations: prev.leaderRecommendations.map((recommendation) =>
+        recommendation.id === recommendationId
+          ? {
+              ...recommendation,
+              status,
+              updatedAt: new Date().toISOString(),
+            }
+          : recommendation,
       ),
     }));
   };
@@ -398,6 +423,8 @@ export const AppProvider = ({ children }) => {
       submitApplication,
       updateApplicationStatus,
       submitLeaderRecommendation,
+      updateLeaderRecommendationStatus,
+      deleteLeaderRecommendation,
     }),
     [state, currentUser],
   );
