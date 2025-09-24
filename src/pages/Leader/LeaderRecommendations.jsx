@@ -318,71 +318,290 @@ const LeaderRecommendations = () => {
     }
 
     setEditingOriginStatus(recommendation.status);
-
-    if (recommendation.status === 'submitted') {
-      const confirmed = window.confirm(
-        'Modifying this submitted recommendation will move it back to draft. You will need to submit it again after making changes. Continue?',
-      );
-      if (!confirmed) {
-        setEditingOriginStatus(null);
-        return;
-      }
-
-      submitLeaderRecommendation(leaderId, {
-        id: recommendation.id,
-        status: 'draft',
-        name: recommendation.name,
-        age: recommendation.age ?? null,
-        email: recommendation.email,
-        phone: recommendation.phone,
-        gender: recommendation.gender ?? '',
-        stake: recommendation.stake,
-        ward: recommendation.ward,
-        moreInfo: recommendation.moreInfo ?? '',
-      });
-    setFeedback('This recommendation has been moved back to draft. Submit again once updates are complete.');
-  }
-
-  setCurrentFormId(recommendationId);
-  setSelectedId(recommendationId);
+    setCurrentFormId(recommendationId);
+    setSelectedId(recommendationId);
   };
 
   const handleCancelEdit = () => {
     setCurrentFormId(undefined);
+    setEditingOriginStatus(null);
   };
 
-  const renderCard = (recommendation) => {
+  const renderListItem = (recommendation) => {
     const isSelected = selectedId === recommendation.id;
     const isActive = currentFormId === recommendation.id;
-    const cardClassName = classNames(
-      'leader-recommendations__card',
-      isSelected && 'leader-recommendations__card--selected',
-      isActive && 'leader-recommendations__card--active',
+    const listItemClassName = classNames(
+      'review__list-item',
+      (isSelected || isActive) && 'review__list-item--active',
     );
 
     return (
       <button
-        key={recommendation.id}
         type="button"
-        className="leader-recommendations__card-button"
+        className={listItemClassName}
         onClick={() => handleSelect(recommendation.id)}
+        aria-current={isSelected ? 'true' : 'false'}
       >
-        <article className={cardClassName}>
-          <div className="leader-recommendations__card-header">
-            <div>
-              <h3>{recommendation.name}</h3>
-              <span className="leader-recommendations__card-meta">
-                {recommendation.stake} • {recommendation.ward}
-              </span>
+        <div className="review__list-top">
+          <span className="review__list-name">{recommendation.name}</span>
+          <StatusChip status={recommendation.status} />
+        </div>
+        <div className="review__list-bottom">
+          <span className="review__list-meta">{recommendation.stake}</span>
+          <span className="review__list-meta">{recommendation.ward}</span>
+          <span className="review__list-meta review__list-date">
+            {new Date(recommendation.updatedAt).toLocaleDateString()}
+          </span>
+        </div>
+      </button>
+    );
+  };
+
+  const renderForm = (variant = 'desktop') => (
+    <form
+      className={classNames(
+        'leader-recommendations__form',
+        variant === 'mobile' && 'leader-recommendations__form--mobile',
+      )}
+      onSubmit={(event) => {
+        event.preventDefault();
+        handleSubmitDraft('submitted');
+      }}
+    >
+      {editingOriginStatus === 'submitted' && (
+        <p className="leader-recommendations__alert">
+          This recommendation is currently submitted. Save as draft or resubmit after making updates.
+        </p>
+      )}
+      {formError && (
+        <p className="leader-recommendations__alert leader-recommendations__alert--error">{formError}</p>
+      )}
+      <div className="leader-recommendations__grid">
+        <TextField
+          name="name"
+          label="Applicant Name"
+          value={form.name}
+          onChange={handleFormChange}
+          required
+          error={errors.name}
+        />
+        <TextField
+          name="age"
+          label="Age"
+          type="number"
+          value={form.age}
+          onChange={handleFormChange}
+          required
+          error={errors.age}
+          min={16}
+          max={120}
+        />
+        <TextField
+          name="email"
+          label="Email"
+          type="email"
+          value={form.email}
+          onChange={handleFormChange}
+          required
+          error={errors.email}
+        />
+        <TextField
+          name="phone"
+          label="Phone"
+          type="tel"
+          value={form.phone}
+          onChange={handleFormChange}
+          required
+          error={errors.phone}
+        />
+        <TextField
+          name="stake"
+          label="Stake"
+          value={form.stake}
+          onChange={handleFormChange}
+          required
+          error={errors.stake}
+        />
+        <TextField
+          name="ward"
+          label="Ward"
+          value={form.ward}
+          onChange={handleFormChange}
+          required
+          error={errors.ward}
+        />
+        <ComboBox
+          name="gender"
+          label="Gender"
+          value={form.gender}
+          onChange={handleFormChange}
+          error={errors.gender}
+          options={genderOptions}
+          variant="input"
+        />
+      </div>
+      <TextField
+        name="moreInfo"
+        label="Additional Information"
+        value={form.moreInfo}
+        onChange={handleFormChange}
+        placeholder="Share any context or strengths that make this applicant a great fit."
+        multiline
+        rows={4}
+        wrapperClassName="leader-recommendations__form-full"
+        showRequiredIndicator={false}
+      />
+      <div
+        className={classNames(
+          'leader-recommendations__actions',
+          variant === 'mobile' && 'leader-recommendations__actions--mobile',
+        )}
+      >
+        <Button type="submit" variant="primary" className="leader-recommendations__btn">
+          Submit Recommendation
+        </Button>
+        <Button
+          type="button"
+          onClick={() => handleSubmitDraft('draft')}
+          className="leader-recommendations__btn"
+        >
+          Save Draft
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          onClick={handleCancelEdit}
+          className="leader-recommendations__btn"
+        >
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+
+  const renderDesktopDetails = () => {
+    if (isEditing) {
+      return <div className="review__details-card leader-recommendations__form-card">{renderForm()}</div>;
+    }
+
+    if (selectedRecommendation) {
+      const updatedLabel = `Updated ${new Date(selectedRecommendation.updatedAt).toLocaleString()}`;
+      return (
+        <div className="review__details-card">
+          <header className="review__details-header">
+            <div className="review__details-info">
+              <div className="review__details-heading">
+                <h2>{selectedRecommendation.name}</h2>
+              </div>
+              <p className="review__details-meta">{updatedLabel}</p>
             </div>
-            <StatusChip status={recommendation.status} className="leader-recommendations__status-chip" />
-          </div>
-          {isActive && <p className="leader-recommendations__editing-indicator">Editing…</p>}
-          <dl className="leader-recommendations__card-details">
+            <StatusChip status={selectedRecommendation.status} />
+          </header>
+          <dl className="review__grid">
+            <div>
+              <dt>Email</dt>
+              <dd>{selectedRecommendation.email}</dd>
+            </div>
             <div>
               <dt>Phone</dt>
-              <dd>{recommendation.phone}</dd>
+              <dd>{selectedRecommendation.phone}</dd>
             </div>
+            <div>
+              <dt>Age</dt>
+              <dd>{selectedRecommendation.age ?? 'N/A'}</dd>
+            </div>
+            <div>
+              <dt>Stake</dt>
+              <dd>{selectedRecommendation.stake}</dd>
+            </div>
+            <div>
+              <dt>Ward</dt>
+              <dd>{selectedRecommendation.ward}</dd>
+            </div>
+            <div>
+              <dt>Gender</dt>
+              <dd>{selectedRecommendation.gender ?? 'N/A'}</dd>
+            </div>
+          </dl>
+          <div className="review__notes">
+            <h3>Additional Information</h3>
+            <p>{selectedRecommendation.moreInfo || 'No additional information provided.'}</p>
+          </div>
+          <div className="leader-recommendations__detail-actions">
+            <Button
+              type="button"
+              onClick={() => handleModify(selectedRecommendation.id)}
+              className="leader-recommendations__btn"
+            >
+              Modify
+            </Button>
+            {selectedRecommendation.status === 'draft' ? (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => handleQuickSubmit(selectedRecommendation.id)}
+                className="leader-recommendations__btn"
+              >
+                Submit
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={() => handleCancelSubmission(selectedRecommendation.id)}
+                className="leader-recommendations__btn"
+              >
+                Cancel Submission
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => handleDelete(selectedRecommendation.id)}
+              className="leader-recommendations__btn"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return <div className="review__placeholder">Select a recommendation to review its details.</div>;
+  };
+
+  const renderMobileCard = (recommendation) => {
+    const isEditingThis = currentFormId === recommendation.id;
+    return (
+      <article
+        key={recommendation.id}
+        className={classNames(
+          'review-card',
+          'leader-recommendations__mobile-card',
+          isEditingThis && 'leader-recommendations__mobile-card--editing',
+        )}
+      >
+        <div className="review-card__header">
+          <div>
+            <h2>{recommendation.name}</h2>
+            <p className="review-card__meta">
+              Updated {new Date(recommendation.updatedAt).toLocaleString()}
+            </p>
+          </div>
+          <StatusChip status={recommendation.status} />
+        </div>
+        <dl className="review-card__grid">
+          <div>
+            <dt>Email</dt>
+            <dd>{recommendation.email}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd>{recommendation.phone}</dd>
+          </div>
+          <div>
+            <dt>Age</dt>
+            <dd>{recommendation.age ?? 'N/A'}</dd>
+          </div>
           <div>
             <dt>Stake</dt>
             <dd>{recommendation.stake}</dd>
@@ -395,32 +614,68 @@ const LeaderRecommendations = () => {
             <dt>Gender</dt>
             <dd>{recommendation.gender ?? 'N/A'}</dd>
           </div>
-          <div>
-            <dt>Age</dt>
-            <dd>{recommendation.age ?? 'N/A'}</dd>
-          </div>
         </dl>
-        {recommendation.moreInfo ? (
-          <p className="leader-recommendations__card-notes">{recommendation.moreInfo}</p>
-        ) : null}
-        </article>
-      </button>
+        <div className="review-card__notes">
+          <h3>Additional Information</h3>
+          <p>{recommendation.moreInfo || 'No additional information provided.'}</p>
+        </div>
+        <div className="leader-recommendations__card-actions">
+          <Button
+            type="button"
+            onClick={() => handleModify(recommendation.id)}
+            className="leader-recommendations__btn"
+          >
+            Modify
+          </Button>
+          {recommendation.status === 'draft' ? (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => handleQuickSubmit(recommendation.id)}
+              className="leader-recommendations__btn"
+            >
+              Submit
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => handleCancelSubmission(recommendation.id)}
+              className="leader-recommendations__btn"
+            >
+              Cancel Submission
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="danger"
+            onClick={() => handleDelete(recommendation.id)}
+            className="leader-recommendations__btn"
+          >
+            Delete
+          </Button>
+        </div>
+        {isEditingThis && (
+          <p className="leader-recommendations__mobile-editing-note">
+            Editing this recommendation above. Submit or save your changes when ready.
+          </p>
+        )}
+      </article>
     );
   };
 
   return (
-    <section className="leader-recommendations">
-      <header className="leader-recommendations__header">
-        <div className="leader-recommendations__intro">
-          <h1 className="leader-recommendations__title">My Recommendations</h1>
-          <p className="leader-recommendations__subtitle">
+    <section className="review leader-recommendations">
+      <div className="review__header">
+        <div className="review__header-copy">
+          <h1 className="review__title">My Recommendations</h1>
+          <p className="review__subtitle">
             Manage drafts and submitted recommendations. Update details and resubmit when ready.
           </p>
         </div>
         <Button type="button" variant="primary" onClick={handleCreate}>
           Create Recommendation
         </Button>
-      </header>
+      </div>
 
       {feedback && <p className="leader-recommendations__banner">{feedback}</p>}
 
@@ -428,11 +683,11 @@ const LeaderRecommendations = () => {
         items={TAB_DEFS}
         activeId={activeTab}
         onChange={(_, tab) => handleTabChange(tab.id)}
-        className="leader-recommendations__tabs"
-        tabClassName="leader-recommendations__tab"
-        activeTabClassName="leader-recommendations__tab--active"
-        labelClassName="leader-recommendations__tab-label"
-        badgeClassName="leader-recommendations__tab-pill"
+        className="review__tabs"
+        tabClassName="review__tab"
+        activeTabClassName="review__tab--active"
+        labelClassName="review__tab-label"
+        badgeClassName="review__tab-pill"
         ariaLabel="Recommendation status filters"
         getBadge={(tab) =>
           recommendations.filter((recommendation) =>
@@ -441,213 +696,32 @@ const LeaderRecommendations = () => {
         }
       />
 
-      <div
-        className={classNames(
-          'leader-recommendations__content',
-          isEditing && 'leader-recommendations__content--editing',
-          !isEditing && selectedRecommendation && 'leader-recommendations__content--detail',
-        )}
-      >
-        <aside className="leader-recommendations__list" role="complementary">
+      <div className="review__body">
+        <aside className="review__list" role="complementary" aria-label="Recommendation list">
           {listRecommendations.length ? (
             <ul>
               {listRecommendations.map((recommendation) => (
-                <li key={recommendation.id}>{renderCard(recommendation)}</li>
+                <li key={recommendation.id}>{renderListItem(recommendation)}</li>
               ))}
             </ul>
           ) : (
-            <p className="leader-recommendations__empty">No recommendations in this view yet.</p>
+            <p className="review__empty">No recommendations in this view yet.</p>
           )}
         </aside>
 
-        {isEditing && (
-          <div className="leader-recommendations__form-wrapper">
-            <form className="leader-recommendations__form" onSubmit={(event) => {
-              event.preventDefault();
-              handleSubmitDraft('submitted');
-            }}>
-              {editingOriginStatus === 'submitted' && (
-                <p className="leader-recommendations__alert">
-                  This recommendation was previously submitted. It is now a draft and must be submitted again for
-                  review after changes.
-                </p>
-              )}
-              {formError && (
-                <p className="leader-recommendations__alert leader-recommendations__alert--error">{formError}</p>
-              )}
-              <div className="leader-recommendations__grid">
-                <TextField
-                  name="name"
-                  label="Applicant Name"
-                  value={form.name}
-                  onChange={handleFormChange}
-                  required
-                  error={errors.name}
-                />
-                <TextField
-                  name="age"
-                  label="Age"
-                  type="number"
-                  value={form.age}
-                  onChange={handleFormChange}
-                  required
-                  error={errors.age}
-                  min={16}
-                  max={120}
-                />
-                <TextField
-                  name="email"
-                  label="Email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleFormChange}
-                  required
-                  error={errors.email}
-                />
-                <TextField
-                  name="phone"
-                  label="Phone"
-                  type="tel"
-                  value={form.phone}
-                  onChange={handleFormChange}
-                  required
-                  error={errors.phone}
-                />
-                <TextField
-                  name="stake"
-                  label="Stake"
-                  value={form.stake}
-                  onChange={handleFormChange}
-                  required
-                  error={errors.stake}
-                />
-                <TextField
-                  name="ward"
-                  label="Ward"
-                  value={form.ward}
-                  onChange={handleFormChange}
-                  required
-                  error={errors.ward}
-                />
-                <ComboBox
-                  name="gender"
-                  label="Gender"
-                  value={form.gender}
-                  onChange={handleFormChange}
-                  error={errors.gender}
-                  options={genderOptions}
-                  variant="input"
-                />
-              </div>
-              <TextField
-                name="moreInfo"
-                label="Additional Information"
-                value={form.moreInfo}
-                onChange={handleFormChange}
-                placeholder="Share any context or strengths that make this applicant a great fit."
-                multiline
-                rows={4}
-                wrapperClassName="leader-recommendations__form-full"
-                showRequiredIndicator={false}
-              />
-              <div className="leader-recommendations__actions">
-                <Button type="submit" variant="primary" className="leader-recommendations__btn">
-                  Submit Recommendation
-                </Button>
-                <Button type="button" onClick={() => handleSubmitDraft('draft')} className="leader-recommendations__btn">
-                  Save Draft
-                </Button>
-                <Button type="button" variant="danger" onClick={handleCancelEdit} className="leader-recommendations__btn">
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
+        <div className="review__details leader-recommendations__details" aria-live="polite">
+          {renderDesktopDetails()}
+        </div>
+      </div>
 
-        {!isEditing && selectedRecommendation && (
-          <div className="leader-recommendations__detail">
-            <div className="leader-recommendations__detail-header">
-              <div className="leader-recommendations__detail-info">
-                <h2>{selectedRecommendation.name}</h2>
-                <div className="leader-recommendations__detail-meta">
-                  <span className="leader-recommendations__detail-email">{selectedRecommendation.email}</span>
-                  <span className="leader-recommendations__detail-separator" aria-hidden>
-                    •
-                  </span>
-                  <span className="leader-recommendations__detail-date">
-                    Updated {new Date(selectedRecommendation.updatedAt).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <StatusChip
-                status={selectedRecommendation.status}
-                className="leader-recommendations__status-chip"
-              />
-            </div>
-            <dl className="leader-recommendations__detail-grid">
-              <div>
-                <dt>Phone</dt>
-                <dd>{selectedRecommendation.phone}</dd>
-              </div>
-              <div>
-                <dt>Stake</dt>
-                <dd>{selectedRecommendation.stake}</dd>
-              </div>
-              <div>
-                <dt>Ward</dt>
-                <dd>{selectedRecommendation.ward}</dd>
-              </div>
-              <div>
-                <dt>Gender</dt>
-                <dd>{selectedRecommendation.gender ?? 'N/A'}</dd>
-              </div>
-              <div>
-                <dt>Age</dt>
-                <dd>{selectedRecommendation.age ?? 'N/A'}</dd>
-              </div>
-            </dl>
-            {selectedRecommendation.moreInfo ? (
-              <p className="leader-recommendations__detail-notes">{selectedRecommendation.moreInfo}</p>
-            ) : (
-              <p className="leader-recommendations__detail-notes">No additional information provided.</p>
-            )}
-            <div className="leader-recommendations__detail-actions">
-              <Button
-                type="button"
-                onClick={() => handleModify(selectedRecommendation.id)}
-                className="leader-recommendations__btn"
-              >
-                Modify
-              </Button>
-              {selectedRecommendation.status === 'draft' ? (
-                <Button
-                  type="button"
-                  variant="primary"
-                  onClick={() => handleQuickSubmit(selectedRecommendation.id)}
-                  className="leader-recommendations__btn"
-                >
-                  Submit
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={() => handleCancelSubmission(selectedRecommendation.id)}
-                  className="leader-recommendations__btn"
-                >
-                  Cancel Submission
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => handleDelete(selectedRecommendation.id)}
-                className="leader-recommendations__btn"
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
+      <div className="review__mobile" aria-live="polite">
+        {isEditing && (
+          <article className="review-card leader-recommendations__mobile-form">{renderForm('mobile')}</article>
+        )}
+        {filteredRecommendations.length ? (
+          filteredRecommendations.map((recommendation) => renderMobileCard(recommendation))
+        ) : (
+          <p className="review__empty">No recommendations in this view yet.</p>
         )}
       </div>
     </section>
