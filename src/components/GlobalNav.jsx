@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
 import { Button } from './ui';
@@ -6,6 +7,7 @@ import './GlobalNav.scss';
 const GlobalNav = () => {
   const { currentUser, signOut } = useApp();
   const navigate = useNavigate();
+  const gnbRef = useRef(null);
 
   if (!currentUser) {
     return null;
@@ -53,8 +55,28 @@ const GlobalNav = () => {
     navigate('/signin');
   };
 
+  // Update CSS custom property with actual GNB height
+  useEffect(() => {
+    const updateGnbHeight = () => {
+      if (gnbRef.current) {
+        const height = gnbRef.current.offsetHeight;
+        document.documentElement.style.setProperty('--gnb-height', `${height}px`);
+      }
+    };
+
+    updateGnbHeight();
+    
+    // Update on resize to handle orientation changes
+    const handleResize = () => {
+      setTimeout(updateGnbHeight, 100); // Small delay to ensure layout is complete
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentUser]); // Re-run when user changes (different nav items)
+
   return (
-    <header className="gnb">
+    <header className="gnb" ref={gnbRef}>
       <div className="gnb__inner">
         <div
           className={hasNav ? 'gnb__placeholder gnb__placeholder--active' : 'gnb__placeholder'}

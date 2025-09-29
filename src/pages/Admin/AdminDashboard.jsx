@@ -85,7 +85,14 @@ const AdminDashboard = () => {
 
     const stakeWardData = Object.entries(stakeWardMap).map(([key, value]) => {
       const [stake, ward] = key.split(' | ');
-      return { label: `${stake} - ${ward}`, applications: value };
+      // Create shorter labels for better display
+      const shortStake = stake.replace(' Stake', '');
+      const shortWard = ward.replace(' Ward', '');
+      return { 
+        label: `${shortStake}\n${shortWard}`, 
+        fullLabel: `${stake} - ${ward}`,
+        applications: value 
+      };
     });
 
     return {
@@ -220,7 +227,14 @@ const AdminDashboard = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+              <Tooltip 
+                labelFormatter={(label, payload) => {
+                  if (payload && payload[0] && payload[0].payload) {
+                    return payload[0].payload.fullLabel || label;
+                  }
+                  return label;
+                }}
+              />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -231,10 +245,18 @@ const AdminDashboard = () => {
       <div className='panel panel--wide'>
         <h2 className='panel__title'>Stake &amp; Ward Distribution</h2>
         <div className='panel__chart'>
-          <ResponsiveContainer width='100%' height={260}>
+          <ResponsiveContainer width='100%' height={320}>
             <BarChart data={stakeWardCounts}>
               <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
-              <XAxis dataKey='label' stroke='#4b5563' />
+              <XAxis 
+                dataKey='label' 
+                stroke='#4b5563' 
+                angle={-45}
+                textAnchor='end'
+                height={80}
+                fontSize={12}
+                interval={0}
+              />
               <YAxis allowDecimals={false} stroke='#4b5563' />
               <Tooltip />
               <Legend />

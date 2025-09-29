@@ -114,6 +114,17 @@
   color: var(--color-muted);
 }
 
+@media (max-width: 768px) {
+  .leader-recommendations__mobile-card .review-card__header {
+    align-items: flex-start;
+  }
+
+  .leader-recommendations__mobile-card .status-chip {
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 1024px) {
   .leader-recommendations__detail-actions .btn {
     width: 100%;

@@ -137,6 +137,16 @@
   margin-top: 1.5rem;
 }
 
+/* Chart label improvements */
+.panel__chart .recharts-cartesian-axis-tick-value {
+  font-size: 11px;
+  fill: #6b7280;
+}
+
+.panel__chart .recharts-cartesian-axis-tick-value tspan {
+  font-size: 11px;
+}
+
 @media (max-width: 480px) {
   .summary-card,
   .panel {
