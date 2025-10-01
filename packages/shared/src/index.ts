@@ -33,8 +33,10 @@ export interface User {
   name: string;
   email: string;
   password: string;
-  role: UserRole;
+  role: UserRole | null;
   leaderStatus: LeaderStatus | null;
+  ward: string;
+  stake: string;
   createdAt: string;
 }
 
@@ -79,6 +81,7 @@ export interface CreateUserDto {
 
 export interface SignInDto {
   email: string;
+  name: string;
   password: string;
 }
 
@@ -134,6 +137,12 @@ export interface UpdateUserRoleDto {
   role: UserRole;
 }
 
+export interface CompleteProfileDto {
+  role: UserRole;
+  ward: string;
+  stake: string;
+}
+
 export interface UpdateLeaderStatusDto {
   leaderStatus: LeaderStatus;
 }
@@ -141,16 +150,18 @@ export interface UpdateLeaderStatusDto {
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: UserRole;
+  name: string;
+  role: UserRole | null;
   leaderStatus?: LeaderStatus;
   iat?: number;
   exp?: number;
 }
 
 export interface TokenResponse {
+  user: Omit<User, 'password'>;
   accessToken: string;
   refreshToken: string;
-  user: Omit<User, 'password'>;
+  isNewUser: boolean;
 }
 
 export interface RefreshTokenDto {

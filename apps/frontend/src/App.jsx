@@ -1,5 +1,12 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { RequireAdmin, RequireAuth, PublicOnly, RequireUser, RequireLeader } from './components/RouteGuards.jsx';
+import {
+  RequireAdmin,
+  RequireAuth,
+  PublicOnly,
+  RequireUser,
+  RequireLeader,
+  RequireIncompleteProfile,
+} from './components/RouteGuards.jsx';
 import AppLayout from './layouts/AppLayout.jsx';
 import { useApp } from './context/AppContext.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
@@ -7,6 +14,8 @@ import AdminReview from './pages/Admin/AdminReview.jsx';
 import AdminRoles from './pages/Admin/AdminRoles.jsx';
 import SignIn from './pages/Auth/SignIn.jsx';
 import SignUp from './pages/Auth/SignUp.jsx';
+import AuthCallback from './pages/Auth/AuthCallback.jsx';
+import CompleteProfile from './pages/Auth/CompleteProfile.jsx';
 import UserApplication from './pages/User/UserApplication.jsx';
 import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
 import LeaderPending from './pages/Leader/LeaderPending.jsx';
@@ -21,7 +30,7 @@ const App = () => {
   return (
     <Routes>
       <Route
-        path="/signin"
+        path='/signin'
         element={
           <PublicOnly>
             <SignIn />
@@ -29,12 +38,21 @@ const App = () => {
         }
       />
       <Route
-        path="/signup"
+        path='/signup'
         element={
           <PublicOnly>
             <SignUp />
           </PublicOnly>
         }
+      />
+      <Route path='/auth/callback' element={<AuthCallback />} />
+      <Route 
+        path='/auth/complete-profile' 
+        element={
+          <RequireIncompleteProfile>
+            <CompleteProfile />
+          </RequireIncompleteProfile>
+        } 
       />
       <Route
         element={
@@ -45,15 +63,15 @@ const App = () => {
       >
         <Route index element={<Navigate to={defaultAuthedPath} replace />} />
         <Route
-          path="/admin"
+          path='/admin'
           element={
             <RequireAdmin>
-              <Navigate to="/admin/dashboard" replace />
+              <Navigate to='/admin/dashboard' replace />
             </RequireAdmin>
           }
         />
         <Route
-          path="/admin/dashboard"
+          path='/admin/dashboard'
           element={
             <RequireAdmin>
               <AdminDashboard />
@@ -61,7 +79,7 @@ const App = () => {
           }
         />
         <Route
-          path="/admin/review"
+          path='/admin/review'
           element={
             <RequireAdmin>
               <AdminReview />
@@ -69,7 +87,7 @@ const App = () => {
           }
         />
         <Route
-          path="/admin/roles"
+          path='/admin/roles'
           element={
             <RequireAdmin>
               <AdminRoles />
@@ -77,7 +95,7 @@ const App = () => {
           }
         />
         <Route
-          path="/application"
+          path='/application'
           element={
             <RequireUser>
               <UserApplication />
@@ -85,7 +103,7 @@ const App = () => {
           }
         />
         <Route
-          path="/leader/dashboard"
+          path='/leader/dashboard'
           element={
             <RequireLeader requireApproved>
               <LeaderDashboard />
@@ -93,7 +111,7 @@ const App = () => {
           }
         />
         <Route
-          path="/leader/recommendations"
+          path='/leader/recommendations'
           element={
             <RequireLeader>
               <LeaderRecommendations />
@@ -101,7 +119,7 @@ const App = () => {
           }
         />
         <Route
-          path="/leader/pending"
+          path='/leader/pending'
           element={
             <RequireLeader>
               <LeaderPending />
@@ -109,7 +127,12 @@ const App = () => {
           }
         />
       </Route>
-      <Route path="*" element={<Navigate to={currentUser ? defaultAuthedPath : '/signin'} replace />} />
+      <Route
+        path='*'
+        element={
+          <Navigate to={currentUser ? defaultAuthedPath : '/signin'} replace />
+        }
+      />
     </Routes>
   );
 };

@@ -3,6 +3,11 @@ export const getDefaultPathForUser = (user) => {
     return '/signin';
   }
 
+  // If user has no role, redirect to complete profile
+  if (!user.role) {
+    return '/auth/complete-profile';
+  }
+
   if (user.role === 'admin') {
     return '/admin/dashboard';
   }

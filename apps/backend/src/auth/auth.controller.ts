@@ -1,4 +1,6 @@
+import type { Response } from 'express';
 import {
+  Res,
   Controller,
   Post,
   Get,
@@ -7,7 +9,6 @@ import {
   Param,
   UseGuards,
   Req,
-  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -20,6 +21,7 @@ import type {
   CreateUserDto,
   SignInDto,
   UpdateUserRoleDto,
+  CompleteProfileDto,
   UpdateLeaderStatusDto,
   User,
   TokenResponse,
@@ -33,13 +35,62 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signUp(@Body() createUserDto: CreateUserDto): Promise<TokenResponse> {
-    return this.authService.signUp(createUserDto);
+  async signUp(
+    @Body() createUserDto: CreateUserDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    const tokenResponse = await this.authService.signUp(createUserDto);
+
+    // Set HTTP-only cookies for tokens
+    res.cookie('token', tokenResponse.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.cookie('refresh-token', tokenResponse.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.json({ isNewUser: Boolean(tokenResponse.isNewUser) });
   }
 
   @Post('signin')
-  async signIn(@Body() signInDto: SignInDto): Promise<TokenResponse> {
-    return this.authService.signIn(signInDto);
+  async signIn(
+    @Body() signInDto: SignInDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    const tokenResponse = await this.authService.signIn(signInDto);
+
+    // Set HTTP-only cookies for tokens
+    res.cookie('token', tokenResponse.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.cookie('refresh-token', tokenResponse.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.json({ isNewUser: Boolean(tokenResponse.isNewUser) });
+  }
+
+  @Post('signout')
+  signOut(@Res() res: Response): void {
+    // Clear HTTP-only cookies
+    res.clearCookie('token');
+    res.clearCookie('refresh-token');
+
+    res.json({ message: 'Signed out successfully' });
   }
 
   @Post('refresh')
@@ -51,7 +102,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuth() {
+  async googleAuth(): Promise<void> {
     // Initiates Google OAuth flow
   }
 
@@ -59,8 +110,30 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(
     @Req() req: { user: GoogleOAuthDto },
-  ): Promise<TokenResponse> {
-    return this.authService.googleLogin(req.user);
+    @Res() res: Response,
+  ): Promise<void> {
+    const tokenResponse = await this.authService.googleLogin(req.user);
+
+    // Set HTTP-only cookies for tokens
+    res.cookie('token', tokenResponse.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.cookie('refresh-token', tokenResponse.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Redirect to frontend with only newUser parameter
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const redirectUrl = `${frontendUrl}/auth/callback?newUser=${Boolean(tokenResponse.isNewUser)}`;
+
+    res.redirect(redirectUrl);
   }
 
   @Get('users')
@@ -105,5 +178,20 @@ export class AuthController {
       updateLeaderStatusDto.leaderStatus,
     );
     return { message: 'Leader status updated successfully' };
+  }
+
+  @Put('profile/complete')
+  @UseGuards(JwtAuthGuard)
+  async completeProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() completeProfileDto: CompleteProfileDto,
+  ): Promise<User> {
+    await this.authService.updateUserRole(
+      user.sub,
+      completeProfileDto.role,
+      completeProfileDto.ward,
+      completeProfileDto.stake,
+    );
+    return this.authService.getUser(user.sub);
   }
 }

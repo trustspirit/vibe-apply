@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from 'react';
 import {
   authApi,
   usersApi,
@@ -9,19 +16,9 @@ import {
 
 const STORAGE_KEY = 'vibe-apply-app-state';
 const SESSION_KEY = 'vibe-apply-session';
-const TOKEN_KEY = 'vibe-apply-token';
 
 // Fallback dummy data for offline mode or API failures
 const defaultUsers = [
-  {
-    id: 'user-admin',
-    name: 'System Admin',
-    email: 'admin@vibeapply.com',
-    password: 'admin123',
-    role: 'admin',
-    leaderStatus: null,
-    createdAt: new Date().toISOString(),
-  },
   {
     id: 'user-leader-approved',
     name: 'Leader Lydia',
@@ -176,11 +173,13 @@ export const AppProvider = ({ children }) => {
     [currentUserId, state.users]
   );
 
-  // Check if token exists and validate session on app start
+  // Check if user session exists via HTTP-only cookies on app start
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (token && !currentUserId) {
+      // Skip auth initialization if we're on the auth callback page
+      const isAuthCallback = window.location.pathname === '/auth/callback';
+
+      if (!currentUserId && !isAuthCallback) {
         try {
           setIsLoading(true);
           const user = await authApi.getCurrentUser();
@@ -193,8 +192,7 @@ export const AppProvider = ({ children }) => {
               : [...prev.users, user],
           }));
         } catch (error) {
-          console.error('Failed to validate session:', error);
-          localStorage.removeItem(TOKEN_KEY);
+          console.error('No valid session found:', error);
           localStorage.removeItem(SESSION_KEY);
         } finally {
           setIsLoading(false);
@@ -223,69 +221,121 @@ export const AppProvider = ({ children }) => {
     }
   }, [currentUserId]);
 
-  const signUp = async ({ name, email, password, role }) => {
+  const signUp = useCallback(
+    async ({ name, email, password }) => {
+      try {
+        setIsLoading(true);
+        const user = await authApi.signUp({ name, email, password });
+
+        // Update local state
+        setState((prev) => ({
+          ...prev,
+          users: [...prev.users, user],
+        }));
+        setCurrentUserId(user.id);
+
+        return user;
+      } catch (error) {
+        if (error instanceof ApiError) {
+          throw new Error(error.message);
+        }
+
+        // Fallback to local signup if API fails
+        console.warn('API signup failed, falling back to local:', error);
+        setIsOnline(false);
+
+        const trimmedEmail = email.trim().toLowerCase();
+        if (
+          state.users.some((user) => user.email.toLowerCase() === trimmedEmail)
+        ) {
+          throw new Error('Email already in use.');
+        }
+
+        const newUser = {
+          id:
+            typeof crypto !== 'undefined' && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `user-${Date.now()}`,
+          name: name.trim(),
+          email: trimmedEmail,
+          password,
+          role: null,
+          leaderStatus: null,
+          ward: '',
+          stake: '',
+          createdAt: new Date().toISOString(),
+        };
+
+        setState((prev) => ({
+          ...prev,
+          users: [...prev.users, newUser],
+        }));
+        setCurrentUserId(newUser.id);
+
+        return newUser;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [state.users]
+  );
+
+  const signIn = useCallback(
+    async ({ email, password }) => {
+      try {
+        setIsLoading(true);
+        const user = await authApi.signIn({ email, password });
+
+        // Update local state
+        setState((prev) => ({
+          ...prev,
+          users: prev.users.some((u) => u.id === user.id)
+            ? prev.users.map((u) => (u.id === user.id ? user : u))
+            : [...prev.users, user],
+        }));
+        setCurrentUserId(user.id);
+
+        return user;
+      } catch (error) {
+        if (error instanceof ApiError) {
+          throw new Error(error.message);
+        }
+
+        // Fallback to local signin if API fails
+        console.warn('API signin failed, falling back to local:', error);
+        setIsOnline(false);
+
+        const trimmedEmail = email.trim().toLowerCase();
+        const foundUser = state.users.find(
+          (user) =>
+            user.email.toLowerCase() === trimmedEmail &&
+            user.password === password
+        );
+
+        if (!foundUser) {
+          throw new Error('Invalid credentials.');
+        }
+
+        setCurrentUserId(foundUser.id);
+        return foundUser;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [state.users]
+  );
+
+  const signOut = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const user = await authApi.signUp({ name, email, password, role });
-
-      // Update local state
-      setState((prev) => ({
-        ...prev,
-        users: [...prev.users, user],
-      }));
-      setCurrentUserId(user.id);
-
-      return user;
+      await authApi.signOut();
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw new Error(error.message);
-      }
-
-      // Fallback to local signup if API fails
-      console.warn('API signup failed, falling back to local:', error);
-      setIsOnline(false);
-
-      const trimmedEmail = email.trim().toLowerCase();
-      if (
-        state.users.some((user) => user.email.toLowerCase() === trimmedEmail)
-      ) {
-        throw new Error('Email already in use.');
-      }
-
-      const normalizedRole = role === 'leader' ? 'leader' : 'applicant';
-      const leaderStatus = normalizedRole === 'leader' ? 'pending' : null;
-
-      const newUser = {
-        id:
-          typeof crypto !== 'undefined' && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `user-${Date.now()}`,
-        name: name.trim(),
-        email: trimmedEmail,
-        password,
-        role: normalizedRole,
-        leaderStatus,
-        createdAt: new Date().toISOString(),
-      };
-
-      setState((prev) => ({
-        ...prev,
-        users: [...prev.users, newUser],
-      }));
-      setCurrentUserId(newUser.id);
-
-      return newUser;
-    } finally {
-      setIsLoading(false);
+      console.warn('API signout failed:', error);
     }
-  };
+    setCurrentUserId(null);
+  }, []);
 
-  const signIn = async ({ email, password }) => {
-    try {
-      setIsLoading(true);
-      const user = await authApi.signIn({ email, password });
-
-      // Update local state
+  const setUser = useCallback((user) => {
+    if (user) {
       setState((prev) => ({
         ...prev,
         users: prev.users.some((u) => u.id === user.id)
@@ -293,45 +343,12 @@ export const AppProvider = ({ children }) => {
           : [...prev.users, user],
       }));
       setCurrentUserId(user.id);
-
-      return user;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw new Error(error.message);
-      }
-
-      // Fallback to local signin if API fails
-      console.warn('API signin failed, falling back to local:', error);
-      setIsOnline(false);
-
-      const trimmedEmail = email.trim().toLowerCase();
-      const foundUser = state.users.find(
-        (user) =>
-          user.email.toLowerCase() === trimmedEmail &&
-          user.password === password
-      );
-
-      if (!foundUser) {
-        throw new Error('Invalid credentials.');
-      }
-
-      setCurrentUserId(foundUser.id);
-      return foundUser;
-    } finally {
-      setIsLoading(false);
+    } else {
+      setCurrentUserId(null);
     }
-  };
+  }, []);
 
-  const signOut = async () => {
-    try {
-      await authApi.signOut();
-    } catch (error) {
-      console.warn('API signout failed:', error);
-    }
-    setCurrentUserId(null);
-  };
-
-  const updateUserRole = async (userId, role) => {
+  const updateUserRole = useCallback(async (userId, role) => {
     try {
       await usersApi.updateRole(userId, role);
       // Update local state after successful API call
@@ -385,9 +402,9 @@ export const AppProvider = ({ children }) => {
         }),
       }));
     }
-  };
+  }, []);
 
-  const updateLeaderStatus = async (userId, status) => {
+  const updateLeaderStatus = useCallback(async (userId, status) => {
     try {
       await usersApi.updateLeaderStatus(userId, status);
       // Update local state after successful API call
@@ -417,9 +434,9 @@ export const AppProvider = ({ children }) => {
         ),
       }));
     }
-  };
+  }, []);
 
-  const submitApplication = async (userId, payload) => {
+  const submitApplication = useCallback(async (userId, payload) => {
     try {
       const application = await applicationsApi.submit({ ...payload, userId });
       // Update local state after successful API call
@@ -487,9 +504,9 @@ export const AppProvider = ({ children }) => {
         };
       });
     }
-  };
+  }, []);
 
-  const submitLeaderRecommendation = async (leaderId, payload) => {
+  const submitLeaderRecommendation = useCallback(async (leaderId, payload) => {
     try {
       const { id, ...formData } = payload;
       if (id) {
@@ -562,37 +579,40 @@ export const AppProvider = ({ children }) => {
         };
       });
     }
-  };
+  }, []);
 
-  const deleteLeaderRecommendation = async (leaderId, recommendationId) => {
-    try {
-      await recommendationsApi.delete(recommendationId);
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: prev.leaderRecommendations.filter(
-          (recommendation) => recommendation.id !== recommendationId
-        ),
-      }));
-    } catch (error) {
-      console.warn(
-        'API deleteLeaderRecommendation failed, updating locally:',
-        error
-      );
-      // Fallback to local delete
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: prev.leaderRecommendations.filter(
-          (recommendation) =>
-            !(
-              recommendation.id === recommendationId &&
-              recommendation.leaderId === leaderId
-            )
-        ),
-      }));
-    }
-  };
+  const deleteLeaderRecommendation = useCallback(
+    async (leaderId, recommendationId) => {
+      try {
+        await recommendationsApi.delete(recommendationId);
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: prev.leaderRecommendations.filter(
+            (recommendation) => recommendation.id !== recommendationId
+          ),
+        }));
+      } catch (error) {
+        console.warn(
+          'API deleteLeaderRecommendation failed, updating locally:',
+          error
+        );
+        // Fallback to local delete
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: prev.leaderRecommendations.filter(
+            (recommendation) =>
+              !(
+                recommendation.id === recommendationId &&
+                recommendation.leaderId === leaderId
+              )
+          ),
+        }));
+      }
+    },
+    []
+  );
 
-  const updateApplicationStatus = async (applicationId, status) => {
+  const updateApplicationStatus = useCallback(async (applicationId, status) => {
     try {
       await applicationsApi.updateStatus(applicationId, status);
       setState((prev) => ({
@@ -626,45 +646,48 @@ export const AppProvider = ({ children }) => {
         ),
       }));
     }
-  };
+  }, []);
 
-  const updateLeaderRecommendationStatus = async (recommendationId, status) => {
-    try {
-      await recommendationsApi.updateStatus(recommendationId, status);
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: prev.leaderRecommendations.map(
-          (recommendation) =>
-            recommendation.id === recommendationId
-              ? {
-                  ...recommendation,
-                  status,
-                  updatedAt: new Date().toISOString(),
-                }
-              : recommendation
-        ),
-      }));
-    } catch (error) {
-      console.warn(
-        'API updateLeaderRecommendationStatus failed, updating locally:',
-        error
-      );
-      // Fallback to local update
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: prev.leaderRecommendations.map(
-          (recommendation) =>
-            recommendation.id === recommendationId
-              ? {
-                  ...recommendation,
-                  status,
-                  updatedAt: new Date().toISOString(),
-                }
-              : recommendation
-        ),
-      }));
-    }
-  };
+  const updateLeaderRecommendationStatus = useCallback(
+    async (recommendationId, status) => {
+      try {
+        await recommendationsApi.updateStatus(recommendationId, status);
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: prev.leaderRecommendations.map(
+            (recommendation) =>
+              recommendation.id === recommendationId
+                ? {
+                    ...recommendation,
+                    status,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : recommendation
+          ),
+        }));
+      } catch (error) {
+        console.warn(
+          'API updateLeaderRecommendationStatus failed, updating locally:',
+          error
+        );
+        // Fallback to local update
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: prev.leaderRecommendations.map(
+            (recommendation) =>
+              recommendation.id === recommendationId
+                ? {
+                    ...recommendation,
+                    status,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : recommendation
+          ),
+        }));
+      }
+    },
+    []
+  );
 
   const value = useMemo(
     () => ({
@@ -677,6 +700,7 @@ export const AppProvider = ({ children }) => {
       signUp,
       signIn,
       signOut,
+      setUser,
       updateUserRole,
       updateLeaderStatus,
       submitApplication,
@@ -685,7 +709,23 @@ export const AppProvider = ({ children }) => {
       updateLeaderRecommendationStatus,
       deleteLeaderRecommendation,
     }),
-    [state, currentUser, isLoading, isOnline]
+    [
+      state,
+      currentUser,
+      isLoading,
+      isOnline,
+      signIn,
+      signUp,
+      signOut,
+      setUser,
+      updateUserRole,
+      updateLeaderStatus,
+      submitApplication,
+      updateApplicationStatus,
+      submitLeaderRecommendation,
+      updateLeaderRecommendationStatus,
+      deleteLeaderRecommendation,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

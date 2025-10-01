@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import axios from 'axios';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -9,177 +9,125 @@ class ApiError extends Error {
   }
 }
 
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch {
-      errorData = { message: 'An error occurred' };
-    }
+const api = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // Include HTTP-only cookies
+});
 
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    const status = error.response?.status || 500;
+    const errorData = error.response?.data || { message: 'An error occurred' };
+    
     throw new ApiError(
-      errorData.message || `HTTP ${response.status}`,
-      response.status,
+      errorData.message || `HTTP ${status}`,
+      status,
       errorData
     );
   }
-
-  return response.json();
-};
-
-const apiRequest = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('vibe-apply-token');
-
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-    ...options,
-  };
-
-  if (config.body && typeof config.body === 'object') {
-    config.body = JSON.stringify(config.body);
-  }
-
-  const response = await fetch(`${API_BASE_URL}/api${endpoint}`, config);
-  return handleResponse(response);
-};
+);
 
 // Auth API
 export const authApi = {
   signIn: async ({ email, password }) => {
-    const data = await apiRequest('/auth/signin', {
-      method: 'POST',
-      body: { email, password },
-    });
-
-    if (data.token) {
-      localStorage.setItem('vibe-apply-token', data.token);
-    }
-
-    return data.user;
+    const data = await api.post('/auth/signin', { email, password });
+    // Tokens are now set as HTTP-only cookies by the backend
+    return data;
   },
 
   signUp: async ({ name, email, password, role }) => {
-    const data = await apiRequest('/auth/signup', {
-      method: 'POST',
-      body: { name, email, password, role },
-    });
-
-    if (data.token) {
-      localStorage.setItem('vibe-apply-token', data.token);
-    }
-
-    return data.user;
+    const data = await api.post('/auth/signup', { name, email, password, role });
+    // Tokens are now set as HTTP-only cookies by the backend
+    return data;
   },
 
   signOut: async () => {
-    localStorage.removeItem('vibe-apply-token');
+    // Clear any local storage items
     localStorage.removeItem('vibe-apply-session');
 
     try {
-      await apiRequest('/auth/signout', { method: 'POST' });
+      // Backend should clear HTTP-only cookies
+      await api.post('/auth/signout');
     } catch (error) {
       console.warn('Sign out request failed:', error);
     }
   },
 
   getCurrentUser: async () => {
-    return apiRequest('/auth/me');
+    return api.get('/auth/profile');
+  },
+
+  completeProfile: async (profileData) => {
+    return api.put('/auth/profile/complete', profileData);
   },
 };
 
 // Users API
 export const usersApi = {
   getAll: async () => {
-    return apiRequest('/users');
+    return api.get('/auth/users');
   },
 
   updateRole: async (userId, role) => {
-    return apiRequest(`/users/${userId}/role`, {
-      method: 'PATCH',
-      body: { role },
-    });
+    return api.put(`/auth/users/${userId}/role`, { role });
   },
 
   updateLeaderStatus: async (userId, status) => {
-    return apiRequest(`/users/${userId}/leader-status`, {
-      method: 'PATCH',
-      body: { status },
-    });
+    return api.put(`/auth/users/${userId}/leader-status`, { leaderStatus: status });
   },
 };
 
 // Applications API
 export const applicationsApi = {
   getAll: async () => {
-    return apiRequest('/applications');
+    return api.get('/applications');
   },
 
   getByUser: async (userId) => {
-    return apiRequest(`/applications/user/${userId}`);
+    return api.get(`/applications/user/${userId}`);
   },
 
   submit: async (applicationData) => {
-    return apiRequest('/applications', {
-      method: 'POST',
-      body: applicationData,
-    });
+    return api.post('/applications', applicationData);
   },
 
   update: async (applicationId, applicationData) => {
-    return apiRequest(`/applications/${applicationId}`, {
-      method: 'PUT',
-      body: applicationData,
-    });
+    return api.put(`/applications/${applicationId}`, applicationData);
   },
 
   updateStatus: async (applicationId, status) => {
-    return apiRequest(`/applications/${applicationId}/status`, {
-      method: 'PATCH',
-      body: { status },
-    });
+    return api.patch(`/applications/${applicationId}/status`, { status });
   },
 };
 
 // Leader Recommendations API
 export const recommendationsApi = {
   getAll: async () => {
-    return apiRequest('/recommendations');
+    return api.get('/recommendations');
   },
 
   getByLeader: async (leaderId) => {
-    return apiRequest(`/recommendations/leader/${leaderId}`);
+    return api.get(`/recommendations/leader/${leaderId}`);
   },
 
   submit: async (recommendationData) => {
-    return apiRequest('/recommendations', {
-      method: 'POST',
-      body: recommendationData,
-    });
+    return api.post('/recommendations', recommendationData);
   },
 
   update: async (recommendationId, recommendationData) => {
-    return apiRequest(`/recommendations/${recommendationId}`, {
-      method: 'PUT',
-      body: recommendationData,
-    });
+    return api.put(`/recommendations/${recommendationId}`, recommendationData);
   },
 
   updateStatus: async (recommendationId, status) => {
-    return apiRequest(`/recommendations/${recommendationId}/status`, {
-      method: 'PATCH',
-      body: { status },
-    });
+    return api.patch(`/recommendations/${recommendationId}/status`, { status });
   },
 
   delete: async (recommendationId) => {
-    return apiRequest(`/recommendations/${recommendationId}`, {
-      method: 'DELETE',
-    });
+    return api.delete(`/recommendations/${recommendationId}`);
   },
 };
 

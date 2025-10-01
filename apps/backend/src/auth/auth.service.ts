@@ -17,6 +17,14 @@ import {
   GoogleOAuthDto,
 } from '@vibe-apply/shared';
 
+/**
+ * Authentication service handling user sign up, sign in, and OAuth flows.
+ *
+ * Google OAuth users can have null roles initially and complete their profile
+ * selection later via the PUT /auth/profile/complete endpoint.
+ * All users have ward and stake fields for church organization tracking.
+ */
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -31,6 +39,7 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
+      name: user.name,
       role: user.role,
       leaderStatus: user.leaderStatus || undefined,
     };
@@ -44,7 +53,7 @@ export class AuthService {
   }
 
   async signUp(createUserDto: CreateUserDto): Promise<TokenResponse> {
-    const { name, email, password, role } = createUserDto;
+    const { name, email, password } = createUserDto;
 
     try {
       const userRecord = await this.firebaseService.createUser(
@@ -53,16 +62,15 @@ export class AuthService {
         name,
       );
 
-      const leaderStatus =
-        role === UserRole.LEADER ? LeaderStatus.PENDING : null;
-
       const user: User = {
         id: userRecord.uid,
         name,
         email,
         password: '',
-        role,
-        leaderStatus,
+        role: null,
+        leaderStatus: null,
+        ward: '',
+        stake: '',
         createdAt: new Date().toISOString(),
       };
 
@@ -73,8 +81,10 @@ export class AuthService {
         .set({
           name,
           email,
-          role,
-          leaderStatus,
+          role: null,
+          leaderStatus: null,
+          ward: '',
+          stake: '',
           createdAt: user.createdAt,
         });
 
@@ -83,6 +93,7 @@ export class AuthService {
       const { password: _password, ...userWithoutPassword } = user;
 
       return {
+        isNewUser: true,
         ...tokens,
         user: userWithoutPassword,
       };
@@ -122,9 +133,11 @@ export class AuthService {
         name: userData.name as string,
         email: userData.email as string,
         password: '',
-        role: userData.role as UserRole,
+        role: (userData.role as UserRole) || null,
         leaderStatus: (userData.leaderStatus as LeaderStatus) || null,
         createdAt: userData.createdAt as string,
+        ward: (userData.ward as string) || '',
+        stake: (userData.stake as string) || '',
       };
 
       const tokens = this.generateTokens(user);
@@ -132,6 +145,7 @@ export class AuthService {
       const { password: _password2, ...userWithoutPassword } = user;
 
       return {
+        isNewUser: false,
         ...tokens,
         user: userWithoutPassword,
       };
@@ -161,23 +175,44 @@ export class AuthService {
       name: userData.name as string,
       email: userData.email as string,
       password: '',
-      role: userData.role as UserRole,
+      role: (userData.role as UserRole) || null,
       leaderStatus: (userData.leaderStatus as LeaderStatus) || null,
       createdAt: userData.createdAt as string,
+      ward: (userData.ward as string) || '',
+      stake: (userData.stake as string) || '',
     };
   }
 
-  async updateUserRole(uid: string, role: UserRole): Promise<void> {
+  async updateUserRole(
+    uid: string,
+    role: UserRole,
+    ward?: string,
+    stake?: string,
+  ): Promise<void> {
     const leaderStatus = role === UserRole.LEADER ? LeaderStatus.PENDING : null;
+
+    const updateData: {
+      role: UserRole;
+      leaderStatus: LeaderStatus | null;
+      ward?: string;
+      stake?: string;
+    } = {
+      role,
+      leaderStatus,
+    };
+
+    if (ward !== undefined) {
+      updateData.ward = ward;
+    }
+    if (stake !== undefined) {
+      updateData.stake = stake;
+    }
 
     await this.firebaseService
       .getFirestore()
       .collection('users')
       .doc(uid)
-      .update({
-        role,
-        leaderStatus,
-      });
+      .update(updateData);
   }
 
   async updateLeaderStatus(
@@ -206,9 +241,11 @@ export class AuthService {
         name: data.name as string,
         email: data.email as string,
         password: '',
-        role: data.role as UserRole,
+        role: (data.role as UserRole) || null,
         leaderStatus: (data.leaderStatus as LeaderStatus) || null,
         createdAt: data.createdAt as string,
+        ward: (data.ward as string) || '',
+        stake: (data.stake as string) || '',
       };
     });
   }
@@ -225,6 +262,7 @@ export class AuthService {
       const { password: _password3, ...userWithoutPassword } = user;
 
       return {
+        isNewUser: false,
         ...tokens,
         user: userWithoutPassword,
       };
@@ -235,6 +273,7 @@ export class AuthService {
 
   async googleLogin(googleUser: GoogleOAuthDto): Promise<TokenResponse> {
     try {
+      // Try to find existing user
       const userRecord = await this.firebaseService
         .getAuth()
         .getUserByEmail(googleUser.email);
@@ -245,10 +284,12 @@ export class AuthService {
       const { password: _password4, ...userWithoutPassword } = user;
 
       return {
+        isNewUser: false,
         ...tokens,
         user: userWithoutPassword,
       };
     } catch {
+      // Create new user if not found
       const userRecord = await this.firebaseService.createUser(
         googleUser.email,
         Math.random().toString(36),
@@ -260,8 +301,10 @@ export class AuthService {
         name: googleUser.name,
         email: googleUser.email,
         password: '',
-        role: UserRole.APPLICANT,
+        role: null,
         leaderStatus: null,
+        ward: '',
+        stake: '',
         createdAt: new Date().toISOString(),
       };
 
@@ -272,7 +315,7 @@ export class AuthService {
         .set({
           name: user.name,
           email: user.email,
-          role: user.role,
+          ...(user.role && { role: user.role }), // Only set role if not null
           leaderStatus: user.leaderStatus,
           createdAt: user.createdAt,
           googleId: googleUser.googleId,
@@ -284,6 +327,7 @@ export class AuthService {
       const { password: _password5, ...userWithoutPassword } = user;
 
       return {
+        isNewUser: true,
         ...tokens,
         user: userWithoutPassword,
       };

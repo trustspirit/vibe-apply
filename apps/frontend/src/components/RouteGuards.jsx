@@ -10,6 +10,11 @@ export const RequireAuth = ({ children }) => {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
 
+  // Check if user profile is incomplete (no role assigned)
+  if (!currentUser.role) {
+    return <Navigate to="/auth/complete-profile" replace />;
+  }
+
   return children;
 };
 
@@ -32,6 +37,10 @@ export const PublicOnly = ({ children }) => {
   const { currentUser } = useApp();
 
   if (currentUser) {
+    // If user has no role, let them through to complete profile
+    if (!currentUser.role) {
+      return children;
+    }
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
 
@@ -67,6 +76,21 @@ export const RequireLeader = ({ children, requireApproved = false }) => {
 
   if (requireApproved && currentUser.leaderStatus !== 'approved') {
     return <Navigate to="/leader/pending" replace />;
+  }
+
+  return children;
+};
+
+export const RequireIncompleteProfile = ({ children }) => {
+  const { currentUser } = useApp();
+
+  if (!currentUser) {
+    return <Navigate to="/signin" replace />;
+  }
+
+  // If user already has a role, redirect to appropriate dashboard
+  if (currentUser.role) {
+    return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
 
   return children;

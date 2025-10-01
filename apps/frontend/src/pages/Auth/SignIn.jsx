@@ -37,8 +37,8 @@ const SignIn = () => {
 
   const handleGoogleSignIn = () => {
     // Redirect to backend Google OAuth endpoint
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const redirectUrl = `${backendUrl}/auth/google`;
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const redirectUrl = `${backendUrl}/api/auth/google`;
     window.location.href = redirectUrl;
   };
 

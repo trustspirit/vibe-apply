@@ -1,22 +1,30 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { JwtPayload } from '@vibe-apply/shared';
+import { ConfigService } from '@nestjs/config';
+import type { JwtPayload } from '@vibe-apply/shared';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        // First try cookies, then fallback to Authorization header
+        (request) => {
+          return request?.cookies?.['token'] || null;
+        },
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
-  validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
     return {
-      userId: payload.sub,
+      sub: payload.sub,
       email: payload.email,
+      name: payload.name,
       role: payload.role,
       leaderStatus: payload.leaderStatus,
     };

@@ -9,10 +9,6 @@ const GlobalNav = () => {
   const navigate = useNavigate();
   const gnbRef = useRef(null);
 
-  if (!currentUser) {
-    return null;
-  }
-
   const navItems = (() => {
     if (currentUser.role === 'admin') {
       return [
@@ -74,6 +70,10 @@ const GlobalNav = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [currentUser]); // Re-run when user changes (different nav items)
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <header className="gnb" ref={gnbRef}>
