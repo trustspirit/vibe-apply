@@ -4,9 +4,9 @@ import './AppLayout.scss';
 
 const AppLayout = () => {
   return (
-    <div className="app-shell">
+    <div className='app-shell'>
       <GlobalNav />
-      <main className="app-shell__content">
+      <main className='app-shell__content'>
         <Outlet />
       </main>
     </div>

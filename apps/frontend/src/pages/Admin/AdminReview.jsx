@@ -95,7 +95,9 @@ const AdminReview = () => {
     const recommendationItems = leaderRecommendations
       .filter((recommendation) => recommendation.status !== 'draft')
       .map((recommendation) => {
-        const mappedStatus = normalizeRecommendationStatus(recommendation.status);
+        const mappedStatus = normalizeRecommendationStatus(
+          recommendation.status
+        );
         return {
           key: `rec-${recommendation.id}`,
           type: 'recommendation',
@@ -116,7 +118,8 @@ const AdminReview = () => {
       });
 
     return [...applicationItems, ...recommendationItems].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }, [applications, leaderRecommendations]);
 
@@ -126,7 +129,12 @@ const AdminReview = () => {
   );
 
   const statusCounts = useMemo(() => {
-    const counts = { all: reviewItems.length, awaiting: 0, approved: 0, rejected: 0 };
+    const counts = {
+      all: reviewItems.length,
+      awaiting: 0,
+      approved: 0,
+      rejected: 0,
+    };
     reviewItems.forEach((item) => {
       if (item.status === 'awaiting') {
         counts.awaiting += 1;
@@ -166,7 +174,8 @@ const AdminReview = () => {
     }
   }, [filteredItems, selectedId]);
 
-  const selectedItem = filteredItems.find((item) => item.key === selectedId) ?? null;
+  const selectedItem =
+    filteredItems.find((item) => item.key === selectedId) ?? null;
 
   useEffect(() => {
     if (selectedItem) {
@@ -176,7 +185,9 @@ const AdminReview = () => {
     }
   }, [selectedItem]);
 
-  const currentStatus = selectedItem ? statusSelection ?? selectedItem.status : null;
+  const currentStatus = selectedItem
+    ? (statusSelection ?? selectedItem.status)
+    : null;
   const statusSelectId = selectedItem
     ? `review-status-${selectedItem.key}`
     : 'review-status-select';
@@ -315,7 +326,9 @@ const AdminReview = () => {
         badgeClassName='review__tab-pill'
         ariaLabel='Application status filters'
         getBadge={(tab) =>
-          tab.id === 'all' ? statusCounts.all : statusCounts[tab.id] ?? statusCounts.all
+          tab.id === 'all'
+            ? statusCounts.all
+            : (statusCounts[tab.id] ?? statusCounts.all)
         }
       />
 
@@ -364,7 +377,9 @@ const AdminReview = () => {
                             : 'review__list-tag review__list-tag--application'
                         }
                       >
-                        {item.type === 'recommendation' ? 'Recommended' : 'Applied'}
+                        {item.type === 'recommendation'
+                          ? 'Recommended'
+                          : 'Applied'}
                       </span>
                     </div>
                   </button>
@@ -390,14 +405,19 @@ const AdminReview = () => {
                           : 'review__details-tag review__details-tag--application'
                       }
                     >
-                      {selectedItem.type === 'recommendation' ? 'Recommended' : 'Applied'}
+                      {selectedItem.type === 'recommendation'
+                        ? 'Recommended'
+                        : 'Applied'}
                     </span>
                   </div>
                   {selectedItem.type === 'recommendation' && (
-                    <p className='review__details-origin'>Leader Recommendation</p>
+                    <p className='review__details-origin'>
+                      Leader Recommendation
+                    </p>
                   )}
                   <p className='review__details-meta'>
-                    Submitted {new Date(selectedItem.createdAt).toLocaleString()}
+                    Submitted{' '}
+                    {new Date(selectedItem.createdAt).toLocaleString()}
                   </p>
                 </div>
 
@@ -448,7 +468,10 @@ const AdminReview = () => {
 
               <div className='review__notes'>
                 <h3>Additional Information</h3>
-                <p>{selectedItem.moreInfo || 'No additional information provided.'}</p>
+                <p>
+                  {selectedItem.moreInfo ||
+                    'No additional information provided.'}
+                </p>
               </div>
             </div>
           ) : (
@@ -496,7 +519,9 @@ const AdminReview = () => {
                   {item.type === 'recommendation' ? 'Recommended' : 'Applied'}
                 </span>
                 {item.type === 'recommendation' && (
-                  <span className='review-card__source'>Leader Recommendation</span>
+                  <span className='review-card__source'>
+                    Leader Recommendation
+                  </span>
                 )}
               </div>
 

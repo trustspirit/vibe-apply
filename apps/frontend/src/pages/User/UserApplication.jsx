@@ -24,14 +24,21 @@ const STATUS_DISPLAY = {
 const UserApplication = () => {
   const { applications, currentUser, submitApplication } = useApp();
   const existingApplication = useMemo(
-    () => applications.find((application) => application.userId === currentUser?.id),
-    [applications, currentUser?.id],
+    () =>
+      applications.find(
+        (application) => application.userId === currentUser?.id
+      ),
+    [applications, currentUser?.id]
   );
 
-  const isEditable = !existingApplication || !['approved', 'rejected'].includes(existingApplication.status);
+  const isEditable =
+    !existingApplication ||
+    !['approved', 'rejected'].includes(existingApplication.status);
 
   const [form, setForm] = useState(emptyForm);
-  const [isEditing, setIsEditing] = useState(() => !existingApplication || existingApplication.status === 'draft');
+  const [isEditing, setIsEditing] = useState(
+    () => !existingApplication || existingApplication.status === 'draft'
+  );
   const [feedback, setFeedback] = useState('');
   const [formError, setFormError] = useState('');
   const [errors, setErrors] = useState({});
@@ -44,7 +51,8 @@ const UserApplication = () => {
         email: existingApplication.email,
         phone: existingApplication.phone,
         gender:
-          existingApplication.gender === 'male' || existingApplication.gender === 'female'
+          existingApplication.gender === 'male' ||
+          existingApplication.gender === 'female'
             ? existingApplication.gender
             : '',
         stake: existingApplication.stake,
@@ -52,7 +60,11 @@ const UserApplication = () => {
         moreInfo: existingApplication.moreInfo ?? '',
       });
     } else if (currentUser) {
-      setForm((prev) => ({ ...prev, name: currentUser.name, email: currentUser.email }));
+      setForm((prev) => ({
+        ...prev,
+        name: currentUser.name,
+        email: currentUser.email,
+      }));
     }
   }, [existingApplication, currentUser]);
 
@@ -82,7 +94,8 @@ const UserApplication = () => {
     const trimmedPhone = form.phone.trim();
     const trimmedStake = form.stake.trim();
     const trimmedWard = form.ward.trim();
-    const normalizedGender = form.gender === 'male' || form.gender === 'female' ? form.gender : '';
+    const normalizedGender =
+      form.gender === 'male' || form.gender === 'female' ? form.gender : '';
     const normalizedAge = Number.parseInt(form.age, 10);
 
     if (!trimmedName) {
@@ -188,42 +201,48 @@ const UserApplication = () => {
       age: Number.isNaN(normalizedAge) ? null : normalizedAge,
       email: form.email.trim(),
       phone: form.phone.trim(),
-      gender: form.gender === 'male' || form.gender === 'female' ? form.gender : '',
+      gender:
+        form.gender === 'male' || form.gender === 'female' ? form.gender : '',
       stake: form.stake.trim(),
       ward: form.ward.trim(),
       moreInfo: form.moreInfo.trim(),
       status: 'draft',
     });
 
-    setFeedback('Draft saved. You can return anytime to complete and submit your application.');
+    setFeedback(
+      'Draft saved. You can return anytime to complete and submit your application.'
+    );
   };
 
   return (
-    <section className="application">
-      <header className="application__header">
-        <h1 className="application__title">Application</h1>
-        <p className="application__subtitle">
-          {existingApplication ? (
-            existingApplication.status === 'draft'
+    <section className='application'>
+      <header className='application__header'>
+        <h1 className='application__title'>Application</h1>
+        <p className='application__subtitle'>
+          {existingApplication
+            ? existingApplication.status === 'draft'
               ? 'Your draft is saved. Complete the required fields and submit when you are ready.'
               : isEditable
                 ? 'You can update your submission while it is being reviewed.'
                 : 'Your submission is locked while a decision is finalized.'
-          ) : (
-            'Start your application to be considered.'
-          )}
+            : 'Start your application to be considered.'}
         </p>
       </header>
 
-      {formError && <p className="application__feedback application__feedback--error">{formError}</p>}
-      {feedback && <p className="application__feedback">{feedback}</p>}
+      {formError && (
+        <p className='application__feedback application__feedback--error'>
+          {formError}
+        </p>
+      )}
+      {feedback && <p className='application__feedback'>{feedback}</p>}
 
       {existingApplication && !isEditing && (
-        <div className="application__summary">
-          <h2 className="application__summary-title">Submission Overview</h2>
+        <div className='application__summary'>
+          <h2 className='application__summary-title'>Submission Overview</h2>
           {existingApplication.status === 'draft' && (
-            <p className="application__draft-note">
-              This application is saved as a draft. Submit it when the required fields are complete.
+            <p className='application__draft-note'>
+              This application is saved as a draft. Submit it when the required
+              fields are complete.
             </p>
           )}
           <dl>
@@ -231,7 +250,9 @@ const UserApplication = () => {
               <dt>Status</dt>
               <dd>
                 {(() => {
-                  const display = STATUS_DISPLAY[existingApplication.status] ?? {
+                  const display = STATUS_DISPLAY[
+                    existingApplication.status
+                  ] ?? {
                     label: existingApplication.status,
                     tone: existingApplication.status,
                   };
@@ -271,34 +292,43 @@ const UserApplication = () => {
             </div>
             <div>
               <dt>Additional Information</dt>
-              <dd>{existingApplication.moreInfo || 'No additional details provided.'}</dd>
+              <dd>
+                {existingApplication.moreInfo ||
+                  'No additional details provided.'}
+              </dd>
             </div>
           </dl>
           {isEditable ? (
-            <Button type="button" variant="primary" onClick={() => setIsEditing(true)}>
+            <Button
+              type='button'
+              variant='primary'
+              onClick={() => setIsEditing(true)}
+            >
               Edit Submission
             </Button>
           ) : (
-            <p className="application__locked">Edits are unavailable because your submission is being finalized.</p>
+            <p className='application__locked'>
+              Edits are unavailable because your submission is being finalized.
+            </p>
           )}
         </div>
       )}
 
       {isEditing && isEditable && (
-        <form className="application__form" onSubmit={handleSubmitApplication}>
-          <div className="form-grid">
+        <form className='application__form' onSubmit={handleSubmitApplication}>
+          <div className='form-grid'>
             <TextField
-              name="name"
-              label="Name"
+              name='name'
+              label='Name'
               value={form.name}
               onChange={handleChange}
               required
               error={errors.name}
             />
             <TextField
-              name="age"
-              label="Age"
-              type="number"
+              name='age'
+              label='Age'
+              type='number'
               value={form.age}
               onChange={handleChange}
               required
@@ -307,47 +337,47 @@ const UserApplication = () => {
               max={120}
             />
             <TextField
-              name="email"
-              label="Email"
-              type="email"
+              name='email'
+              label='Email'
+              type='email'
               value={form.email}
               onChange={handleChange}
               required
               error={errors.email}
             />
             <TextField
-              name="phone"
-              label="Phone"
-              type="tel"
+              name='phone'
+              label='Phone'
+              type='tel'
               value={form.phone}
               onChange={handleChange}
               required
               error={errors.phone}
             />
             <TextField
-              name="stake"
-              label="Stake"
+              name='stake'
+              label='Stake'
               value={form.stake}
               onChange={handleChange}
               required
               error={errors.stake}
             />
             <TextField
-              name="ward"
-              label="Ward"
+              name='ward'
+              label='Ward'
               value={form.ward}
               onChange={handleChange}
               required
               error={errors.ward}
             />
             <ComboBox
-              name="gender"
-              label="Gender (optional)"
+              name='gender'
+              label='Gender (optional)'
               value={form.gender}
               onChange={handleChange}
               showRequiredIndicator={false}
               error={errors.gender}
-              variant="input"
+              variant='input'
               options={[
                 { value: '', label: 'Select gender', disabled: true },
                 { value: 'male', label: 'Male' },
@@ -356,25 +386,29 @@ const UserApplication = () => {
             />
           </div>
           <TextField
-            name="moreInfo"
-            label="Additional Information"
+            name='moreInfo'
+            label='Additional Information'
             value={form.moreInfo}
             onChange={handleChange}
-            placeholder="Share any relevant experience or context."
+            placeholder='Share any relevant experience or context.'
             multiline
             rows={4}
-            wrapperClassName="form-full"
+            wrapperClassName='form-full'
             showRequiredIndicator={false}
           />
-          <div className="application__form-actions">
-            <Button type="submit" variant="primary">
+          <div className='application__form-actions'>
+            <Button type='submit' variant='primary'>
               Submit Application
             </Button>
-            <Button type="button" onClick={handleSaveDraft}>
+            <Button type='button' onClick={handleSaveDraft}>
               Save Draft
             </Button>
             {existingApplication && (
-              <Button type="button" variant="danger" onClick={() => setIsEditing(false)}>
+              <Button
+                type='button'
+                variant='danger'
+                onClick={() => setIsEditing(false)}
+              >
                 Cancel
               </Button>
             )}
@@ -383,8 +417,12 @@ const UserApplication = () => {
       )}
 
       {!existingApplication && !isEditing && (
-        <div className="application__start">
-          <Button type="button" variant="primary" onClick={() => setIsEditing(true)}>
+        <div className='application__start'>
+          <Button
+            type='button'
+            variant='primary'
+            onClick={() => setIsEditing(true)}
+          >
             Start Application
           </Button>
         </div>

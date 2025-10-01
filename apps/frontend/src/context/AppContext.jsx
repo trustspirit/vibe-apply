@@ -1,8 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  authApi,
+  usersApi,
+  applicationsApi,
+  recommendationsApi,
+  ApiError,
+} from '../services/api.js';
 
 const STORAGE_KEY = 'vibe-apply-app-state';
 const SESSION_KEY = 'vibe-apply-session';
+const TOKEN_KEY = 'vibe-apply-token';
 
+// Fallback dummy data for offline mode or API failures
 const defaultUsers = [
   {
     id: 'user-admin',
@@ -64,36 +73,6 @@ const defaultApplications = [
     createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
-  {
-    id: 'app-3',
-    userId: 'seed-3',
-    name: 'Oliver Choi',
-    age: 22,
-    email: 'oliver.choi@example.com',
-    phone: '555-2032',
-    stake: 'South Stake',
-    ward: 'Harbor Ward',
-    gender: 'male',
-    moreInfo: 'Available for music and choir assignments.',
-    status: 'rejected',
-    createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'app-4',
-    userId: 'seed-4',
-    name: 'Sophia Lee',
-    age: 29,
-    email: 'sophia.lee@example.com',
-    phone: '555-2033',
-    stake: 'North Stake',
-    ward: 'Willow Ward',
-    gender: 'female',
-    moreInfo: 'Skills in event coordination.',
-    status: 'awaiting',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
 ];
 
 const defaultLeaderRecommendations = [
@@ -112,21 +91,6 @@ const defaultLeaderRecommendations = [
     createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
   },
-  {
-    id: 'rec-2',
-    leaderId: 'user-leader-approved',
-    name: 'Taylor Brooks',
-    age: 28,
-    email: 'taylor.brooks@example.com',
-    phone: '555-4031',
-    stake: 'South Stake',
-    ward: 'Oak Ward',
-    gender: 'female',
-    moreInfo: 'Currently serving as Sunday School teacher.',
-    status: 'draft',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
 ];
 
 const defaultState = {
@@ -141,9 +105,18 @@ const normalizeUserRecord = (user) => {
   if (!user) {
     return user;
   }
-  const normalizedRole = user.role === 'admin' ? 'admin' : user.role === 'leader' ? 'leader' : 'applicant';
+  const normalizedRole =
+    user.role === 'admin'
+      ? 'admin'
+      : user.role === 'leader'
+        ? 'leader'
+        : 'applicant';
   const leaderStatus =
-    normalizedRole === 'leader' ? (user.leaderStatus === 'approved' ? 'approved' : 'pending') : null;
+    normalizedRole === 'leader'
+      ? user.leaderStatus === 'approved'
+        ? 'approved'
+        : 'pending'
+      : null;
 
   return {
     ...user,
@@ -164,8 +137,12 @@ const loadState = () => {
     }
     const parsed = JSON.parse(stored);
     return {
-      users: Array.isArray(parsed.users) ? parsed.users.map(normalizeUserRecord) : defaultUsers,
-      applications: Array.isArray(parsed.applications) ? parsed.applications : defaultApplications,
+      users: Array.isArray(parsed.users)
+        ? parsed.users.map(normalizeUserRecord)
+        : defaultUsers,
+      applications: Array.isArray(parsed.applications)
+        ? parsed.applications
+        : defaultApplications,
       leaderRecommendations: Array.isArray(parsed.leaderRecommendations)
         ? parsed.leaderRecommendations
         : defaultLeaderRecommendations,
@@ -191,11 +168,42 @@ const loadSession = () => {
 export const AppProvider = ({ children }) => {
   const [state, setState] = useState(loadState);
   const [currentUserId, setCurrentUserId] = useState(loadSession);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const currentUser = useMemo(
     () => state.users.find((user) => user.id === currentUserId) ?? null,
-    [currentUserId, state.users],
+    [currentUserId, state.users]
   );
+
+  // Check if token exists and validate session on app start
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token && !currentUserId) {
+        try {
+          setIsLoading(true);
+          const user = await authApi.getCurrentUser();
+          setCurrentUserId(user.id);
+          // Update local state with current user
+          setState((prev) => ({
+            ...prev,
+            users: prev.users.some((u) => u.id === user.id)
+              ? prev.users.map((u) => (u.id === user.id ? user : u))
+              : [...prev.users, user],
+          }));
+        } catch (error) {
+          console.error('Failed to validate session:', error);
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(SESSION_KEY);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+  }, [currentUserId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -215,198 +223,447 @@ export const AppProvider = ({ children }) => {
     }
   }, [currentUserId]);
 
-  const signUp = ({ name, email, password, role }) => {
-    const trimmedEmail = email.trim().toLowerCase();
-    if (state.users.some((user) => user.email.toLowerCase() === trimmedEmail)) {
-      throw new Error('Email already in use.');
+  const signUp = async ({ name, email, password, role }) => {
+    try {
+      setIsLoading(true);
+      const user = await authApi.signUp({ name, email, password, role });
+
+      // Update local state
+      setState((prev) => ({
+        ...prev,
+        users: [...prev.users, user],
+      }));
+      setCurrentUserId(user.id);
+
+      return user;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw new Error(error.message);
+      }
+
+      // Fallback to local signup if API fails
+      console.warn('API signup failed, falling back to local:', error);
+      setIsOnline(false);
+
+      const trimmedEmail = email.trim().toLowerCase();
+      if (
+        state.users.some((user) => user.email.toLowerCase() === trimmedEmail)
+      ) {
+        throw new Error('Email already in use.');
+      }
+
+      const normalizedRole = role === 'leader' ? 'leader' : 'applicant';
+      const leaderStatus = normalizedRole === 'leader' ? 'pending' : null;
+
+      const newUser = {
+        id:
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `user-${Date.now()}`,
+        name: name.trim(),
+        email: trimmedEmail,
+        password,
+        role: normalizedRole,
+        leaderStatus,
+        createdAt: new Date().toISOString(),
+      };
+
+      setState((prev) => ({
+        ...prev,
+        users: [...prev.users, newUser],
+      }));
+      setCurrentUserId(newUser.id);
+
+      return newUser;
+    } finally {
+      setIsLoading(false);
     }
-
-    const normalizedRole = role === 'leader' ? 'leader' : 'applicant';
-    const leaderStatus = normalizedRole === 'leader' ? 'pending' : null;
-
-    const newUser = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `user-${Date.now()}`,
-      name: name.trim(),
-      email: trimmedEmail,
-      password,
-      role: normalizedRole,
-      leaderStatus,
-      createdAt: new Date().toISOString(),
-    };
-
-    setState((prev) => ({
-      ...prev,
-      users: [...prev.users, newUser],
-    }));
-    setCurrentUserId(newUser.id);
-
-    return newUser;
   };
 
-  const signIn = ({ email, password }) => {
-    const trimmedEmail = email.trim().toLowerCase();
-    const foundUser = state.users.find(
-      (user) => user.email.toLowerCase() === trimmedEmail && user.password === password,
-    );
+  const signIn = async ({ email, password }) => {
+    try {
+      setIsLoading(true);
+      const user = await authApi.signIn({ email, password });
 
-    if (!foundUser) {
-      throw new Error('Invalid credentials.');
+      // Update local state
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.some((u) => u.id === user.id)
+          ? prev.users.map((u) => (u.id === user.id ? user : u))
+          : [...prev.users, user],
+      }));
+      setCurrentUserId(user.id);
+
+      return user;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw new Error(error.message);
+      }
+
+      // Fallback to local signin if API fails
+      console.warn('API signin failed, falling back to local:', error);
+      setIsOnline(false);
+
+      const trimmedEmail = email.trim().toLowerCase();
+      const foundUser = state.users.find(
+        (user) =>
+          user.email.toLowerCase() === trimmedEmail &&
+          user.password === password
+      );
+
+      if (!foundUser) {
+        throw new Error('Invalid credentials.');
+      }
+
+      setCurrentUserId(foundUser.id);
+      return foundUser;
+    } finally {
+      setIsLoading(false);
     }
-
-    setCurrentUserId(foundUser.id);
-    return foundUser;
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    try {
+      await authApi.signOut();
+    } catch (error) {
+      console.warn('API signout failed:', error);
+    }
     setCurrentUserId(null);
   };
 
-  const updateUserRole = (userId, role) => {
-    setState((prev) => ({
-      ...prev,
-      users: prev.users.map((user) => {
-        if (user.id !== userId) {
-          return user;
+  const updateUserRole = async (userId, role) => {
+    try {
+      await usersApi.updateRole(userId, role);
+      // Update local state after successful API call
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((user) => {
+          if (user.id !== userId) {
+            return user;
+          }
+          const normalizedRole =
+            role === 'admin'
+              ? 'admin'
+              : role === 'leader'
+                ? 'leader'
+                : 'applicant';
+          const leaderStatus =
+            normalizedRole === 'leader'
+              ? (user.leaderStatus ?? 'pending')
+              : null;
+          return {
+            ...user,
+            role: normalizedRole,
+            leaderStatus,
+          };
+        }),
+      }));
+    } catch (error) {
+      console.warn('API updateUserRole failed, updating locally:', error);
+      // Fallback to local update
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((user) => {
+          if (user.id !== userId) {
+            return user;
+          }
+          const normalizedRole =
+            role === 'admin'
+              ? 'admin'
+              : role === 'leader'
+                ? 'leader'
+                : 'applicant';
+          const leaderStatus =
+            normalizedRole === 'leader'
+              ? (user.leaderStatus ?? 'pending')
+              : null;
+          return {
+            ...user,
+            role: normalizedRole,
+            leaderStatus,
+          };
+        }),
+      }));
+    }
+  };
+
+  const updateLeaderStatus = async (userId, status) => {
+    try {
+      await usersApi.updateLeaderStatus(userId, status);
+      // Update local state after successful API call
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                leaderStatus: status === 'approved' ? 'approved' : 'pending',
+              }
+            : user
+        ),
+      }));
+    } catch (error) {
+      console.warn('API updateLeaderStatus failed, updating locally:', error);
+      // Fallback to local update
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                leaderStatus: status === 'approved' ? 'approved' : 'pending',
+              }
+            : user
+        ),
+      }));
+    }
+  };
+
+  const submitApplication = async (userId, payload) => {
+    try {
+      const application = await applicationsApi.submit({ ...payload, userId });
+      // Update local state after successful API call
+      setState((prev) => {
+        const existing = prev.applications.find((app) => app.userId === userId);
+        if (existing) {
+          return {
+            ...prev,
+            applications: prev.applications.map((app) =>
+              app.id === existing.id ? application : app
+            ),
+          };
         }
-        const normalizedRole = role === 'admin' ? 'admin' : role === 'leader' ? 'leader' : 'applicant';
-        const leaderStatus =
-          normalizedRole === 'leader'
-            ? user.leaderStatus ?? 'pending'
-            : null;
         return {
-          ...user,
-          role: normalizedRole,
-          leaderStatus,
+          ...prev,
+          applications: [application, ...prev.applications],
         };
-      }),
-    }));
-  };
+      });
+    } catch (error) {
+      console.warn('API submitApplication failed, updating locally:', error);
+      // Fallback to local update
+      setState((prev) => {
+        const existing = prev.applications.find((app) => app.userId === userId);
+        const timestamp = new Date().toISOString();
+        const { status: requestedStatus, ...applicationData } = payload;
+        const normalizedStatus =
+          requestedStatus === 'draft' ? 'draft' : 'awaiting';
 
-  const updateLeaderStatus = (userId, status) => {
-    setState((prev) => ({
-      ...prev,
-      users: prev.users.map((user) =>
-        user.id === userId ? { ...user, leaderStatus: status === 'approved' ? 'approved' : 'pending' } : user,
-      ),
-    }));
-  };
+        if (existing) {
+          const nextStatus =
+            existing.status === 'approved' || existing.status === 'rejected'
+              ? existing.status
+              : normalizedStatus;
 
-  const submitApplication = (userId, payload) => {
-    setState((prev) => {
-      const existing = prev.applications.find((app) => app.userId === userId);
-      const timestamp = new Date().toISOString();
-      const { status: requestedStatus, ...applicationData } = payload;
-      const normalizedStatus = requestedStatus === 'draft' ? 'draft' : 'awaiting';
+          const updated = {
+            ...existing,
+            ...applicationData,
+            status: nextStatus,
+            updatedAt: timestamp,
+          };
 
-      if (existing) {
-        const nextStatus =
-          existing.status === 'approved' || existing.status === 'rejected' ? existing.status : normalizedStatus;
+          return {
+            ...prev,
+            applications: prev.applications.map((app) =>
+              app.id === existing.id ? updated : app
+            ),
+          };
+        }
 
-        const updated = {
-          ...existing,
+        const newApplication = {
+          id:
+            typeof crypto !== 'undefined' && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `app-${Date.now()}`,
+          userId,
           ...applicationData,
-          status: nextStatus,
+          status: normalizedStatus,
+          createdAt: timestamp,
           updatedAt: timestamp,
         };
 
         return {
           ...prev,
-          applications: prev.applications.map((app) => (app.id === existing.id ? updated : app)),
+          applications: [newApplication, ...prev.applications],
         };
-      }
-
-      const newApplication = {
-        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `app-${Date.now()}`,
-        userId,
-        ...applicationData,
-        status: normalizedStatus,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-
-      return {
-        ...prev,
-        applications: [newApplication, ...prev.applications],
-      };
-    });
+      });
+    }
   };
 
-  const submitLeaderRecommendation = (leaderId, payload) => {
-    setState((prev) => {
-      const timestamp = new Date().toISOString();
-      const { id, status, ...formData } = payload;
-      const normalizedStatus = status === 'submitted' ? 'submitted' : 'draft';
-
+  const submitLeaderRecommendation = async (leaderId, payload) => {
+    try {
+      const { id, ...formData } = payload;
       if (id) {
+        const recommendation = await recommendationsApi.update(id, formData);
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: prev.leaderRecommendations.map((rec) =>
+            rec.id === id ? recommendation : rec
+          ),
+        }));
+      } else {
+        const recommendation = await recommendationsApi.submit({
+          ...formData,
+          leaderId,
+        });
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: [
+            recommendation,
+            ...prev.leaderRecommendations,
+          ],
+        }));
+      }
+    } catch (error) {
+      console.warn(
+        'API submitLeaderRecommendation failed, updating locally:',
+        error
+      );
+      // Fallback to local update (original logic)
+      setState((prev) => {
+        const timestamp = new Date().toISOString();
+        const { id, status, ...formData } = payload;
+        const normalizedStatus = status === 'submitted' ? 'submitted' : 'draft';
+
+        if (id) {
+          return {
+            ...prev,
+            leaderRecommendations: prev.leaderRecommendations.map(
+              (recommendation) =>
+                recommendation.id === id
+                  ? {
+                      ...recommendation,
+                      ...formData,
+                      status: normalizedStatus,
+                      updatedAt: timestamp,
+                    }
+                  : recommendation
+            ),
+          };
+        }
+
+        const newRecommendation = {
+          id:
+            typeof crypto !== 'undefined' && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `rec-${Date.now()}`,
+          leaderId,
+          ...formData,
+          status: normalizedStatus,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+
         return {
           ...prev,
-          leaderRecommendations: prev.leaderRecommendations.map((recommendation) =>
-            recommendation.id === id
+          leaderRecommendations: [
+            newRecommendation,
+            ...prev.leaderRecommendations,
+          ],
+        };
+      });
+    }
+  };
+
+  const deleteLeaderRecommendation = async (leaderId, recommendationId) => {
+    try {
+      await recommendationsApi.delete(recommendationId);
+      setState((prev) => ({
+        ...prev,
+        leaderRecommendations: prev.leaderRecommendations.filter(
+          (recommendation) => recommendation.id !== recommendationId
+        ),
+      }));
+    } catch (error) {
+      console.warn(
+        'API deleteLeaderRecommendation failed, updating locally:',
+        error
+      );
+      // Fallback to local delete
+      setState((prev) => ({
+        ...prev,
+        leaderRecommendations: prev.leaderRecommendations.filter(
+          (recommendation) =>
+            !(
+              recommendation.id === recommendationId &&
+              recommendation.leaderId === leaderId
+            )
+        ),
+      }));
+    }
+  };
+
+  const updateApplicationStatus = async (applicationId, status) => {
+    try {
+      await applicationsApi.updateStatus(applicationId, status);
+      setState((prev) => ({
+        ...prev,
+        applications: prev.applications.map((app) =>
+          app.id === applicationId
+            ? {
+                ...app,
+                status,
+                updatedAt: new Date().toISOString(),
+              }
+            : app
+        ),
+      }));
+    } catch (error) {
+      console.warn(
+        'API updateApplicationStatus failed, updating locally:',
+        error
+      );
+      // Fallback to local update
+      setState((prev) => ({
+        ...prev,
+        applications: prev.applications.map((app) =>
+          app.id === applicationId
+            ? {
+                ...app,
+                status,
+                updatedAt: new Date().toISOString(),
+              }
+            : app
+        ),
+      }));
+    }
+  };
+
+  const updateLeaderRecommendationStatus = async (recommendationId, status) => {
+    try {
+      await recommendationsApi.updateStatus(recommendationId, status);
+      setState((prev) => ({
+        ...prev,
+        leaderRecommendations: prev.leaderRecommendations.map(
+          (recommendation) =>
+            recommendation.id === recommendationId
               ? {
                   ...recommendation,
-                  ...formData,
-                  status: normalizedStatus,
-                  updatedAt: timestamp,
+                  status,
+                  updatedAt: new Date().toISOString(),
                 }
-              : recommendation,
-          ),
-        };
-      }
-
-      const newRecommendation = {
-        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `rec-${Date.now()}`,
-        leaderId,
-        ...formData,
-        status: normalizedStatus,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-
-      return {
+              : recommendation
+        ),
+      }));
+    } catch (error) {
+      console.warn(
+        'API updateLeaderRecommendationStatus failed, updating locally:',
+        error
+      );
+      // Fallback to local update
+      setState((prev) => ({
         ...prev,
-        leaderRecommendations: [newRecommendation, ...prev.leaderRecommendations],
-      };
-    });
-  };
-
-  const deleteLeaderRecommendation = (leaderId, recommendationId) => {
-    setState((prev) => ({
-      ...prev,
-      leaderRecommendations: prev.leaderRecommendations.filter(
-        (recommendation) =>
-          !(recommendation.id === recommendationId && recommendation.leaderId === leaderId),
-      ),
-    }));
-  };
-
-  const updateApplicationStatus = (applicationId, status) => {
-    setState((prev) => ({
-      ...prev,
-      applications: prev.applications.map((app) =>
-        app.id === applicationId
-          ? {
-              ...app,
-              status,
-              updatedAt: new Date().toISOString(),
-            }
-          : app,
-      ),
-    }));
-  };
-
-  const updateLeaderRecommendationStatus = (recommendationId, status) => {
-    setState((prev) => ({
-      ...prev,
-      leaderRecommendations: prev.leaderRecommendations.map((recommendation) =>
-        recommendation.id === recommendationId
-          ? {
-              ...recommendation,
-              status,
-              updatedAt: new Date().toISOString(),
-            }
-          : recommendation,
-      ),
-    }));
+        leaderRecommendations: prev.leaderRecommendations.map(
+          (recommendation) =>
+            recommendation.id === recommendationId
+              ? {
+                  ...recommendation,
+                  status,
+                  updatedAt: new Date().toISOString(),
+                }
+              : recommendation
+        ),
+      }));
+    }
   };
 
   const value = useMemo(
@@ -415,6 +672,8 @@ export const AppProvider = ({ children }) => {
       applications: state.applications,
       leaderRecommendations: state.leaderRecommendations,
       currentUser,
+      isLoading,
+      isOnline,
       signUp,
       signIn,
       signOut,
@@ -426,7 +685,7 @@ export const AppProvider = ({ children }) => {
       updateLeaderRecommendationStatus,
       deleteLeaderRecommendation,
     }),
-    [state, currentUser],
+    [state, currentUser, isLoading, isOnline]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
