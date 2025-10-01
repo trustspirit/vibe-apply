@@ -21,6 +21,7 @@ import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
 import LeaderPending from './pages/Leader/LeaderPending.jsx';
 import LeaderRecommendations from './pages/Leader/LeaderRecommendations.jsx';
 import { getDefaultPathForUser } from './utils/navigation.js';
+import { ROUTES } from './utils/constants.js';
 
 const App = () => {
   const { currentUser } = useApp();
@@ -30,7 +31,7 @@ const App = () => {
   return (
     <Routes>
       <Route
-        path='/signin'
+        path={ROUTES.SIGN_IN}
         element={
           <PublicOnly>
             <SignIn />
@@ -38,16 +39,16 @@ const App = () => {
         }
       />
       <Route
-        path='/signup'
+        path={ROUTES.SIGN_UP}
         element={
           <PublicOnly>
             <SignUp />
           </PublicOnly>
         }
       />
-      <Route path='/auth/callback' element={<AuthCallback />} />
+      <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallback />} />
       <Route 
-        path='/auth/complete-profile' 
+        path={ROUTES.COMPLETE_PROFILE} 
         element={
           <RequireIncompleteProfile>
             <CompleteProfile />
@@ -63,15 +64,15 @@ const App = () => {
       >
         <Route index element={<Navigate to={defaultAuthedPath} replace />} />
         <Route
-          path='/admin'
+          path={ROUTES.ADMIN_ROOT}
           element={
             <RequireAdmin>
-              <Navigate to='/admin/dashboard' replace />
+              <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />
             </RequireAdmin>
           }
         />
         <Route
-          path='/admin/dashboard'
+          path={ROUTES.ADMIN_DASHBOARD}
           element={
             <RequireAdmin>
               <AdminDashboard />
@@ -79,7 +80,7 @@ const App = () => {
           }
         />
         <Route
-          path='/admin/review'
+          path={ROUTES.ADMIN_REVIEW}
           element={
             <RequireAdmin>
               <AdminReview />
@@ -87,7 +88,7 @@ const App = () => {
           }
         />
         <Route
-          path='/admin/roles'
+          path={ROUTES.ADMIN_ROLES}
           element={
             <RequireAdmin>
               <AdminRoles />
@@ -95,7 +96,7 @@ const App = () => {
           }
         />
         <Route
-          path='/application'
+          path={ROUTES.APPLICATION}
           element={
             <RequireUser>
               <UserApplication />
@@ -103,7 +104,7 @@ const App = () => {
           }
         />
         <Route
-          path='/leader/dashboard'
+          path={ROUTES.LEADER_DASHBOARD}
           element={
             <RequireLeader requireApproved>
               <LeaderDashboard />
@@ -111,7 +112,7 @@ const App = () => {
           }
         />
         <Route
-          path='/leader/recommendations'
+          path={ROUTES.LEADER_RECOMMENDATIONS}
           element={
             <RequireLeader>
               <LeaderRecommendations />
@@ -119,7 +120,7 @@ const App = () => {
           }
         />
         <Route
-          path='/leader/pending'
+          path={ROUTES.LEADER_PENDING}
           element={
             <RequireLeader>
               <LeaderPending />
@@ -130,7 +131,7 @@ const App = () => {
       <Route
         path='*'
         element={
-          <Navigate to={currentUser ? defaultAuthedPath : '/signin'} replace />
+          <Navigate to={currentUser ? defaultAuthedPath : ROUTES.SIGN_IN} replace />
         }
       />
     </Routes>

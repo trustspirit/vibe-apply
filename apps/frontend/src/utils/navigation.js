@@ -1,22 +1,23 @@
+import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants.js';
+
 export const getDefaultPathForUser = (user) => {
   if (!user) {
-    return '/signin';
+    return ROUTES.SIGN_IN;
   }
 
-  // If user has no role, redirect to complete profile
   if (!user.role) {
-    return '/auth/complete-profile';
+    return ROUTES.COMPLETE_PROFILE;
   }
 
-  if (user.role === 'admin') {
-    return '/admin/dashboard';
+  if (user.role === USER_ROLES.ADMIN) {
+    return ROUTES.ADMIN_DASHBOARD;
   }
 
-  if (user.role === 'leader') {
-    return user.leaderStatus === 'approved' ? '/leader/dashboard' : '/leader/pending';
+  if (user.role === USER_ROLES.LEADER) {
+    return user.leaderStatus === LEADER_STATUS.APPROVED ? ROUTES.LEADER_DASHBOARD : ROUTES.LEADER_PENDING;
   }
 
-  return '/application';
+  return ROUTES.APPLICATION;
 };
 
 export default getDefaultPathForUser;

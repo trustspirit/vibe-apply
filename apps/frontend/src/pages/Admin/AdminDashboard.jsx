@@ -16,6 +16,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useApp } from '../../context/AppContext.jsx';
+import { ROUTES } from '../../utils/constants.js';
 import './AdminDashboard.scss';
 
 const GENDER_COLORS = {
@@ -111,15 +112,15 @@ const AdminDashboard = () => {
   const pieData = genderSplit.length ? genderSplit : [{ name: 'No Data', value: 1 }];
 
   const goToAwaiting = () => {
-    navigate('/admin/review', { state: { initialTab: 'awaiting' } });
+    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: 'awaiting' } });
   };
 
   const goToApproved = () => {
-    navigate('/admin/review', { state: { initialTab: 'approved' } });
+    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: 'approved' } });
   };
 
   const goToNewToday = () => {
-    navigate('/admin/review', { state: { initialTab: 'all', focus: 'today' } });
+    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: 'all', focus: 'today' } });
   };
 
   return (

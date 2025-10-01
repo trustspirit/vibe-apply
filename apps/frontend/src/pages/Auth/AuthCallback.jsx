@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { authApi } from '../../services/api';
+import { USER_ROLES, ROUTES } from '../../utils/constants.js';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -11,35 +12,32 @@ const AuthCallback = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const isNewUser = urlParams.get('newUser') === 'true';
 
-    // Fetch user profile from API using HTTP-only cookies
     const fetchUserProfile = async () => {
       try {
         const user = await authApi.getCurrentUser();
         setUser(user);
 
-        // If new user, redirect to complete profile
         if (isNewUser) {
-          navigate('/auth/complete-profile');
+          navigate(ROUTES.COMPLETE_PROFILE);
           return;
         }
 
-        // Redirect based on role
         switch (user.role) {
-          case 'admin':
-            navigate('/admin');
+          case USER_ROLES.ADMIN:
+            navigate(ROUTES.ADMIN_ROOT);
             break;
-          case 'leader':
-            navigate('/leader');
+          case USER_ROLES.LEADER:
+            navigate(ROUTES.LEADER_DASHBOARD);
             break;
           default:
-            navigate('/application');
+            navigate(ROUTES.APPLICATION);
         }
       } catch (error) {
         console.error('AuthCallback Debug - Error details:', error);
         console.error(
           'AuthCallback Debug - Redirecting to signin due to error'
         );
-        navigate('/signin');
+        navigate(ROUTES.SIGN_IN);
       }
     };
 

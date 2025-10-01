@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
 import { Button } from './ui';
+import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants.js';
 import './GlobalNav.scss';
 
 const GlobalNav = () => {
@@ -10,45 +11,45 @@ const GlobalNav = () => {
   const gnbRef = useRef(null);
 
   const navItems = (() => {
-    if (currentUser.role === 'admin') {
+    if (currentUser.role === USER_ROLES.ADMIN) {
       return [
-        { to: '/admin/dashboard', label: 'Dashboard' },
-        { to: '/admin/review', label: 'Review Applications' },
-        { to: '/admin/roles', label: 'Manage Roles' },
+        { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
+        { to: ROUTES.ADMIN_REVIEW, label: 'Review Applications' },
+        { to: ROUTES.ADMIN_ROLES, label: 'Manage Roles' },
       ];
     }
-    if (currentUser.role === 'leader') {
-      if (currentUser.leaderStatus === 'approved') {
+    if (currentUser.role === USER_ROLES.LEADER) {
+      if (currentUser.leaderStatus === LEADER_STATUS.APPROVED) {
         return [
-          { to: '/leader/dashboard', label: 'Leader Dashboard' },
-          { to: '/leader/recommendations', label: 'Recommendations' },
+          { to: ROUTES.LEADER_DASHBOARD, label: 'Leader Dashboard' },
+          { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
         ];
       }
       return [
-        { to: '/leader/pending', label: 'Leader Access' },
-        { to: '/leader/recommendations', label: 'Recommendations' },
+        { to: ROUTES.LEADER_PENDING, label: 'Leader Access' },
+        { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
       ];
     }
-    if (currentUser.role === 'applicant') {
-      return [{ to: '/application', label: 'Application' }];
+    if (currentUser.role === USER_ROLES.APPLICANT) {
+      return [{ to: ROUTES.APPLICATION, label: 'Application' }];
     }
     return [];
   })();
   const hasNav = navItems.length > 0;
 
   const roleLabel = (() => {
-    if (currentUser.role === 'admin') {
+    if (currentUser.role === USER_ROLES.ADMIN) {
       return 'Admin';
     }
-    if (currentUser.role === 'leader') {
-      return currentUser.leaderStatus === 'approved' ? 'Leader' : 'Leader (Pending)';
+    if (currentUser.role === USER_ROLES.LEADER) {
+      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Leader' : 'Leader (Pending)';
     }
     return 'Applicant';
   })();
 
   const handleSignOut = () => {
     signOut();
-    navigate('/signin');
+    navigate(ROUTES.SIGN_IN);
   };
 
   // Update CSS custom property with actual GNB height

@@ -13,19 +13,19 @@ import {
   recommendationsApi,
   ApiError,
 } from '../services/api.js';
+import { USER_ROLES, LEADER_STATUS } from '../utils/constants.js';
 
 const STORAGE_KEY = 'vibe-apply-app-state';
 const SESSION_KEY = 'vibe-apply-session';
 
-// Fallback dummy data for offline mode or API failures
 const defaultUsers = [
   {
     id: 'user-leader-approved',
     name: 'Leader Lydia',
     email: 'leader.lydia@example.com',
     password: 'leader123',
-    role: 'leader',
-    leaderStatus: 'approved',
+    role: USER_ROLES.LEADER,
+    leaderStatus: LEADER_STATUS.APPROVED,
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
@@ -33,7 +33,7 @@ const defaultUsers = [
     name: 'Applicant Aaron',
     email: 'applicant.aaron@example.com',
     password: 'applicant123',
-    role: 'applicant',
+    role: USER_ROLES.APPLICANT,
     leaderStatus: null,
     createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -103,16 +103,16 @@ const normalizeUserRecord = (user) => {
     return user;
   }
   const normalizedRole =
-    user.role === 'admin'
-      ? 'admin'
-      : user.role === 'leader'
-        ? 'leader'
-        : 'applicant';
+    user.role === USER_ROLES.ADMIN
+      ? USER_ROLES.ADMIN
+      : user.role === USER_ROLES.LEADER
+        ? USER_ROLES.LEADER
+        : USER_ROLES.APPLICANT;
   const leaderStatus =
-    normalizedRole === 'leader'
-      ? user.leaderStatus === 'approved'
-        ? 'approved'
-        : 'pending'
+    normalizedRole === USER_ROLES.LEADER
+      ? user.leaderStatus === LEADER_STATUS.APPROVED
+        ? LEADER_STATUS.APPROVED
+        : LEADER_STATUS.PENDING
       : null;
 
   return {
@@ -351,7 +351,6 @@ export const AppProvider = ({ children }) => {
   const updateUserRole = useCallback(async (userId, role) => {
     try {
       await usersApi.updateRole(userId, role);
-      // Update local state after successful API call
       setState((prev) => ({
         ...prev,
         users: prev.users.map((user) => {
@@ -359,14 +358,14 @@ export const AppProvider = ({ children }) => {
             return user;
           }
           const normalizedRole =
-            role === 'admin'
-              ? 'admin'
-              : role === 'leader'
-                ? 'leader'
-                : 'applicant';
+            role === USER_ROLES.ADMIN
+              ? USER_ROLES.ADMIN
+              : role === USER_ROLES.LEADER
+                ? USER_ROLES.LEADER
+                : USER_ROLES.APPLICANT;
           const leaderStatus =
-            normalizedRole === 'leader'
-              ? (user.leaderStatus ?? 'pending')
+            normalizedRole === USER_ROLES.LEADER
+              ? (user.leaderStatus ?? LEADER_STATUS.PENDING)
               : null;
           return {
             ...user,
@@ -377,7 +376,6 @@ export const AppProvider = ({ children }) => {
       }));
     } catch (error) {
       console.warn('API updateUserRole failed, updating locally:', error);
-      // Fallback to local update
       setState((prev) => ({
         ...prev,
         users: prev.users.map((user) => {
@@ -385,14 +383,14 @@ export const AppProvider = ({ children }) => {
             return user;
           }
           const normalizedRole =
-            role === 'admin'
-              ? 'admin'
-              : role === 'leader'
-                ? 'leader'
-                : 'applicant';
+            role === USER_ROLES.ADMIN
+              ? USER_ROLES.ADMIN
+              : role === USER_ROLES.LEADER
+                ? USER_ROLES.LEADER
+                : USER_ROLES.APPLICANT;
           const leaderStatus =
-            normalizedRole === 'leader'
-              ? (user.leaderStatus ?? 'pending')
+            normalizedRole === USER_ROLES.LEADER
+              ? (user.leaderStatus ?? LEADER_STATUS.PENDING)
               : null;
           return {
             ...user,

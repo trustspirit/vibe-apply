@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { useApp } from '../../context/AppContext.jsx';
 import { Button } from '../../components/ui';
+import { ROUTES } from '../../utils/constants.js';
 import './LeaderDashboard.scss';
 
 const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];
@@ -75,7 +76,7 @@ const LeaderDashboard = () => {
     : [{ name: 'No Data', value: 1 }];
 
   const handleCreateRecommendation = () => {
-    navigate('/leader/recommendations', { state: { action: 'create' } });
+    navigate(ROUTES.LEADER_RECOMMENDATIONS, { state: { action: 'create' } });
   };
 
   return (

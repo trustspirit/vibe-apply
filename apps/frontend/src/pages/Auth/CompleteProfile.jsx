@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui';
 import { getDefaultPathForUser } from '../../utils/navigation.js';
 import { authApi } from '../../services/api';
+import { USER_ROLES, ROUTES } from '../../utils/constants.js';
 import './SignUp.scss';
 
 const CompleteProfile = () => {
@@ -13,7 +14,7 @@ const CompleteProfile = () => {
   const [form, setForm] = useState({
     stake: '',
     ward: '',
-    role: 'applicant',
+    role: USER_ROLES.APPLICANT,
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +50,7 @@ const CompleteProfile = () => {
   };
 
   if (!currentUser) {
-    navigate('/signin');
+    navigate(ROUTES.SIGN_IN);
     return null;
   }
 
@@ -92,8 +93,8 @@ const CompleteProfile = () => {
                 <input
                   type='radio'
                   name='role'
-                  value='applicant'
-                  checked={form.role === 'applicant'}
+                  value={USER_ROLES.APPLICANT}
+                  checked={form.role === USER_ROLES.APPLICANT}
                   onChange={handleChange}
                 />
                 Applicant
@@ -102,8 +103,8 @@ const CompleteProfile = () => {
                 <input
                   type='radio'
                   name='role'
-                  value='leader'
-                  checked={form.role === 'leader'}
+                  value={USER_ROLES.LEADER}
+                  checked={form.role === USER_ROLES.LEADER}
                   onChange={handleChange}
                 />
                 Leader

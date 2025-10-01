@@ -1,13 +1,14 @@
 import { Navigate } from 'react-router-dom';
 import { Button } from '../../components/ui';
 import { useApp } from '../../context/AppContext.jsx';
+import { ROUTES } from '../../utils/constants.js';
 import './LeaderPending.scss';
 
 const LeaderPending = () => {
   const { currentUser, signOut } = useApp();
 
   if (currentUser?.leaderStatus === 'approved') {
-    return <Navigate to='/leader/dashboard' replace />;
+    return <Navigate to={ROUTES.LEADER_DASHBOARD} replace />;
   }
 
   return (

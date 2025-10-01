@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
 import { Button } from '../../components/ui';
+import { ROUTES } from '../../utils/constants.js';
 
 import './SignUp.scss';
 
@@ -38,7 +39,7 @@ const SignUp = () => {
         email: form.email,
         password: form.password,
       });
-      navigate('/complete-profile', { replace: true });
+      navigate(ROUTES.COMPLETE_PROFILE, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -111,7 +112,7 @@ const SignUp = () => {
           </Button>
         </form>
         <p className='auth__footer'>
-          Already have an account? <Link to='/signin'>Sign in</Link>
+          Already have an account? <Link to={ROUTES.SIGN_IN}>Sign in</Link>
         </p>
       </div>
     </div>

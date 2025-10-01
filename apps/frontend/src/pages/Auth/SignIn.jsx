@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
 import { Button } from '../../components/ui';
 import { getDefaultPathForUser } from '../../utils/navigation.js';
+import { ROUTES } from '../../utils/constants.js';
 import './SignIn.scss';
 
 const SignIn = () => {
@@ -120,7 +121,7 @@ const SignIn = () => {
         </Button>
 
         <p className='auth__footer'>
-          New here? <Link to='/signup'>Create an account</Link>
+          New here? <Link to={ROUTES.SIGN_UP}>Create an account</Link>
         </p>
         <p className='auth__hint'>
           Default admin: admin@vibeapply.com / admin123

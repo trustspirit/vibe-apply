@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { useApp } from '../../context/AppContext.jsx';
 import { ComboBox, StatusChip, ToggleButton } from '../../components/ui';
+import { USER_ROLES, LEADER_STATUS } from '../../utils/constants.js';
 import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'leader', label: 'Leader' },
-  { value: 'applicant', label: 'Applicant' },
+  { value: USER_ROLES.ADMIN, label: 'Admin' },
+  { value: USER_ROLES.LEADER, label: 'Leader' },
+  { value: USER_ROLES.APPLICANT, label: 'Applicant' },
 ];
 
 const AdminRoles = () => {
@@ -19,9 +20,9 @@ const AdminRoles = () => {
           return a.name.localeCompare(b.name);
         }
         const order = {
-          admin: 0,
-          leader: 1,
-          applicant: 2,
+          [USER_ROLES.ADMIN]: 0,
+          [USER_ROLES.LEADER]: 1,
+          [USER_ROLES.APPLICANT]: 2,
         };
         return (order[a.role] ?? 3) - (order[b.role] ?? 3);
       }),
@@ -36,7 +37,7 @@ const AdminRoles = () => {
   };
 
   const handleLeaderToggle = (userId, isApproved) => {
-    updateLeaderStatus(userId, isApproved ? 'approved' : 'pending');
+    updateLeaderStatus(userId, isApproved ? LEADER_STATUS.APPROVED : LEADER_STATUS.PENDING);
   };
 
   return (
@@ -69,17 +70,17 @@ const AdminRoles = () => {
                   <StatusChip
                     status={user.role}
                     tone={
-                      user.role === 'admin'
+                      user.role === USER_ROLES.ADMIN
                         ? 'admin'
-                        : user.role === 'leader'
+                        : user.role === USER_ROLES.LEADER
                           ? 'leader'
                           : 'applicant'
                     }
                     label={
-                      user.role === 'admin'
+                      user.role === USER_ROLES.ADMIN
                         ? 'Admin'
-                        : user.role === 'leader'
-                          ? user.leaderStatus === 'approved'
+                        : user.role === USER_ROLES.LEADER
+                          ? user.leaderStatus === LEADER_STATUS.APPROVED
                             ? 'Leader'
                             : 'Leader (Pending)'
                           : 'Applicant'
@@ -95,9 +96,9 @@ const AdminRoles = () => {
                     }
                     options={ROLE_OPTIONS}
                     tone={
-                      user.role === 'admin'
+                      user.role === USER_ROLES.ADMIN
                         ? 'admin'
-                        : user.role === 'leader'
+                        : user.role === USER_ROLES.LEADER
                           ? 'leader'
                           : 'applicant'
                     }
@@ -112,9 +113,9 @@ const AdminRoles = () => {
                   )}
                 </td>
                 <td>
-                  {user.role === 'leader' ? (
+                  {user.role === USER_ROLES.LEADER ? (
                     <ToggleButton
-                      checked={user.leaderStatus === 'approved'}
+                      checked={user.leaderStatus === LEADER_STATUS.APPROVED}
                       onChange={(next) => handleLeaderToggle(user.id, next)}
                       labelOn='Approved'
                       labelOff='Pending'
