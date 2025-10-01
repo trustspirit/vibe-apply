@@ -215,7 +215,9 @@ export class AuthService {
 
   async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<TokenResponse> {
     try {
-      const payload = this.jwtService.verify(refreshTokenDto.refreshToken);
+      const payload = this.jwtService.verify<JwtPayload>(
+        refreshTokenDto.refreshToken,
+      );
       const user = await this.getUser(payload.sub);
 
       const tokens = this.generateTokens(user);

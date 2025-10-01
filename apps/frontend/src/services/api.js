@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -44,7 +44,7 @@ const apiRequest = async (endpoint, options = {}) => {
     config.body = JSON.stringify(config.body);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetch(`${API_BASE_URL}/api${endpoint}`, config);
   return handleResponse(response);
 };
 
