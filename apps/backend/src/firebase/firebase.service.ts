@@ -13,7 +13,11 @@ export class FirebaseService {
     );
 
     if (serviceAccountKey) {
-      const serviceAccount = JSON.parse(serviceAccountKey) as {
+      const decodedKey = Buffer.from(serviceAccountKey, 'base64').toString(
+        'utf8',
+      );
+
+      const serviceAccount = JSON.parse(decodedKey) as {
         project_id: string;
         [key: string]: any;
       };
