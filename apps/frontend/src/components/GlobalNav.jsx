@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
-import { Button } from './ui';
+import { Button, Avatar } from './ui';
 import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants.js';
 import './GlobalNav.scss';
 
@@ -9,6 +9,9 @@ const GlobalNav = () => {
   const { currentUser, signOut } = useApp();
   const navigate = useNavigate();
   const gnbRef = useRef(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+  const avatarRef = useRef(null);
 
   const navItems = (() => {
     if (currentUser.role === USER_ROLES.ADMIN) {
@@ -51,6 +54,36 @@ const GlobalNav = () => {
     signOut();
     navigate(ROUTES.SIGN_IN);
   };
+
+  const toggleMenu = () => {
+    setShowMenu((prev) => !prev);
+  };
+
+  const handleMenuAction = (action) => {
+    setShowMenu(false);
+    action();
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(event.target)
+      ) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   // Update CSS custom property with actual GNB height
   useEffect(() => {
@@ -101,9 +134,29 @@ const GlobalNav = () => {
             <span className="gnb__greeting">Hi, {currentUser.name}</span>
             <span className="gnb__role">{roleLabel}</span>
           </div>
-          <Button type="button" className="gnb__logout" onClick={handleSignOut}>
-            Logout
-          </Button>
+          <div className="gnb__avatar-wrapper" ref={avatarRef}>
+            <Avatar
+              name={currentUser.name}
+              size="md"
+              onClick={toggleMenu}
+            />
+          </div>
+          {showMenu && (
+            <div className="gnb__menu" ref={menuRef}>
+              <button
+                className="gnb__menu-item"
+                onClick={() => handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))}
+              >
+                Account Settings
+              </button>
+              <button
+                className="gnb__menu-item"
+                onClick={() => handleMenuAction(handleSignOut)}
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -32,6 +32,7 @@ export interface User {
     leaderStatus: LeaderStatus | null;
     ward: string;
     stake: string;
+    phone?: string;
     createdAt: string;
 }
 export interface Application {
@@ -48,6 +49,7 @@ export interface Application {
     status: ApplicationStatus;
     createdAt: string;
     updatedAt: string;
+    linkedApplicationId?: string;
 }
 export interface LeaderRecommendation {
     id: string;
@@ -63,6 +65,7 @@ export interface LeaderRecommendation {
     status: RecommendationStatus;
     createdAt: string;
     updatedAt: string;
+    linkedApplicationId?: string;
 }
 export interface CreateUserDto {
     name: string;
@@ -126,6 +129,11 @@ export interface CompleteProfileDto {
     role: UserRole;
     ward: string;
     stake: string;
+}
+export interface UpdateUserProfileDto {
+    ward?: string;
+    stake?: string;
+    phone?: string;
 }
 export interface UpdateLeaderStatusDto {
     leaderStatus: LeaderStatus;

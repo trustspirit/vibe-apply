@@ -22,7 +22,7 @@ const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];
 
 const LeaderDashboard = () => {
   const navigate = useNavigate();
-  const { currentUser, leaderRecommendations } = useApp();
+  const { currentUser, applications, leaderRecommendations } = useApp();
   const leaderId = currentUser?.id ?? null;
 
   const recommendations = useMemo(
@@ -36,40 +36,118 @@ const LeaderDashboard = () => {
     [leaderRecommendations, leaderId]
   );
 
+  const applicantsInStake = useMemo(() => {
+    if (!currentUser?.stake) {
+      return [];
+    }
+
+    const linkedApplicationIds = new Set(
+      recommendations
+        .filter((rec) => rec.linkedApplicationId)
+        .map((rec) => rec.linkedApplicationId)
+    );
+
+    return applications.filter((app) => {
+      const inStake = app.stake === currentUser.stake;
+      const notRecommended = !linkedApplicationIds.has(app.id);
+      return inStake && notRecommended;
+    });
+  }, [applications, currentUser, recommendations]);
+
+  const combinedItems = useMemo(() => {
+    if (!currentUser?.stake) {
+      return [];
+    }
+
+    const applicationById = new Map();
+    applications
+      .filter((app) => app.stake === currentUser.stake)
+      .forEach((app) => {
+        applicationById.set(app.id, app);
+      });
+
+    const mappedRecommendations = recommendations.map((rec) => ({
+      ...rec,
+      hasApplication: rec.linkedApplicationId && applicationById.has(rec.linkedApplicationId),
+    }));
+
+    const mappedApplications = applicantsInStake.map((app) => ({
+      ...app,
+      isApplication: true,
+    }));
+
+    return [...mappedRecommendations, ...mappedApplications];
+  }, [recommendations, applicantsInStake, applications, currentUser]);
+
   const statusCounts = useMemo(
-    () => ({
-      draft: recommendations.filter(
-        (recommendation) => recommendation.status === 'draft'
-      ).length,
-      submitted: recommendations.filter(
-        (recommendation) => recommendation.status === 'submitted'
-      ).length,
-    }),
-    [recommendations]
+    () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      return {
+        draft: recommendations.filter(
+          (recommendation) => recommendation.status === 'draft'
+        ).length,
+        submitted: recommendations.filter(
+          (recommendation) => recommendation.status === 'submitted' || recommendation.status === 'approved' || recommendation.status === 'rejected'
+        ).length,
+        applications: applicantsInStake.length,
+        newRecommendationsToday: recommendations.filter(
+          (recommendation) => new Date(recommendation.createdAt) >= today
+        ).length,
+        newApplicationsToday: applicantsInStake.filter(
+          (app) => new Date(app.createdAt) >= today
+        ).length,
+      };
+    },
+    [recommendations, applicantsInStake]
   );
 
   const locationCounts = useMemo(() => {
-    const groups = recommendations.reduce((acc, recommendation) => {
-      const stake = recommendation.stake || 'Unknown Stake';
-      const ward = recommendation.ward || 'Unknown Ward';
+    const groups = combinedItems.reduce((acc, item) => {
+      const stake = item.stake || 'Unknown Stake';
+      const ward = item.ward || 'Unknown Ward';
       const key = `${stake} • ${ward}`;
-      acc[key] = (acc[key] ?? 0) + 1;
+      if (!acc[key]) {
+        acc[key] = { recommendations: 0, applications: 0 };
+      }
+      if (item.isApplication) {
+        acc[key].applications += 1;
+      } else {
+        acc[key].recommendations += 1;
+      }
       return acc;
     }, {});
-    return Object.entries(groups).map(([name, total]) => ({ name, total }));
-  }, [recommendations]);
+    return Object.entries(groups).map(([name, counts]) => ({ 
+      name, 
+      Recommendations: counts.recommendations,
+      Applications: counts.applications
+    }));
+  }, [combinedItems]);
 
   const genderCounts = useMemo(() => {
-    const map = recommendations.reduce((acc, recommendation) => {
+    const map = combinedItems.reduce((acc, item) => {
       const key =
-        recommendation.gender === 'male' || recommendation.gender === 'female'
-          ? recommendation.gender
+        item.gender === 'male' || item.gender === 'female'
+          ? item.gender
           : 'Unspecified';
-      acc[key] = (acc[key] ?? 0) + 1;
+      if (!acc[key]) {
+        acc[key] = { recommendations: 0, applications: 0 };
+      }
+      if (item.isApplication) {
+        acc[key].applications += 1;
+      } else {
+        acc[key].recommendations += 1;
+      }
       return acc;
     }, {});
-    return Object.entries(map).map(([name, value]) => ({ name, value }));
-  }, [recommendations]);
+    return Object.entries(map).map(([name, counts]) => ({ 
+      name, 
+      Recommendations: counts.recommendations,
+      Applications: counts.applications,
+      value: counts.recommendations + counts.applications
+    }));
+  }, [combinedItems]);
 
   const pieData = genderCounts.length
     ? genderCounts
@@ -115,6 +193,30 @@ const LeaderDashboard = () => {
             {statusCounts.submitted}
           </span>
         </div>
+        <div className='leader-dashboard__stat-card'>
+          <span className='leader-dashboard__stat-label'>
+            Applications in Stake
+          </span>
+          <span className='leader-dashboard__stat-value'>
+            {statusCounts.applications}
+          </span>
+        </div>
+        <div className='leader-dashboard__stat-card'>
+          <span className='leader-dashboard__stat-label'>
+            New Recommendations Today
+          </span>
+          <span className='leader-dashboard__stat-value'>
+            {statusCounts.newRecommendationsToday}
+          </span>
+        </div>
+        <div className='leader-dashboard__stat-card'>
+          <span className='leader-dashboard__stat-label'>
+            New Applications Today
+          </span>
+          <span className='leader-dashboard__stat-value'>
+            {statusCounts.newApplicationsToday}
+          </span>
+        </div>
       </div>
 
       <div className='leader-dashboard__charts'>
@@ -126,21 +228,25 @@ const LeaderDashboard = () => {
             <ResponsiveContainer width='100%' height={260}>
               <BarChart data={locationCounts}>
                 <CartesianGrid strokeDasharray='3 3' stroke='#e2e8f0' />
-                <XAxis dataKey='name' stroke='#64748b' />
-                <YAxis allowDecimals={false} stroke='#64748b' />
+                <XAxis dataKey='name' stroke='#64748b' style={{ fontSize: '0.75rem' }} />
+                <YAxis allowDecimals={false} stroke='#64748b' style={{ fontSize: '0.75rem' }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
                 <Bar
-                  dataKey='total'
+                  dataKey='Recommendations'
                   fill='#2563eb'
-                  name='Recommendations'
+                  radius={[6, 6, 0, 0]}
+                />
+                <Bar
+                  dataKey='Applications'
+                  fill='#1e3a8a'
                   radius={[6, 6, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <p className='leader-dashboard__empty'>
-              No recommendations yet to show location data.
+              No data yet to show location distribution.
             </p>
           )}
         </div>
@@ -155,6 +261,8 @@ const LeaderDashboard = () => {
                 innerRadius={50}
                 outerRadius={90}
                 paddingAngle={4}
+                label={(entry) => entry.name}
+                style={{ fontSize: '0.75rem' }}
               >
                 {pieData.map((entry, index) => (
                   <Cell
@@ -163,8 +271,8 @@ const LeaderDashboard = () => {
                   />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip contentStyle={{ fontSize: '0.875rem' }} />
+              <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
             </PieChart>
           </ResponsiveContainer>
         </div>

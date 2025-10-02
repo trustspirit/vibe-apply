@@ -23,6 +23,7 @@ import type {
   UpdateUserRoleDto,
   CompleteProfileDto,
   UpdateLeaderStatusDto,
+  UpdateUserProfileDto,
   User,
   TokenResponse,
   RefreshTokenDto,
@@ -193,5 +194,14 @@ export class AuthController {
       completeProfileDto.stake,
     );
     return this.authService.getUser(user.sub);
+  }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+  ): Promise<User> {
+    return this.authService.updateUserProfile(user.sub, updateUserProfileDto);
   }
 }

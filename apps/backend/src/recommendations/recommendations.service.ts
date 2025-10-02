@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { FirebaseService } from '../firebase/firebase.service';
 import {
   LeaderRecommendation,
@@ -32,10 +32,38 @@ export class RecommendationsService {
       .collection('recommendations')
       .add(recommendationData);
 
-    return {
+    const recommendation = {
       id: docRef.id,
       ...recommendationData,
     };
+
+    await this.linkMatchingApplication(recommendation);
+
+    return recommendation;
+  }
+
+  private async linkMatchingApplication(
+    recommendation: LeaderRecommendation,
+  ): Promise<void> {
+    const applicationsSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection('applications')
+      .where('email', '==', recommendation.email.toLowerCase())
+      .where('stake', '==', recommendation.stake)
+      .where('ward', '==', recommendation.ward)
+      .get();
+
+    if (!applicationsSnapshot.empty) {
+      const applicationDoc = applicationsSnapshot.docs[0];
+      await this.firebaseService
+        .getFirestore()
+        .collection('recommendations')
+        .doc(recommendation.id)
+        .update({
+          linkedApplicationId: applicationDoc.id,
+          updatedAt: new Date().toISOString(),
+        });
+    }
   }
 
   async findAll(): Promise<LeaderRecommendation[]> {
@@ -45,13 +73,23 @@ export class RecommendationsService {
       .orderBy('createdAt', 'desc')
       .get();
 
-    return recommendationsSnapshot.docs.map(
-      (doc) =>
-        ({
+    return recommendationsSnapshot.docs
+      .filter((doc) => {
+        const data = doc.data();
+        return data.status !== RecommendationStatus.DRAFT;
+      })
+      .map((doc) => {
+        const data = doc.data();
+        const status = data.status as RecommendationStatus;
+        const canModify = status !== RecommendationStatus.APPROVED && status !== RecommendationStatus.REJECTED;
+        
+        return {
           id: doc.id,
-          ...doc.data(),
-        }) as LeaderRecommendation,
-    );
+          ...data,
+          canEdit: canModify,
+          canDelete: canModify,
+        } as any;
+      });
   }
 
   async findByLeaderId(leaderId: string): Promise<LeaderRecommendation[]> {
@@ -59,16 +97,23 @@ export class RecommendationsService {
       .getFirestore()
       .collection('recommendations')
       .where('leaderId', '==', leaderId)
-      .orderBy('createdAt', 'desc')
       .get();
 
-    return recommendationsSnapshot.docs.map(
-      (doc) =>
-        ({
+    return recommendationsSnapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+        const status = data.status as RecommendationStatus;
+        const canModify = status !== RecommendationStatus.APPROVED && status !== RecommendationStatus.REJECTED;
+        
+        return {
           id: doc.id,
-          ...doc.data(),
-        }) as LeaderRecommendation,
-    );
+          ...data,
+          status: status,
+          canEdit: canModify,
+          canDelete: canModify,
+        } as any;
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   async findOne(id: string): Promise<LeaderRecommendation> {
@@ -97,6 +142,12 @@ export class RecommendationsService {
     id: string,
     updateRecommendationDto: UpdateRecommendationDto,
   ): Promise<LeaderRecommendation> {
+    const existing = await this.findOne(id);
+    
+    if (existing.status === RecommendationStatus.APPROVED || existing.status === RecommendationStatus.REJECTED) {
+      throw new BadRequestException('Cannot modify a recommendation that has been reviewed');
+    }
+
     const updateData = {
       ...updateRecommendationDto,
       updatedAt: new Date().toISOString(),
@@ -119,6 +170,12 @@ export class RecommendationsService {
   }
 
   async remove(id: string): Promise<void> {
+    const existing = await this.findOne(id);
+    
+    if (existing.status === RecommendationStatus.APPROVED || existing.status === RecommendationStatus.REJECTED) {
+      throw new BadRequestException('Cannot delete a recommendation that has been reviewed');
+    }
+
     await this.firebaseService
       .getFirestore()
       .collection('recommendations')

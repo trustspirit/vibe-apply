@@ -25,8 +25,10 @@ const emptyForm = {
 
 const TAB_DEFS = [
   { id: 'all', label: 'All' },
-  { id: 'submitted', label: 'Submitted' },
   { id: 'draft', label: 'Draft' },
+  { id: 'submitted', label: 'Awaiting Review' },
+  { id: 'approved', label: 'Approved' },
+  { id: 'rejected', label: 'Rejected' },
 ];
 
 const genderOptions = [
@@ -39,6 +41,7 @@ const LeaderRecommendations = () => {
   const { state } = useLocation();
   const {
     currentUser,
+    applications,
     leaderRecommendations,
     submitLeaderRecommendation,
     deleteLeaderRecommendation,
@@ -72,14 +75,66 @@ const LeaderRecommendations = () => {
     [leaderRecommendations, leaderId]
   );
 
+  const applicantsInStake = useMemo(() => {
+    if (!currentUser?.stake) {
+      return [];
+    }
+
+    const linkedApplicationIds = new Set(
+      recommendations
+        .filter((rec) => rec.linkedApplicationId)
+        .map((rec) => rec.linkedApplicationId)
+    );
+
+    const filtered = applications.filter((app) => {
+      const inStake = app.stake === currentUser.stake;
+      const notRecommended = !linkedApplicationIds.has(app.id);
+
+      return inStake && notRecommended;
+    });
+
+    return filtered.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [applications, currentUser, recommendations]);
+
+  const combinedItems = useMemo(() => {
+    const applicationById = new Map();
+    applications
+      .filter((app) => app.stake === currentUser?.stake)
+      .forEach((app) => {
+        applicationById.set(app.id, app);
+      });
+
+    const mappedRecommendations = recommendations.map((rec) => {
+      const canModify = rec.status !== 'approved' && rec.status !== 'rejected';
+      return {
+        ...rec,
+        hasApplication: rec.linkedApplicationId && applicationById.has(rec.linkedApplicationId),
+        canEdit: rec.canEdit !== undefined ? rec.canEdit : canModify,
+        canDelete: rec.canDelete !== undefined ? rec.canDelete : canModify,
+      };
+    });
+
+    const mappedApplications = applicantsInStake.map((app) => ({
+      ...app,
+      isApplication: true,
+    }));
+
+    return [...mappedRecommendations, ...mappedApplications].sort(
+      (a, b) =>
+        new Date(b.updatedAt || b.createdAt).getTime() -
+        new Date(a.updatedAt || a.createdAt).getTime()
+    );
+  }, [recommendations, applicantsInStake, applications, currentUser]);
+
   const filteredRecommendations = useMemo(() => {
     if (activeTab === 'all') {
-      return recommendations;
+      return combinedItems;
     }
-    return recommendations.filter(
-      (recommendation) => recommendation.status === activeTab
-    );
-  }, [recommendations, activeTab]);
+    return combinedItems.filter((item) => !item.isApplication && item.status === activeTab);
+  }, [combinedItems, activeTab]);
 
   const listRecommendations = filteredRecommendations;
 
@@ -103,16 +158,9 @@ const LeaderRecommendations = () => {
   }, [filteredRecommendations, selectedId, currentFormId]);
 
   const isEditing = currentFormId !== undefined;
-  const activeRecommendation =
-    currentFormId && currentFormId !== null
-      ? (recommendations.find(
-          (recommendation) => recommendation.id === currentFormId
-        ) ?? null)
-      : null;
-  const selectedRecommendation = selectedId
-    ? (recommendations.find(
-        (recommendation) => recommendation.id === selectedId
-      ) ?? null)
+
+  const selectedItem = selectedId
+    ? (combinedItems.find((item) => item.id === selectedId) ?? null)
     : null;
 
   useEffect(() => {
@@ -125,7 +173,11 @@ const LeaderRecommendations = () => {
     }
 
     if (currentFormId === null) {
-      setForm(emptyForm);
+      setForm({
+        ...emptyForm,
+        stake: currentUser?.stake || '',
+        ward: '',
+      });
       setErrors({});
       setFormError('');
       setEditingOriginStatus(null);
@@ -152,7 +204,7 @@ const LeaderRecommendations = () => {
     } else {
       setCurrentFormId(undefined);
     }
-  }, [currentFormId, recommendations]);
+  }, [currentFormId, recommendations, currentUser]);
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
@@ -162,6 +214,30 @@ const LeaderRecommendations = () => {
     setCurrentFormId(null);
     setSelectedId(null);
     setFeedback('');
+  };
+
+  const handleRecommendApplicant = (application) => {
+    if (!leaderId) {
+      return;
+    }
+    submitLeaderRecommendation(leaderId, {
+      id: null,
+      status: 'submitted',
+      name: application.name,
+      age: application.age ?? null,
+      email: application.email,
+      phone: application.phone,
+      gender: application.gender ?? '',
+      stake: application.stake,
+      ward: application.ward,
+      moreInfo: application.moreInfo ?? '',
+    })
+      .then(() => {
+        setFeedback(`${application.name} has been recommended for review.`);
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to recommend applicant.');
+      });
   };
 
   const handleSelect = (recommendationId) => {
@@ -218,9 +294,6 @@ const LeaderRecommendations = () => {
     if (!trimmedWard) {
       nextErrors.ward = 'Ward is required.';
     }
-    if (!normalizedGender) {
-      nextErrors.gender = 'Select male or female.';
-    }
 
     return {
       nextErrors,
@@ -267,18 +340,34 @@ const LeaderRecommendations = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
-    });
-
-    setFeedback(
-      status === 'submitted'
-        ? 'Recommendation submitted for review.'
-        : 'Draft saved successfully.'
-    );
-    setCurrentFormId(undefined);
+    })
+      .then(() => {
+        setFeedback(
+          status === 'submitted'
+            ? 'Recommendation submitted for review.'
+            : 'Draft saved successfully.'
+        );
+        setCurrentFormId(undefined);
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to save recommendation.');
+      });
   };
 
   const handleDelete = (recommendationId) => {
     if (!leaderId) {
+      return;
+    }
+    const recommendation = recommendations.find(
+      (item) => item.id === recommendationId
+    );
+    if (!recommendation) {
+      return;
+    }
+    if (
+      recommendation.status === 'approved' ||
+      recommendation.status === 'rejected'
+    ) {
       return;
     }
     const confirmed = window.confirm(
@@ -287,14 +376,19 @@ const LeaderRecommendations = () => {
     if (!confirmed) {
       return;
     }
-    deleteLeaderRecommendation(leaderId, recommendationId);
-    setFeedback('Recommendation removed.');
-    if (currentFormId === recommendationId) {
-      setCurrentFormId(undefined);
-    }
-    if (selectedId === recommendationId) {
-      setSelectedId(null);
-    }
+    deleteLeaderRecommendation(leaderId, recommendationId)
+      .then(() => {
+        setFeedback('Recommendation removed.');
+        if (currentFormId === recommendationId) {
+          setCurrentFormId(undefined);
+        }
+        if (selectedId === recommendationId) {
+          setSelectedId(null);
+        }
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to delete recommendation.');
+      });
   };
 
   const handleQuickSubmit = (recommendationId) => {
@@ -318,9 +412,14 @@ const LeaderRecommendations = () => {
       stake: recommendation.stake,
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
-    });
-    setFeedback('Recommendation submitted for review.');
-    setSelectedId(recommendationId);
+    })
+      .then(() => {
+        setFeedback('Recommendation submitted for review.');
+        setSelectedId(recommendationId);
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to submit recommendation.');
+      });
   };
 
   const handleCancelSubmission = (recommendationId) => {
@@ -331,6 +430,12 @@ const LeaderRecommendations = () => {
       (item) => item.id === recommendationId
     );
     if (!recommendation) {
+      return;
+    }
+    if (
+      recommendation.status === 'approved' ||
+      recommendation.status === 'rejected'
+    ) {
       return;
     }
     const confirmed = window.confirm(
@@ -350,9 +455,14 @@ const LeaderRecommendations = () => {
       stake: recommendation.stake,
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
-    });
-    setFeedback('Submission cancelled. The recommendation is now a draft.');
-    setSelectedId(recommendationId);
+    })
+      .then(() => {
+        setFeedback('Recommendation moved back to draft.');
+        setSelectedId(recommendationId);
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to cancel submission.');
+      });
   };
 
   const handleModify = (recommendationId) => {
@@ -360,6 +470,23 @@ const LeaderRecommendations = () => {
       (item) => item.id === recommendationId
     );
     if (!recommendation || !leaderId) {
+      return;
+    }
+
+    console.log(
+      '[DEBUG] handleModify - recommendation.status:',
+      recommendation.status,
+      'type:',
+      typeof recommendation.status
+    );
+
+    if (
+      recommendation.status === 'approved' ||
+      recommendation.status === 'rejected'
+    ) {
+      console.log(
+        '[DEBUG] handleModify - BLOCKED: status is approved or rejected'
+      );
       return;
     }
 
@@ -373,31 +500,54 @@ const LeaderRecommendations = () => {
     setEditingOriginStatus(null);
   };
 
-  const renderListItem = (recommendation) => {
-    const isSelected = selectedId === recommendation.id;
-    const isActive = currentFormId === recommendation.id;
+  const renderListItem = (item) => {
+    const isSelected = selectedId === item.id;
+    const isActive = currentFormId === item.id;
     const listItemClassName = classNames(
       'review__list-item',
       (isSelected || isActive) && 'review__list-item--active'
     );
 
+    const dateToShow = item.updatedAt || item.createdAt;
+
     return (
       <button
         type='button'
         className={listItemClassName}
-        onClick={() => handleSelect(recommendation.id)}
+        onClick={() => handleSelect(item.id)}
         aria-current={isSelected ? 'true' : 'false'}
       >
         <div className='review__list-top'>
-          <span className='review__list-name'>{recommendation.name}</span>
-          <StatusChip status={recommendation.status} />
+          <span className='review__list-name'>{item.name}</span>
+          {item.isApplication ? (
+            <StatusChip status={item.status || 'awaiting'} />
+          ) : (
+            <StatusChip status={item.status} />
+          )}
         </div>
         <div className='review__list-bottom'>
-          <span className='review__list-meta'>{recommendation.stake}</span>
-          <span className='review__list-meta'>{recommendation.ward}</span>
+          <span className='review__list-meta'>{item.stake}</span>
+          <span className='review__list-meta'>{item.ward}</span>
           <span className='review__list-meta review__list-date'>
-            {new Date(recommendation.updatedAt).toLocaleDateString()}
+            {new Date(dateToShow).toLocaleDateString()}
           </span>
+          <div className='review__list-tags'>
+            {!item.isApplication && (
+              <span className='review__list-tag review__list-tag--recommendation'>
+                Recommended
+              </span>
+            )}
+            {item.isApplication && (
+              <span className='review__list-tag review__list-tag--application'>
+                Applied
+              </span>
+            )}
+            {!item.isApplication && item.hasApplication && (
+              <span className='review__list-tag review__list-tag--application'>
+                Applied
+              </span>
+            )}
+          </div>
         </div>
       </button>
     );
@@ -470,6 +620,7 @@ const LeaderRecommendations = () => {
           onChange={handleFormChange}
           required
           error={errors.stake}
+          disabled
         />
         <TextField
           name='ward'
@@ -481,9 +632,10 @@ const LeaderRecommendations = () => {
         />
         <ComboBox
           name='gender'
-          label='Gender'
+          label='Gender (optional)'
           value={form.gender}
           onChange={handleFormChange}
+          showRequiredIndicator={false}
           error={errors.gender}
           options={genderOptions}
           variant='input'
@@ -541,88 +693,162 @@ const LeaderRecommendations = () => {
       );
     }
 
-    if (selectedRecommendation) {
-      const updatedLabel = `Updated ${new Date(selectedRecommendation.updatedAt).toLocaleString()}`;
+    if (selectedItem) {
+      if (selectedItem.isApplication) {
+        return (
+          <div className='review__details-card'>
+            <header className='review__details-header'>
+              <div className='review__details-info'>
+                <div className='review__details-heading'>
+                  <h2>{selectedItem.name}</h2>
+                </div>
+                <p className='review__details-meta'>
+                  Application submitted{' '}
+                  {new Date(selectedItem.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <StatusChip status={selectedItem.status || 'awaiting'} />
+            </header>
+            <dl className='review__grid'>
+              <div>
+                <dt>Email</dt>
+                <dd>{selectedItem.email}</dd>
+              </div>
+              <div>
+                <dt>Phone</dt>
+                <dd>{selectedItem.phone}</dd>
+              </div>
+              <div>
+                <dt>Age</dt>
+                <dd>{selectedItem.age ?? 'N/A'}</dd>
+              </div>
+              <div>
+                <dt>Stake</dt>
+                <dd>{selectedItem.stake}</dd>
+              </div>
+              <div>
+                <dt>Ward</dt>
+                <dd>{selectedItem.ward}</dd>
+              </div>
+              <div>
+                <dt>Gender</dt>
+                <dd>{selectedItem.gender ?? 'N/A'}</dd>
+              </div>
+            </dl>
+            <div className='leader-recommendations__detail-actions'>
+              <Button
+                type='button'
+                variant='primary'
+                onClick={() => handleRecommendApplicant(selectedItem)}
+                className='leader-recommendations__btn'
+              >
+                Recommend
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      const updatedLabel = `Updated ${new Date(selectedItem.updatedAt).toLocaleString()}`;
+      const canModify = selectedItem.canEdit && selectedItem.canDelete;
+
       return (
         <div className='review__details-card'>
           <header className='review__details-header'>
             <div className='review__details-info'>
               <div className='review__details-heading'>
-                <h2>{selectedRecommendation.name}</h2>
+                <h2>{selectedItem.name}</h2>
+                <div className='review__details-tags'>
+                  <span className='review__details-tag review__details-tag--recommendation'>
+                    Recommended
+                  </span>
+                  {selectedItem.hasApplication && (
+                    <span className='review__details-tag review__details-tag--application'>
+                      Applied
+                    </span>
+                  )}
+                </div>
               </div>
               <p className='review__details-meta'>{updatedLabel}</p>
             </div>
-            <StatusChip status={selectedRecommendation.status} />
+            {selectedItem.status && <StatusChip status={selectedItem.status} />}
           </header>
           <dl className='review__grid'>
             <div>
               <dt>Email</dt>
-              <dd>{selectedRecommendation.email}</dd>
+              <dd>{selectedItem.email}</dd>
             </div>
             <div>
               <dt>Phone</dt>
-              <dd>{selectedRecommendation.phone}</dd>
+              <dd>{selectedItem.phone}</dd>
             </div>
             <div>
               <dt>Age</dt>
-              <dd>{selectedRecommendation.age ?? 'N/A'}</dd>
+              <dd>{selectedItem.age ?? 'N/A'}</dd>
             </div>
             <div>
               <dt>Stake</dt>
-              <dd>{selectedRecommendation.stake}</dd>
+              <dd>{selectedItem.stake}</dd>
             </div>
             <div>
               <dt>Ward</dt>
-              <dd>{selectedRecommendation.ward}</dd>
+              <dd>{selectedItem.ward}</dd>
             </div>
             <div>
               <dt>Gender</dt>
-              <dd>{selectedRecommendation.gender ?? 'N/A'}</dd>
+              <dd>{selectedItem.gender ?? 'N/A'}</dd>
             </div>
           </dl>
           <div className='review__notes'>
             <h3>Additional Information</h3>
             <p>
-              {selectedRecommendation.moreInfo ||
-                'No additional information provided.'}
+              {selectedItem.moreInfo || 'No additional information provided.'}
             </p>
           </div>
           <div className='leader-recommendations__detail-actions'>
-            <Button
-              type='button'
-              onClick={() => handleModify(selectedRecommendation.id)}
-              className='leader-recommendations__btn'
-            >
-              Modify
-            </Button>
-            {selectedRecommendation.status === 'draft' ? (
-              <Button
-                type='button'
-                variant='primary'
-                onClick={() => handleQuickSubmit(selectedRecommendation.id)}
-                className='leader-recommendations__btn'
-              >
-                Submit
-              </Button>
-            ) : (
-              <Button
-                type='button'
-                onClick={() =>
-                  handleCancelSubmission(selectedRecommendation.id)
-                }
-                className='leader-recommendations__btn'
-              >
-                Cancel Submission
-              </Button>
+            {canModify && (
+              <>
+                <Button
+                  type='button'
+                  onClick={() => handleModify(selectedItem.id)}
+                  className='leader-recommendations__btn'
+                >
+                  Modify
+                </Button>
+                {selectedItem.status === 'draft' ? (
+                  <Button
+                    type='button'
+                    variant='primary'
+                    onClick={() => handleQuickSubmit(selectedItem.id)}
+                    className='leader-recommendations__btn'
+                  >
+                    Submit
+                  </Button>
+                ) : (
+                  <Button
+                    type='button'
+                    onClick={() => handleCancelSubmission(selectedItem.id)}
+                    className='leader-recommendations__btn'
+                  >
+                    Cancel Submission
+                  </Button>
+                )}
+                <Button
+                  type='button'
+                  variant='danger'
+                  onClick={() => handleDelete(selectedItem.id)}
+                  className='leader-recommendations__btn'
+                >
+                  Delete
+                </Button>
+              </>
             )}
-            <Button
-              type='button'
-              variant='danger'
-              onClick={() => handleDelete(selectedRecommendation.id)}
-              className='leader-recommendations__btn'
-            >
-              Delete
-            </Button>
+            {!canModify && (
+              <p className='leader-recommendations__locked-message'>
+                This recommendation has been reviewed and is now locked. You can
+                no longer modify or delete it.
+              </p>
+            )}
           </div>
         </div>
       );
@@ -635,11 +861,68 @@ const LeaderRecommendations = () => {
     );
   };
 
-  const renderMobileCard = (recommendation) => {
-    const isEditingThis = currentFormId === recommendation.id;
+  const renderMobileCard = (item) => {
+    if (item.isApplication) {
+      return (
+        <article
+          key={item.id}
+          className='review-card leader-recommendations__mobile-card'
+        >
+          <div className='review-card__header'>
+            <div>
+              <h2>{item.name}</h2>
+              <p className='review-card__meta'>
+                Submitted {new Date(item.createdAt).toLocaleString()}
+              </p>
+            </div>
+            <StatusChip status={item.status || 'awaiting'} />
+          </div>
+          <dl className='review-card__grid'>
+            <div>
+              <dt>Email</dt>
+              <dd>{item.email}</dd>
+            </div>
+            <div>
+              <dt>Phone</dt>
+              <dd>{item.phone}</dd>
+            </div>
+            <div>
+              <dt>Age</dt>
+              <dd>{item.age ?? 'N/A'}</dd>
+            </div>
+            <div>
+              <dt>Stake</dt>
+              <dd>{item.stake}</dd>
+            </div>
+            <div>
+              <dt>Ward</dt>
+              <dd>{item.ward}</dd>
+            </div>
+            <div>
+              <dt>Gender</dt>
+              <dd>{item.gender ?? 'N/A'}</dd>
+            </div>
+          </dl>
+          <div className='leader-recommendations__card-actions'>
+              <Button
+                type='button'
+                variant='primary'
+                onClick={() => handleRecommendApplicant(item)}
+                className='leader-recommendations__btn'
+              >
+                Recommend
+              </Button>
+          </div>
+        </article>
+      );
+    }
+
+    const isEditingThis = currentFormId === item.id;
+    const isLocked = item.status === 'approved' || item.status === 'rejected';
+
     return (
       <article
-        key={recommendation.id}
+        key={item.id}
         className={classNames(
           'review-card',
           'leader-recommendations__mobile-card',
@@ -648,82 +931,99 @@ const LeaderRecommendations = () => {
       >
         <div className='review-card__header'>
           <div>
-            <h2>{recommendation.name}</h2>
+            <h2>{item.name}</h2>
             <p className='review-card__meta'>
-              Updated {new Date(recommendation.updatedAt).toLocaleString()}
+              Updated {new Date(item.updatedAt).toLocaleString()}
             </p>
           </div>
-          <StatusChip status={recommendation.status} />
+          <StatusChip status={item.status} />
+        </div>
+        <div className='review-card__tags'>
+          <span className='review-card__tag review-card__tag--recommendation'>
+            Recommended
+          </span>
+          {item.hasApplication && (
+            <span className='review-card__tag review-card__tag--application'>
+              Applied
+            </span>
+          )}
         </div>
         <dl className='review-card__grid'>
           <div>
             <dt>Email</dt>
-            <dd>{recommendation.email}</dd>
+            <dd>{item.email}</dd>
           </div>
           <div>
             <dt>Phone</dt>
-            <dd>{recommendation.phone}</dd>
+            <dd>{item.phone}</dd>
           </div>
           <div>
             <dt>Age</dt>
-            <dd>{recommendation.age ?? 'N/A'}</dd>
+            <dd>{item.age ?? 'N/A'}</dd>
           </div>
           <div>
             <dt>Stake</dt>
-            <dd>{recommendation.stake}</dd>
+            <dd>{item.stake}</dd>
           </div>
           <div>
             <dt>Ward</dt>
-            <dd>{recommendation.ward}</dd>
+            <dd>{item.ward}</dd>
           </div>
           <div>
             <dt>Gender</dt>
-            <dd>{recommendation.gender ?? 'N/A'}</dd>
+            <dd>{item.gender ?? 'N/A'}</dd>
           </div>
         </dl>
         <div className='review-card__notes'>
           <h3>Additional Information</h3>
-          <p>
-            {recommendation.moreInfo || 'No additional information provided.'}
-          </p>
+          <p>{item.moreInfo || 'No additional information provided.'}</p>
         </div>
         <div className='leader-recommendations__card-actions'>
-          <Button
-            type='button'
-            onClick={() => handleModify(recommendation.id)}
-            className='leader-recommendations__btn'
-          >
-            Modify
-          </Button>
-          {recommendation.status === 'draft' ? (
-            <Button
-              type='button'
-              variant='primary'
-              onClick={() => handleQuickSubmit(recommendation.id)}
-              className='leader-recommendations__btn'
-            >
-              Submit
-            </Button>
+          {item.canEdit && item.canDelete ? (
+            <>
+              <Button
+                type='button'
+                onClick={() => handleModify(item.id)}
+                className='leader-recommendations__btn'
+              >
+                Modify
+              </Button>
+              {item.status === 'draft' ? (
+                <Button
+                  type='button'
+                  variant='primary'
+                  onClick={() => handleQuickSubmit(item.id)}
+                  className='leader-recommendations__btn'
+                >
+                  Submit
+                </Button>
+              ) : (
+                <Button
+                  type='button'
+                  onClick={() => handleCancelSubmission(item.id)}
+                  className='leader-recommendations__btn'
+                >
+                  Cancel Submission
+                </Button>
+              )}
+              <Button
+                type='button'
+                variant='danger'
+                onClick={() => handleDelete(item.id)}
+                className='leader-recommendations__btn'
+              >
+                Delete
+              </Button>
+            </>
           ) : (
-            <Button
-              type='button'
-              onClick={() => handleCancelSubmission(recommendation.id)}
-              className='leader-recommendations__btn'
-            >
-              Cancel Submission
-            </Button>
+            <p className='leader-recommendations__locked-message'>
+              This recommendation has been reviewed and is now locked. You can
+              no longer modify or delete it.
+            </p>
           )}
-          <Button
-            type='button'
-            variant='danger'
-            onClick={() => handleDelete(recommendation.id)}
-            className='leader-recommendations__btn'
-          >
-            Delete
-          </Button>
         </div>
         {isEditingThis && (
-          <p className='leader-recommendations__mobile-editing-note'>
+          <p className='leader-recommendations__editing-banner'>
             Editing this recommendation above. Submit or save your changes when
             ready.
           </p>
@@ -760,8 +1060,8 @@ const LeaderRecommendations = () => {
         badgeClassName='review__tab-pill'
         ariaLabel='Recommendation status filters'
         getBadge={(tab) =>
-          recommendations.filter((recommendation) =>
-            tab.id === 'all' ? true : recommendation.status === tab.id
+          combinedItems.filter((item) =>
+            tab.id === 'all' ? true : !item.isApplication && item.status === tab.id
           ).length
         }
       />
@@ -798,9 +1098,7 @@ const LeaderRecommendations = () => {
           </article>
         )}
         {filteredRecommendations.length ? (
-          filteredRecommendations.map((recommendation) =>
-            renderMobileCard(recommendation)
-          )
+          filteredRecommendations.map((item) => renderMobileCard(item))
         ) : (
           <p className='review__empty'>No recommendations in this view yet.</p>
         )}

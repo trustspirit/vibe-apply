@@ -15,6 +15,7 @@ import {
   JwtPayload,
   RefreshTokenDto,
   GoogleOAuthDto,
+  UpdateUserProfileDto,
 } from '@vibe-apply/shared';
 
 /**
@@ -71,6 +72,7 @@ export class AuthService {
         leaderStatus: null,
         ward: '',
         stake: '',
+        phone: undefined,
         createdAt: new Date().toISOString(),
       };
 
@@ -138,6 +140,7 @@ export class AuthService {
         createdAt: userData.createdAt as string,
         ward: (userData.ward as string) || '',
         stake: (userData.stake as string) || '',
+        phone: (userData.phone as string) || undefined,
       };
 
       const tokens = this.generateTokens(user);
@@ -180,6 +183,7 @@ export class AuthService {
       createdAt: userData.createdAt as string,
       ward: (userData.ward as string) || '',
       stake: (userData.stake as string) || '',
+      phone: (userData.phone as string) || undefined,
     };
   }
 
@@ -246,6 +250,7 @@ export class AuthService {
         createdAt: data.createdAt as string,
         ward: (data.ward as string) || '',
         stake: (data.stake as string) || '',
+        phone: (data.phone as string) || undefined,
       };
     });
   }
@@ -305,6 +310,7 @@ export class AuthService {
         leaderStatus: null,
         ward: '',
         stake: '',
+        phone: undefined,
         createdAt: new Date().toISOString(),
       };
 
@@ -332,5 +338,97 @@ export class AuthService {
         user: userWithoutPassword,
       };
     }
+  }
+
+  async updateUserProfile(
+    uid: string,
+    updateUserProfileDto: UpdateUserProfileDto,
+  ): Promise<User> {
+    const user = await this.getUser(uid);
+    const oldWard = user.ward;
+    const oldStake = user.stake;
+    const oldPhone: string = (user.phone as string | undefined) || '';
+
+    const updateData: Record<string, string> = {};
+
+    const ward = (updateUserProfileDto as Record<string, any>).ward as
+      | string
+      | undefined;
+    const stake = (updateUserProfileDto as Record<string, any>).stake as
+      | string
+      | undefined;
+    const phone = (updateUserProfileDto as Record<string, any>).phone as
+      | string
+      | undefined;
+
+    if (ward !== undefined) {
+      updateData.ward = ward;
+    }
+
+    if (stake !== undefined) {
+      updateData.stake = stake;
+    }
+
+    if (phone !== undefined) {
+      updateData.phone = phone;
+    }
+
+    await this.firebaseService
+      .getFirestore()
+      .collection('users')
+      .doc(uid)
+      .update(updateData);
+
+    const wardChanged = ward !== undefined && ward !== oldWard;
+    const stakeChanged = stake !== undefined && stake !== oldStake;
+    const phoneChanged = phone !== undefined && phone !== oldPhone;
+
+    if (wardChanged || stakeChanged || phoneChanged) {
+      const applicationsSnapshot = await this.firebaseService
+        .getFirestore()
+        .collection('applications')
+        .where('userId', '==', uid)
+        .get();
+
+      const appUpdatePromises = applicationsSnapshot.docs.map(async (doc) => {
+        const appUpdateData: Record<string, string> = {};
+        if (wardChanged && ward !== undefined) {
+          appUpdateData.ward = ward;
+        }
+        if (stakeChanged && stake !== undefined) {
+          appUpdateData.stake = stake;
+        }
+        if (phoneChanged && phone !== undefined) {
+          appUpdateData.phone = phone;
+        }
+        await doc.ref.update(appUpdateData);
+      });
+
+      const recommendationsSnapshot = await this.firebaseService
+        .getFirestore()
+        .collection('recommendations')
+        .where('leaderId', '==', uid)
+        .get();
+
+      const recUpdatePromises = recommendationsSnapshot.docs.map(
+        async (doc) => {
+          const recUpdateData: Record<string, string> = {};
+          if (wardChanged && ward !== undefined) {
+            recUpdateData.ward = ward;
+          }
+          if (stakeChanged && stake !== undefined) {
+            recUpdateData.stake = stake;
+          }
+          if (phoneChanged && phone !== undefined) {
+            recUpdateData.phone = phone;
+          }
+          await doc.ref.update(recUpdateData);
+        },
+      );
+
+      await Promise.all([...appUpdatePromises, ...recUpdatePromises]);
+    }
+
+    return this.getUser(uid);
   }
 }

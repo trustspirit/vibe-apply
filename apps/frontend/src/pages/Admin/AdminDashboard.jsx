@@ -27,20 +27,31 @@ const GENDER_COLORS = {
 };
 
 const AdminDashboard = () => {
-  const { applications } = useApp();
+  const { applications, leaderRecommendations } = useApp();
   const navigate = useNavigate();
 
   const { totals, weeklyTrend, genderSplit, stakeWardCounts } = useMemo(() => {
+    const submittedRecommendations = leaderRecommendations.filter(
+      (rec) => rec.status === 'submitted'
+    );
     const totalApplications = applications.length;
-    const awaitingCount = applications.filter((app) => app.status === 'awaiting').length;
+    const awaitingApplications = applications.filter((app) => app.status === 'awaiting').length;
+    const awaitingRecommendations = submittedRecommendations.length;
+    const awaitingCount = awaitingApplications + awaitingRecommendations;
     const approvedCount = applications.filter((app) => app.status === 'approved').length;
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
-    const todaysCount = applications.filter((app) => {
+    const todaysApplications = applications.filter((app) => {
       const created = new Date(app.createdAt);
       created.setHours(0, 0, 0, 0);
       return created.getTime() === todayDate.getTime();
     }).length;
+    const todaysRecommendations = submittedRecommendations.filter((rec) => {
+      const created = new Date(rec.createdAt);
+      created.setHours(0, 0, 0, 0);
+      return created.getTime() === todayDate.getTime();
+    }).length;
+    const todaysCount = todaysApplications + todaysRecommendations;
 
     const days = Array.from({ length: 7 }).map((_, index) => {
       const date = new Date();
@@ -54,18 +65,27 @@ const AdminDashboard = () => {
         month: 'short',
         day: 'numeric',
       });
-      const count = applications.filter((app) => {
+      const appCount = applications.filter((app) => {
         const created = new Date(app.createdAt);
         created.setHours(0, 0, 0, 0);
         return created.getTime() === date.getTime();
       }).length;
-      return { day: dayLabel, applications: count };
+      const recCount = submittedRecommendations.filter((rec) => {
+        const created = new Date(rec.createdAt);
+        created.setHours(0, 0, 0, 0);
+        return created.getTime() === date.getTime();
+      }).length;
+      return { 
+        day: dayLabel, 
+        applications: appCount,
+        recommendations: recCount,
+      };
     });
 
-    const genderCounts = applications.reduce(
-      (acc, app) => {
+    const genderCounts = [...applications, ...submittedRecommendations].reduce(
+      (acc, item) => {
         const key =
-          app.gender && ['male', 'female'].includes(app.gender) ? app.gender : 'other';
+          item.gender && ['male', 'female'].includes(item.gender) ? item.gender : 'other';
         acc[key] += 1;
         return acc;
       },
@@ -76,23 +96,30 @@ const AdminDashboard = () => {
       .filter(([, value]) => value > 0)
       .map(([key, value]) => ({ name: key, value }));
 
-    const stakeWardMap = applications.reduce((acc, app) => {
-      const stakeKey = app.stake ?? 'Unknown Stake';
-      const wardKey = app.ward ?? 'Unknown Ward';
+    const stakeWardMap = [...applications, ...submittedRecommendations].reduce((acc, item) => {
+      const stakeKey = item.stake ?? 'Unknown Stake';
+      const wardKey = item.ward ?? 'Unknown Ward';
       const composedKey = `${stakeKey} | ${wardKey}`;
-      acc[composedKey] = (acc[composedKey] ?? 0) + 1;
+      if (!acc[composedKey]) {
+        acc[composedKey] = { applications: 0, recommendations: 0 };
+      }
+      if (applications.includes(item)) {
+        acc[composedKey].applications += 1;
+      } else {
+        acc[composedKey].recommendations += 1;
+      }
       return acc;
     }, {});
 
-    const stakeWardData = Object.entries(stakeWardMap).map(([key, value]) => {
+    const stakeWardData = Object.entries(stakeWardMap).map(([key, counts]) => {
       const [stake, ward] = key.split(' | ');
-      // Create shorter labels for better display
       const shortStake = stake.replace(' Stake', '');
       const shortWard = ward.replace(' Ward', '');
       return { 
         label: `${shortStake}\n${shortWard}`, 
         fullLabel: `${stake} - ${ward}`,
-        applications: value 
+        applications: counts.applications,
+        recommendations: counts.recommendations,
       };
     });
 
@@ -100,6 +127,8 @@ const AdminDashboard = () => {
       totals: {
         totalApplications,
         awaitingCount,
+        awaitingApplications,
+        awaitingRecommendations,
         approvedCount,
         todaysCount,
       },
@@ -107,7 +136,7 @@ const AdminDashboard = () => {
       genderSplit: genderSplitData,
       stakeWardCounts: stakeWardData,
     };
-  }, [applications]);
+  }, [applications, leaderRecommendations]);
 
   const pieData = genderSplit.length ? genderSplit : [{ name: 'No Data', value: 1 }];
 
@@ -152,7 +181,7 @@ const AdminDashboard = () => {
             <span className='summary-card__label'>Awaiting</span>
             <span className='summary-card__value'>{totals.awaitingCount}</span>
           </div>
-          <span className='summary-card__spark'>Needs action</span>
+          <span className='summary-card__spark'>{totals.awaitingApplications} apps, {totals.awaitingRecommendations} recs</span>
         </button>
         <button
           type='button'
@@ -196,12 +225,22 @@ const AdminDashboard = () => {
                 <XAxis dataKey='day' stroke='#4b5563' />
                 <YAxis allowDecimals={false} stroke='#4b5563' />
                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                <Legend />
                 <Line
                   type='monotone'
                   dataKey='applications'
                   stroke='#2563eb'
                   strokeWidth={3}
                   dot={{ r: 4 }}
+                  name='Applications'
+                />
+                <Line
+                  type='monotone'
+                  dataKey='recommendations'
+                  stroke='#10b981'
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  name='Recommendations'
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -261,7 +300,8 @@ const AdminDashboard = () => {
               <YAxis allowDecimals={false} stroke='#4b5563' />
               <Tooltip />
               <Legend />
-              <Bar dataKey='applications' fill='#34d399' name='Applications' />
+              <Bar dataKey='applications' fill='#2563eb' name='Applications' />
+              <Bar dataKey='recommendations' fill='#10b981' name='Recommendations' />
             </BarChart>
           </ResponsiveContainer>
         </div>

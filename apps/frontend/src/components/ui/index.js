@@ -1,3 +1,4 @@
+export { default as Avatar } from './Avatar.jsx';
 export { default as Button } from './Button.jsx';
 export { default as ComboBox } from './ComboBox.jsx';
 export { default as MenuButton } from './MenuButton.jsx';

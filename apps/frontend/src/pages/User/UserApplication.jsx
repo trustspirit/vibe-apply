@@ -31,14 +31,10 @@ const UserApplication = () => {
     [applications, currentUser?.id]
   );
 
-  const isEditable =
-    !existingApplication ||
-    !['approved', 'rejected'].includes(existingApplication.status);
+  const isEditable = !existingApplication || (existingApplication.canEdit && existingApplication.canDelete);
 
   const [form, setForm] = useState(emptyForm);
-  const [isEditing, setIsEditing] = useState(
-    () => !existingApplication || existingApplication.status === 'draft'
-  );
+  const [isEditing, setIsEditing] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [formError, setFormError] = useState('');
   const [errors, setErrors] = useState({});
@@ -59,12 +55,16 @@ const UserApplication = () => {
         ward: existingApplication.ward,
         moreInfo: existingApplication.moreInfo ?? '',
       });
+      setIsEditing(existingApplication.status === 'draft');
     } else if (currentUser) {
       setForm((prev) => ({
         ...prev,
         name: currentUser.name,
         email: currentUser.email,
+        stake: currentUser.stake || '',
+        ward: currentUser.ward || '',
       }));
+      setIsEditing(true);
     }
   }, [existingApplication, currentUser]);
 
@@ -178,11 +178,15 @@ const UserApplication = () => {
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
       status: 'awaiting',
-    });
-
-    setErrors({});
-    setFeedback('Your application has been submitted and is awaiting review.');
-    setIsEditing(false);
+    })
+      .then(() => {
+        setErrors({});
+        setFeedback('Your application has been submitted and is awaiting review.');
+        setIsEditing(false);
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to submit application.');
+      });
   };
 
   const handleSaveDraft = () => {
@@ -207,11 +211,15 @@ const UserApplication = () => {
       ward: form.ward.trim(),
       moreInfo: form.moreInfo.trim(),
       status: 'draft',
-    });
-
-    setFeedback(
-      'Draft saved. You can return anytime to complete and submit your application.'
-    );
+    })
+      .then(() => {
+        setFeedback(
+          'Draft saved. You can return anytime to complete and submit your application.'
+        );
+      })
+      .catch((error) => {
+        setFormError(error.message || 'Failed to save draft.');
+      });
   };
 
   return (
@@ -246,26 +254,28 @@ const UserApplication = () => {
             </p>
           )}
           <dl>
-            <div>
-              <dt>Status</dt>
-              <dd>
-                {(() => {
-                  const display = STATUS_DISPLAY[
-                    existingApplication.status
-                  ] ?? {
-                    label: existingApplication.status,
-                    tone: existingApplication.status,
-                  };
-                  return (
-                    <StatusChip
-                      status={existingApplication.status}
-                      tone={display.tone}
-                      label={display.label}
-                    />
-                  );
-                })()}
-              </dd>
-            </div>
+            {existingApplication.status && (
+              <div>
+                <dt>Status</dt>
+                <dd>
+                  {(() => {
+                    const display = STATUS_DISPLAY[
+                      existingApplication.status
+                    ] ?? {
+                      label: existingApplication.status,
+                      tone: existingApplication.status,
+                    };
+                    return (
+                      <StatusChip
+                        status={existingApplication.status}
+                        tone={display.tone}
+                        label={display.label}
+                      />
+                    );
+                  })()}
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Name</dt>
               <dd>{existingApplication.name}</dd>
@@ -361,6 +371,7 @@ const UserApplication = () => {
               onChange={handleChange}
               required
               error={errors.stake}
+              disabled
             />
             <TextField
               name='ward'
@@ -369,6 +380,7 @@ const UserApplication = () => {
               onChange={handleChange}
               required
               error={errors.ward}
+              disabled
             />
             <ComboBox
               name='gender'

@@ -30,9 +30,8 @@
 
 .leader-dashboard__stats {
   display: grid;
-  grid-auto-flow: column;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1rem;
-  max-width: 32rem;
 }
 
 .leader-dashboard__stat-card {
@@ -85,7 +84,7 @@
 
 @media (max-width: 768px) {
   .leader-dashboard__stats {
-    grid-auto-flow: row;
+    grid-template-columns: 1fr;
   }
 
   .leader-dashboard__actions .btn {

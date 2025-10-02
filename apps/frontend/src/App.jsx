@@ -17,6 +17,7 @@ import SignUp from './pages/Auth/SignUp.jsx';
 import AuthCallback from './pages/Auth/AuthCallback.jsx';
 import CompleteProfile from './pages/Auth/CompleteProfile.jsx';
 import UserApplication from './pages/User/UserApplication.jsx';
+import AccountSettings from './pages/User/AccountSettings.jsx';
 import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
 import LeaderPending from './pages/Leader/LeaderPending.jsx';
 import LeaderRecommendations from './pages/Leader/LeaderRecommendations.jsx';
@@ -102,6 +103,10 @@ const App = () => {
               <UserApplication />
             </RequireUser>
           }
+        />
+        <Route
+          path={ROUTES.ACCOUNT_SETTINGS}
+          element={<AccountSettings />}
         />
         <Route
           path={ROUTES.LEADER_DASHBOARD}

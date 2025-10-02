@@ -23,4 +23,5 @@ export const ROUTES = {
   LEADER_RECOMMENDATIONS: '/leader/recommendations',
   LEADER_PENDING: '/leader/pending',
   APPLICATION: '/application',
+  ACCOUNT_SETTINGS: '/settings',
 };

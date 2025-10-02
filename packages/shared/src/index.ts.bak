@@ -37,7 +37,6 @@ export interface User {
   leaderStatus: LeaderStatus | null;
   ward: string;
   stake: string;
-  phone?: string;
   createdAt: string;
 }
 
@@ -149,9 +148,13 @@ export interface CompleteProfileDto {
 export interface UpdateUserProfileDto {
   ward?: string;
   stake?: string;
-  phone?: string;
 }
 
+export interface UpdateUserProfileDtoOld {
+  email?: string;
+  ward?: string;
+  stake?: string;
+}
 
 export interface UpdateLeaderStatusDto {
   leaderStatus: LeaderStatus;

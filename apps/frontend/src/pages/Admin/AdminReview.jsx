@@ -74,31 +74,74 @@ const AdminReview = () => {
     STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 
   const reviewItems = useMemo(() => {
-    const applicationItems = applications.map((app) => ({
-      key: `app-${app.id}`,
-      type: 'application',
-      entityId: app.id,
-      status: app.status,
-      rawStatus: app.status,
-      name: app.name,
-      email: app.email,
-      phone: app.phone,
-      age: app.age,
-      gender: app.gender,
-      stake: app.stake,
-      ward: app.ward,
-      moreInfo: app.moreInfo,
-      createdAt: app.createdAt,
-      updatedAt: app.updatedAt,
-    }));
+    const applicationById = new Map();
+    applications.forEach((app) => {
+      applicationById.set(app.id, app);
+    });
 
-    const recommendationItems = leaderRecommendations
-      .filter((recommendation) => recommendation.status !== 'draft')
-      .map((recommendation) => {
+    const recommendationById = new Map();
+    const recommendationsByLinkedAppId = new Map();
+    leaderRecommendations
+      .filter((rec) => rec.status !== 'draft')
+      .forEach((rec) => {
+        recommendationById.set(rec.id, rec);
+        if (rec.linkedApplicationId) {
+          recommendationsByLinkedAppId.set(rec.linkedApplicationId, rec);
+        }
+      });
+
+    const processedIds = new Set();
+    const items = [];
+
+    applications.forEach((app) => {
+      if (processedIds.has(app.id)) {
+        return;
+      }
+      processedIds.add(app.id);
+
+      const recommendation = recommendationsByLinkedAppId.get(app.id);
+      if (recommendation) {
+        processedIds.add(recommendation.id);
+      }
+      
+      items.push({
+        key: `app-${app.id}`,
+        type: 'application',
+        entityId: app.id,
+        status: app.status,
+        rawStatus: app.status,
+        name: app.name,
+        email: app.email,
+        phone: app.phone,
+        age: app.age,
+        gender: app.gender,
+        stake: app.stake,
+        ward: app.ward,
+        moreInfo: app.moreInfo,
+        createdAt: app.createdAt,
+        updatedAt: app.updatedAt,
+        hasRecommendation: !!recommendation,
+        recommendationId: recommendation?.id,
+      });
+    });
+
+    leaderRecommendations
+      .filter((rec) => rec.status !== 'draft')
+      .forEach((recommendation) => {
+        if (processedIds.has(recommendation.id)) {
+          return;
+        }
+        processedIds.add(recommendation.id);
+
         const mappedStatus = normalizeRecommendationStatus(
           recommendation.status
         );
-        return {
+        
+        const linkedApp = recommendation.linkedApplicationId 
+          ? applicationById.get(recommendation.linkedApplicationId) 
+          : null;
+        
+        items.push({
           key: `rec-${recommendation.id}`,
           type: 'recommendation',
           entityId: recommendation.id,
@@ -114,10 +157,12 @@ const AdminReview = () => {
           moreInfo: recommendation.moreInfo,
           createdAt: recommendation.createdAt,
           updatedAt: recommendation.updatedAt,
-        };
+          hasApplication: !!linkedApp,
+          applicationId: linkedApp?.id,
+        });
       });
 
-    return [...applicationItems, ...recommendationItems].sort(
+    return items.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
@@ -370,17 +415,28 @@ const AdminReview = () => {
                       <span className='review__list-meta review__list-date'>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
-                      <span
-                        className={
-                          item.type === 'recommendation'
-                            ? 'review__list-tag review__list-tag--recommendation'
-                            : 'review__list-tag review__list-tag--application'
-                        }
-                      >
-                        {item.type === 'recommendation'
-                          ? 'Recommended'
-                          : 'Applied'}
-                      </span>
+                      <div className='review__list-tags'>
+                        {item.type === 'application' && (
+                          <span className='review__list-tag review__list-tag--application'>
+                            Applied
+                          </span>
+                        )}
+                        {item.type === 'recommendation' && (
+                          <span className='review__list-tag review__list-tag--recommendation'>
+                            Recommended
+                          </span>
+                        )}
+                        {item.type === 'application' && item.hasRecommendation && (
+                          <span className='review__list-tag review__list-tag--recommendation'>
+                            Recommended
+                          </span>
+                        )}
+                        {item.type === 'recommendation' && item.hasApplication && (
+                          <span className='review__list-tag review__list-tag--application'>
+                            Applied
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </button>
                 </li>
@@ -398,17 +454,28 @@ const AdminReview = () => {
                 <div className='review__details-info'>
                   <div className='review__details-heading'>
                     <h2>{selectedItem.name}</h2>
-                    <span
-                      className={
-                        selectedItem.type === 'recommendation'
-                          ? 'review__details-tag review__details-tag--recommendation'
-                          : 'review__details-tag review__details-tag--application'
-                      }
-                    >
-                      {selectedItem.type === 'recommendation'
-                        ? 'Recommended'
-                        : 'Applied'}
-                    </span>
+                    <div className='review__details-tags'>
+                      {selectedItem.type === 'application' && (
+                        <span className='review__details-tag review__details-tag--application'>
+                          Applied
+                        </span>
+                      )}
+                      {selectedItem.type === 'recommendation' && (
+                        <span className='review__details-tag review__details-tag--recommendation'>
+                          Recommended
+                        </span>
+                      )}
+                      {selectedItem.type === 'application' && selectedItem.hasRecommendation && (
+                        <span className='review__details-tag review__details-tag--recommendation'>
+                          Recommended
+                        </span>
+                      )}
+                      {selectedItem.type === 'recommendation' && selectedItem.hasApplication && (
+                        <span className='review__details-tag review__details-tag--application'>
+                          Applied
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {selectedItem.type === 'recommendation' && (
                     <p className='review__details-origin'>
@@ -509,15 +576,26 @@ const AdminReview = () => {
               </div>
 
               <div className='review-card__tags'>
-                <span
-                  className={
-                    item.type === 'recommendation'
-                      ? 'review-card__tag review-card__tag--recommendation'
-                      : 'review-card__tag review-card__tag--application'
-                  }
-                >
-                  {item.type === 'recommendation' ? 'Recommended' : 'Applied'}
-                </span>
+                {item.type === 'application' && (
+                  <span className='review-card__tag review-card__tag--application'>
+                    Applied
+                  </span>
+                )}
+                {item.type === 'recommendation' && (
+                  <span className='review-card__tag review-card__tag--recommendation'>
+                    Recommended
+                  </span>
+                )}
+                {item.type === 'application' && item.hasRecommendation && (
+                  <span className='review-card__tag review-card__tag--recommendation'>
+                    Recommended
+                  </span>
+                )}
+                {item.type === 'recommendation' && item.hasApplication && (
+                  <span className='review-card__tag review-card__tag--application'>
+                    Applied
+                  </span>
+                )}
                 {item.type === 'recommendation' && (
                   <span className='review-card__source'>
                     Leader Recommendation

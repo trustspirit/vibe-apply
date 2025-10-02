@@ -64,6 +64,10 @@ export const authApi = {
   completeProfile: async (profileData) => {
     return api.put('/auth/profile/complete', profileData);
   },
+
+  updateProfile: async (profileData) => {
+    return api.put('/auth/profile', profileData);
+  },
 };
 
 // Users API
@@ -91,6 +95,10 @@ export const applicationsApi = {
     return api.get(`/applications/user/${userId}`);
   },
 
+  getMyApplication: async () => {
+    return api.get('/applications/my-application');
+  },
+
   submit: async (applicationData) => {
     return api.post('/applications', applicationData);
   },
@@ -112,6 +120,10 @@ export const recommendationsApi = {
 
   getByLeader: async (leaderId) => {
     return api.get(`/recommendations/leader/${leaderId}`);
+  },
+
+  getMyRecommendations: async () => {
+    return api.get('/recommendations/my-recommendations');
   },
 
   submit: async (recommendationData) => {
