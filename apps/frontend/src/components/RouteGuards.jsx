@@ -4,8 +4,12 @@ import { getDefaultPathForUser } from '../utils/navigation.js';
 import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants.js';
 
 export const RequireAuth = ({ children }) => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
   const location = useLocation();
+
+  if (isInitializing) {
+    return null;
+  }
 
   if (!currentUser) {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;

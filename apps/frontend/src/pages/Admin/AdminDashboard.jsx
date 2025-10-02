@@ -32,11 +32,13 @@ const AdminDashboard = () => {
 
   const { totals, weeklyTrend, genderSplit, stakeWardCounts } = useMemo(() => {
     const submittedRecommendations = leaderRecommendations.filter(
-      (rec) => rec.status === 'submitted'
+      (rec) => rec.status === 'submitted' || rec.status === 'approved' || rec.status === 'rejected'
     );
     const totalApplications = applications.length;
+    const totalRecommendations = submittedRecommendations.length;
+    const totalSubmissions = totalApplications + totalRecommendations;
     const awaitingApplications = applications.filter((app) => app.status === 'awaiting').length;
-    const awaitingRecommendations = submittedRecommendations.length;
+    const awaitingRecommendations = leaderRecommendations.filter((rec) => rec.status === 'submitted').length;
     const awaitingCount = awaitingApplications + awaitingRecommendations;
     const approvedCount = applications.filter((app) => app.status === 'approved').length;
     const todayDate = new Date();
@@ -126,6 +128,8 @@ const AdminDashboard = () => {
     return {
       totals: {
         totalApplications,
+        totalRecommendations,
+        totalSubmissions,
         awaitingCount,
         awaitingApplications,
         awaitingRecommendations,
@@ -163,10 +167,10 @@ const AdminDashboard = () => {
             <span>📥</span>
           </div>
           <div className='summary-card__content'>
-            <span className='summary-card__label'>Total Applications</span>
-            <span className='summary-card__value'>{totals.totalApplications}</span>
+            <span className='summary-card__label'>Total Submissions</span>
+            <span className='summary-card__value'>{totals.totalSubmissions}</span>
           </div>
-          <span className='summary-card__spark'>All time</span>
+          <span className='summary-card__spark'>{totals.totalApplications} apps, {totals.totalRecommendations} recs</span>
         </div>
         <button
           type='button'

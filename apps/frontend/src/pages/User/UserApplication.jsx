@@ -22,7 +22,7 @@ const STATUS_DISPLAY = {
 };
 
 const UserApplication = () => {
-  const { applications, currentUser, submitApplication } = useApp();
+  const { applications, currentUser, submitApplication, isInitializing, isLoadingApplications } = useApp();
   const existingApplication = useMemo(
     () =>
       applications.find(
@@ -40,6 +40,10 @@ const UserApplication = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    if (isInitializing || !currentUser) {
+      return;
+    }
+
     if (existingApplication) {
       setForm({
         name: existingApplication.name,
@@ -66,7 +70,7 @@ const UserApplication = () => {
       }));
       setIsEditing(true);
     }
-  }, [existingApplication, currentUser]);
+  }, [existingApplication, currentUser, isInitializing]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -224,18 +228,20 @@ const UserApplication = () => {
 
   return (
     <section className='application'>
-      <header className='application__header'>
-        <h1 className='application__title'>Application</h1>
-        <p className='application__subtitle'>
-          {existingApplication
-            ? existingApplication.status === 'draft'
-              ? 'Your draft is saved. Complete the required fields and submit when you are ready.'
-              : isEditable
-                ? 'You can update your submission while it is being reviewed.'
-                : 'Your submission is locked while a decision is finalized.'
-            : 'Start your application to be considered.'}
-        </p>
-      </header>
+      {(isInitializing || isLoadingApplications) ? null : (
+        <>
+          <header className='application__header'>
+            <h1 className='application__title'>Application</h1>
+            <p className='application__subtitle'>
+              {existingApplication
+                ? existingApplication.status === 'draft'
+                  ? 'Your draft is saved. Complete the required fields and submit when you are ready.'
+                  : isEditable
+                    ? 'You can update your submission while it is being reviewed.'
+                    : 'Your submission is locked while a decision is finalized.'
+                : 'Start your application to be considered.'}
+            </p>
+          </header>
 
       {formError && (
         <p className='application__feedback application__feedback--error'>
@@ -438,6 +444,8 @@ const UserApplication = () => {
             Start Application
           </Button>
         </div>
+      )}
+        </>
       )}
     </section>
   );

@@ -49,6 +49,8 @@ export const AppProvider = ({ children }) => {
   });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoadingApplications, setIsLoadingApplications] = useState(false);
 
   const currentUser = useMemo(
     () => state.users.find((user) => user.id === currentUserId) ?? null,
@@ -74,12 +76,15 @@ export const AppProvider = ({ children }) => {
           console.error('No valid session found:', error);
         } finally {
           setIsLoading(false);
+          setIsInitializing(false);
         }
+      } else {
+        setIsInitializing(false);
       }
     };
 
     initializeAuth();
-  }, [currentUserId]);
+  }, []);
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -149,6 +154,7 @@ export const AppProvider = ({ children }) => {
     const fetchUserApplication = async () => {
       if (currentUser?.role === USER_ROLES.APPLICANT && currentUser?.id) {
         try {
+          setIsLoadingApplications(true);
           const application = await applicationsApi.getMyApplication();
           setState((prev) => ({
             ...prev,
@@ -156,6 +162,8 @@ export const AppProvider = ({ children }) => {
           }));
         } catch (error) {
           console.warn('Failed to fetch applicant application:', error);
+        } finally {
+          setIsLoadingApplications(false);
         }
       }
     };
@@ -380,6 +388,8 @@ export const AppProvider = ({ children }) => {
       leaderRecommendations: state.leaderRecommendations,
       currentUser,
       isLoading,
+      isInitializing,
+      isLoadingApplications,
       signUp,
       signIn,
       signOut,
@@ -396,6 +406,8 @@ export const AppProvider = ({ children }) => {
       state,
       currentUser,
       isLoading,
+      isInitializing,
+      isLoadingApplications,
       signIn,
       signUp,
       signOut,
