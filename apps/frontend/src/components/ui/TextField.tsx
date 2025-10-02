@@ -1,7 +1,27 @@
-import { forwardRef } from 'react';
-import classNames from '../../utils/classNames.js';
+import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
+import classNames from '../../utils/classNames';
 
-const TextField = forwardRef(
+interface BaseTextFieldProps {
+  id?: string;
+  name?: string;
+  label?: string;
+  type?: string;
+  required?: boolean;
+  showRequiredIndicator?: boolean;
+  error?: string;
+  helperText?: ReactNode;
+  wrapperClassName?: string;
+  inputClassName?: string;
+  labelClassName?: string;
+  requiredClassName?: string;
+  multiline?: boolean;
+  rows?: number;
+}
+
+type TextFieldProps = BaseTextFieldProps &
+  (Omit<InputHTMLAttributes<HTMLInputElement>, keyof BaseTextFieldProps> | Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, keyof BaseTextFieldProps>);
+
+const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldProps>(
   (
     {
       id,
@@ -23,7 +43,7 @@ const TextField = forwardRef(
     ref
   ) => {
     const fieldId = id ?? name;
-    const describedBy = [];
+    const describedBy: string[] = [];
     if (helperText) {
       describedBy.push(`${fieldId}-helper`);
     }
@@ -31,14 +51,11 @@ const TextField = forwardRef(
       describedBy.push(`${fieldId}-error`);
     }
 
-    const { className: controlClassName, ...controlProps } = rest;
+    const { className: controlClassName, ...controlProps } = rest as Record<string, unknown>;
     const Control = multiline ? 'textarea' : 'input';
 
     return (
-      <label
-        className={classNames('form-control', wrapperClassName, error && 'field--error')}
-        htmlFor={fieldId}
-      >
+      <label className={classNames('form-control', wrapperClassName, error && 'field--error')} htmlFor={fieldId}>
         {label && (
           <span className={labelClassName}>
             {label}
@@ -50,17 +67,13 @@ const TextField = forwardRef(
           </span>
         )}
         <Control
-          {...controlProps}
+          {...(controlProps as any)}
           id={fieldId}
           name={name}
           type={multiline ? undefined : type}
-          ref={ref}
+          ref={ref as any}
           rows={multiline ? rows : undefined}
-          className={classNames(
-            controlClassName,
-            inputClassName,
-            error && 'input--error'
-          )}
+          className={classNames(controlClassName as string, inputClassName, error && 'input--error')}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy.length ? describedBy.join(' ') : undefined}
           required={required}

@@ -1,14 +1,22 @@
 import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Button, TextField } from '../../components/ui';
 import { authApi } from '../../services/api';
 import { USER_ROLES, LEADER_STATUS } from '../../utils/constants';
+import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import './AccountSettings.scss';
+
+interface AccountForm {
+  stake: string;
+  ward: string;
+  phone: string;
+}
 
 const AccountSettings = () => {
   const { currentUser, setUser } = useApp();
   
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<AccountForm>({
     stake: currentUser?.stake || '',
     ward: currentUser?.ward || '',
     phone: currentUser?.phone || '',
@@ -17,24 +25,24 @@ const AccountSettings = () => {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setError('');
     setSuccess('');
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setSuccess('');
     setIsSubmitting(true);
 
     try {
-      const updates = {};
-      if (form.stake !== currentUser.stake) updates.stake = form.stake;
-      if (form.ward !== currentUser.ward) updates.ward = form.ward;
-      if (form.phone !== currentUser.phone) updates.phone = form.phone;
+      const updates: Partial<AccountForm> = {};
+      if (form.stake !== currentUser?.stake) updates.stake = form.stake;
+      if (form.ward !== currentUser?.ward) updates.ward = form.ward;
+      if (form.phone !== currentUser?.phone) updates.phone = form.phone;
 
       if (Object.keys(updates).length === 0) {
         setError('No changes to save');
@@ -46,16 +54,16 @@ const AccountSettings = () => {
       setUser(updatedUser);
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const getRoleLabel = () => {
-    if (currentUser.role === USER_ROLES.ADMIN) return 'Administrator';
-    if (currentUser.role === USER_ROLES.LEADER) {
-      return currentUser.leaderStatus === LEADER_STATUS.APPROVED 
+    if (currentUser?.role === (USER_ROLES.ADMIN as UserRole)) return 'Administrator';
+    if (currentUser?.role === (USER_ROLES.LEADER as UserRole)) {
+      return currentUser?.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
         ? 'Leader (Approved)' 
         : 'Leader (Pending Approval)';
     }
@@ -150,7 +158,7 @@ const AccountSettings = () => {
                 <span className='account-settings__role-label'>Current Role</span>
                 <span className='account-settings__role-value'>{getRoleLabel()}</span>
               </div>
-              {currentUser.role === USER_ROLES.LEADER && currentUser.leaderStatus === LEADER_STATUS.PENDING && (
+              {currentUser.role === (USER_ROLES.LEADER as UserRole) && currentUser.leaderStatus === (LEADER_STATUS.PENDING as LeaderStatus) && (
                 <p className='account-settings__role-note'>
                   Your leader access is pending approval by an administrator.
                 </p>

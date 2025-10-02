@@ -15,16 +15,36 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useApp } from '../../context/AppContext.jsx';
-import { ROUTES } from '../../utils/constants.js';
+import { useApp } from '../../context/AppContext';
+import { ROUTES } from '../../utils/constants';
+import type { Application } from '@vibe-apply/shared';
 import './AdminDashboard.scss';
 
-const GENDER_COLORS = {
+const GENDER_COLORS: Record<string, string> = {
   male: '#1d4ed8',
   female: '#f97316',
   other: '#6b7280',
   'No Data': '#d1d5db',
 };
+
+interface TrendData {
+  day: string;
+  applications: number;
+  recommendations: number;
+}
+
+interface GenderData {
+  name: string;
+  value: number;
+  [key: string]: string | number;
+}
+
+interface StakeWardData {
+  label: string;
+  fullLabel: string;
+  applications: number;
+  recommendations: number;
+}
 
 const AdminDashboard = () => {
   const { applications, leaderRecommendations } = useApp();
@@ -62,7 +82,7 @@ const AdminDashboard = () => {
       return date;
     });
 
-    const weeklyTrendData = days.map((date) => {
+    const weeklyTrendData: TrendData[] = days.map((date) => {
       const dayLabel = date.toLocaleDateString(undefined, {
         month: 'short',
         day: 'numeric',
@@ -94,7 +114,7 @@ const AdminDashboard = () => {
       { male: 0, female: 0, other: 0 }
     );
 
-    const genderSplitData = Object.entries(genderCounts)
+    const genderSplitData: GenderData[] = Object.entries(genderCounts)
       .filter(([, value]) => value > 0)
       .map(([key, value]) => ({ name: key, value }));
 
@@ -105,15 +125,15 @@ const AdminDashboard = () => {
       if (!acc[composedKey]) {
         acc[composedKey] = { applications: 0, recommendations: 0 };
       }
-      if (applications.includes(item)) {
+      if (applications.includes(item as Application)) {
         acc[composedKey].applications += 1;
       } else {
         acc[composedKey].recommendations += 1;
       }
       return acc;
-    }, {});
+    }, {} as Record<string, { applications: number; recommendations: number }>);
 
-    const stakeWardData = Object.entries(stakeWardMap).map(([key, counts]) => {
+    const stakeWardData: StakeWardData[] = Object.entries(stakeWardMap).map(([key, counts]) => {
       const [stake, ward] = key.split(' | ');
       const shortStake = stake.replace(' Stake', '');
       const shortWard = ward.replace(' Ward', '');

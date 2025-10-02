@@ -21,8 +21,8 @@ import AccountSettings from './pages/User/AccountSettings.jsx';
 import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
 import LeaderPending from './pages/Leader/LeaderPending.jsx';
 import LeaderRecommendations from './pages/Leader/LeaderRecommendations.jsx';
-import { getDefaultPathForUser } from './utils/navigation.js';
-import { ROUTES } from './utils/constants.js';
+import { getDefaultPathForUser } from './utils/navigation';
+import { ROUTES } from './utils/constants';
 
 const App = () => {
   const { currentUser } = useApp();

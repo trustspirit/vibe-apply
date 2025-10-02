@@ -1,49 +1,53 @@
-import { useState } from 'react';
+import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui';
-import { getDefaultPathForUser } from '../../utils/navigation.js';
+import { getDefaultPathForUser } from '../../utils/navigation';
 import { authApi } from '../../services/api';
-import { USER_ROLES, ROUTES } from '../../utils/constants.js';
+import { USER_ROLES, ROUTES } from '../../utils/constants';
+import type { UserRole } from '@vibe-apply/shared';
 import './SignUp.scss';
+
+interface ProfileForm {
+  stake: string;
+  ward: string;
+  role: UserRole;
+}
 
 const CompleteProfile = () => {
   const { currentUser, setUser } = useApp();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ProfileForm>({
     stake: '',
     ward: '',
-    role: USER_ROLES.APPLICANT,
+    role: USER_ROLES.APPLICANT as UserRole,
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
-      // Complete profile via new API endpoint
       const updatedUser = await authApi.completeProfile({ 
         role: form.role,
         ward: form.ward,
         stake: form.stake,
       });
       
-      // Update local user state
       setUser(updatedUser);
 
-      // Redirect to appropriate page
       navigate(getDefaultPathForUser(updatedUser), { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
     } finally {
       setIsSubmitting(false);
     }
@@ -51,6 +55,11 @@ const CompleteProfile = () => {
 
   if (!currentUser) {
     navigate(ROUTES.SIGN_IN);
+    return null;
+  }
+
+  if (currentUser.role && currentUser.stake && currentUser.ward) {
+    navigate(getDefaultPathForUser(currentUser), { replace: true });
     return null;
   }
 

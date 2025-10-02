@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
-import { useApp } from '../../context/AppContext.jsx';
+import { type ChangeEvent, useMemo } from 'react';
+import { useApp } from '../../context/AppContext';
 import { ComboBox, StatusChip, ToggleButton } from '../../components/ui';
-import { USER_ROLES, LEADER_STATUS } from '../../utils/constants.js';
+import { USER_ROLES, LEADER_STATUS } from '../../utils/constants';
+import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [
@@ -19,7 +20,7 @@ const AdminRoles = () => {
         if (a.role === b.role) {
           return a.name.localeCompare(b.name);
         }
-        const order = {
+        const order: Record<string, number> = {
           [USER_ROLES.ADMIN]: 0,
           [USER_ROLES.LEADER]: 1,
           [USER_ROLES.APPLICANT]: 2,
@@ -29,15 +30,15 @@ const AdminRoles = () => {
     [users]
   );
 
-  const handleRoleChange = (userId, role) => {
+  const handleRoleChange = (userId: string, role: string) => {
     if (userId === currentUser?.id) {
       return;
     }
-    updateUserRole(userId, role);
+    updateUserRole(userId, role as UserRole);
   };
 
-  const handleLeaderToggle = (userId, isApproved) => {
-    updateLeaderStatus(userId, isApproved ? LEADER_STATUS.APPROVED : LEADER_STATUS.PENDING);
+  const handleLeaderToggle = (userId: string, isApproved: boolean) => {
+    updateLeaderStatus(userId, (isApproved ? LEADER_STATUS.APPROVED : LEADER_STATUS.PENDING) as LeaderStatus);
   };
 
   return (
@@ -91,7 +92,7 @@ const AdminRoles = () => {
                   <ComboBox
                     name={`role-${user.id}`}
                     value={user.role}
-                    onChange={(event) =>
+                    onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                       handleRoleChange(user.id, event.target.value)
                     }
                     options={ROLE_OPTIONS}
@@ -116,7 +117,7 @@ const AdminRoles = () => {
                   {user.role === USER_ROLES.LEADER ? (
                     <ToggleButton
                       checked={user.leaderStatus === LEADER_STATUS.APPROVED}
-                      onChange={(next) => handleLeaderToggle(user.id, next)}
+                      onChange={(next: boolean) => handleLeaderToggle(user.id, next)}
                       labelOn='Approved'
                       labelOff='Pending'
                       confirmOnMessage='Approve this leader account?'

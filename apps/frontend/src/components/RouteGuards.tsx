@@ -1,9 +1,14 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext.jsx';
-import { getDefaultPathForUser } from '../utils/navigation.js';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants.js';
+import { useApp } from '../context/AppContext';
+import { getDefaultPathForUser } from '../utils/navigation';
+import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants';
+import { ReactNode } from 'react';
 
-export const RequireAuth = ({ children }) => {
+interface RouteGuardProps {
+  children: ReactNode;
+}
+
+export const RequireAuth = ({ children }: RouteGuardProps) => {
   const { currentUser, isInitializing } = useApp();
   const location = useLocation();
 
@@ -22,7 +27,7 @@ export const RequireAuth = ({ children }) => {
   return children;
 };
 
-export const RequireAdmin = ({ children }) => {
+export const RequireAdmin = ({ children }: RouteGuardProps) => {
   const { currentUser } = useApp();
   const location = useLocation();
 
@@ -37,7 +42,7 @@ export const RequireAdmin = ({ children }) => {
   return children;
 };
 
-export const PublicOnly = ({ children }) => {
+export const PublicOnly = ({ children }: RouteGuardProps) => {
   const { currentUser } = useApp();
 
   if (currentUser) {
@@ -50,7 +55,7 @@ export const PublicOnly = ({ children }) => {
   return children;
 };
 
-export const RequireUser = ({ children }) => {
+export const RequireUser = ({ children }: RouteGuardProps) => {
   const { currentUser } = useApp();
   const location = useLocation();
 
@@ -65,7 +70,11 @@ export const RequireUser = ({ children }) => {
   return children;
 };
 
-export const RequireLeader = ({ children, requireApproved = false }) => {
+interface RequireLeaderProps extends RouteGuardProps {
+  requireApproved?: boolean;
+}
+
+export const RequireLeader = ({ children, requireApproved = false }: RequireLeaderProps) => {
   const { currentUser } = useApp();
   const location = useLocation();
 
@@ -84,7 +93,7 @@ export const RequireLeader = ({ children, requireApproved = false }) => {
   return children;
 };
 
-export const RequireIncompleteProfile = ({ children }) => {
+export const RequireIncompleteProfile = ({ children }: RouteGuardProps) => {
   const { currentUser } = useApp();
 
   if (!currentUser) {

@@ -5,16 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext js,jsx --fix",
-    "format": "prettier --write \"src/**/*.{js,jsx,css,scss,html}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,css,scss,html}\"",
-    "typecheck": "echo 'No TypeScript configured for frontend'"
+    "lint": "eslint . --ext js,jsx,ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext js,jsx,ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,scss,html}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,scss,html}\"",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@types/node": "^24.6.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
@@ -25,6 +28,8 @@
     "globals": "^16.4.0",
     "prettier": "^3.6.2",
     "sass": "^1.92.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.44.1",
     "vite": "^7.1.6"
   },
   "dependencies": {

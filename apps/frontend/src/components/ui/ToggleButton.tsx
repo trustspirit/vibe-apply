@@ -1,19 +1,19 @@
-import { forwardRef } from 'react';
-import classNames from '../../utils/classNames.js';
+import { forwardRef, ButtonHTMLAttributes } from 'react';
+import classNames from '../../utils/classNames';
 import './ToggleButton.scss';
 
-const ToggleButton = forwardRef(
+interface ToggleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'type'> {
+  checked?: boolean;
+  onChange?: (value: boolean) => void;
+  labelOn?: string;
+  labelOff?: string;
+  confirmOnMessage?: string;
+  disabled?: boolean;
+}
+
+const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
   (
-    {
-      checked = false,
-      onChange,
-      labelOn = 'On',
-      labelOff = 'Off',
-      className = '',
-      confirmOnMessage,
-      disabled = false,
-      ...rest
-    },
+    { checked = false, onChange, labelOn = 'On', labelOff = 'Off', className = '', confirmOnMessage, disabled = false, ...rest },
     ref
   ) => {
     const handleClick = () => {
@@ -30,12 +30,7 @@ const ToggleButton = forwardRef(
     return (
       <button
         type='button'
-        className={classNames(
-          'toggle-button',
-          checked && 'toggle-button--on',
-          disabled && 'is-disabled',
-          className
-        )}
+        className={classNames('toggle-button', checked && 'toggle-button--on', disabled && 'is-disabled', className)}
         aria-pressed={checked}
         onClick={handleClick}
         ref={ref}

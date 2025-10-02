@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
   useCallback,
+  ReactNode,
 } from 'react';
 import {
   authApi,
@@ -12,26 +13,98 @@ import {
   applicationsApi,
   recommendationsApi,
   ApiError,
-} from '../services/api.js';
-import { USER_ROLES, LEADER_STATUS } from '../utils/constants.js';
+} from '../services/api';
+import { USER_ROLES, LEADER_STATUS } from '../utils/constants';
+import type {
+  User,
+  Application,
+  LeaderRecommendation,
+  UserRole,
+  LeaderStatus,
+  ApplicationStatus,
+  RecommendationStatus,
+} from '@vibe-apply/shared';
 
-const AppContext = createContext(null);
+interface AppState {
+  users: User[];
+  applications: Application[];
+  leaderRecommendations: LeaderRecommendation[];
+}
 
-const normalizeUserRecord = (user) => {
+interface SignUpData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface SignInData {
+  email: string;
+  password: string;
+}
+
+interface ApplicationPayload {
+  userId?: string;
+  name: string;
+  age: number;
+  email: string;
+  phone: string;
+  stake: string;
+  ward: string;
+  gender: string;
+  moreInfo: string;
+}
+
+interface RecommendationPayload {
+  id?: string;
+  leaderId?: string;
+  name: string;
+  age: number;
+  email: string;
+  phone: string;
+  stake: string;
+  ward: string;
+  gender: string;
+  moreInfo: string;
+}
+
+interface AppContextValue {
+  users: User[];
+  applications: Application[];
+  leaderRecommendations: LeaderRecommendation[];
+  currentUser: User | null;
+  isLoading: boolean;
+  isInitializing: boolean;
+  isLoadingApplications: boolean;
+  signUp: (data: SignUpData) => Promise<User>;
+  signIn: (data: SignInData) => Promise<User>;
+  signOut: () => Promise<void>;
+  setUser: (user: User | null) => void;
+  updateUserRole: (userId: string, role: UserRole) => Promise<void>;
+  updateLeaderStatus: (userId: string, status: LeaderStatus) => Promise<void>;
+  submitApplication: (userId: string, payload: ApplicationPayload) => Promise<void>;
+  updateApplicationStatus: (applicationId: string, status: ApplicationStatus) => Promise<void>;
+  submitLeaderRecommendation: (leaderId: string, payload: RecommendationPayload) => Promise<void>;
+  updateLeaderRecommendationStatus: (recommendationId: string, status: RecommendationStatus) => Promise<void>;
+  deleteLeaderRecommendation: (leaderId: string, recommendationId: string) => Promise<void>;
+}
+
+const AppContext = createContext<AppContextValue | null>(null);
+
+const normalizeUserRecord = (user: User | null): User | null => {
   if (!user) {
     return user;
   }
-  const normalizedRole =
-    user.role === USER_ROLES.ADMIN
-      ? USER_ROLES.ADMIN
-      : user.role === USER_ROLES.LEADER
-        ? USER_ROLES.LEADER
-        : USER_ROLES.APPLICANT;
-  const leaderStatus =
-    normalizedRole === USER_ROLES.LEADER
-      ? user.leaderStatus === LEADER_STATUS.APPROVED
-        ? LEADER_STATUS.APPROVED
-        : LEADER_STATUS.PENDING
+  const normalizedRole: UserRole =
+    user.role === (USER_ROLES.ADMIN as UserRole)
+      ? (USER_ROLES.ADMIN as UserRole)
+      : user.role === (USER_ROLES.LEADER as UserRole)
+        ? (USER_ROLES.LEADER as UserRole)
+        : (USER_ROLES.APPLICANT as UserRole);
+  const leaderStatus: LeaderStatus | null =
+    normalizedRole === (USER_ROLES.LEADER as UserRole)
+      ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
+        ? (LEADER_STATUS.APPROVED as LeaderStatus)
+        : (LEADER_STATUS.PENDING as LeaderStatus)
       : null;
 
   return {
@@ -41,13 +114,17 @@ const normalizeUserRecord = (user) => {
   };
 };
 
-export const AppProvider = ({ children }) => {
-  const [state, setState] = useState({
+interface AppProviderProps {
+  children: ReactNode;
+}
+
+export const AppProvider = ({ children }: AppProviderProps) => {
+  const [state, setState] = useState<AppState>({
     users: [],
     applications: [],
     leaderRecommendations: [],
   });
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
@@ -93,7 +170,7 @@ export const AppProvider = ({ children }) => {
           const users = await usersApi.getAll();
           setState((prev) => ({
             ...prev,
-            users: users.map(normalizeUserRecord),
+            users: users.map((u) => normalizeUserRecord(u)!),
           }));
         } catch (error) {
           console.warn('Failed to fetch all users:', error);
@@ -172,7 +249,7 @@ export const AppProvider = ({ children }) => {
   }, [currentUser?.role, currentUser?.id]);
 
   const signUp = useCallback(
-    async ({ name, email, password }) => {
+    async ({ name, email, password }: SignUpData): Promise<User> => {
       try {
         setIsLoading(true);
         const user = await authApi.signUp({ name, email, password });
@@ -197,7 +274,7 @@ export const AppProvider = ({ children }) => {
   );
 
   const signIn = useCallback(
-    async ({ email, password }) => {
+    async ({ email, password }: SignInData): Promise<User> => {
       try {
         setIsLoading(true);
         const user = await authApi.signIn({ email, password });
@@ -232,7 +309,7 @@ export const AppProvider = ({ children }) => {
     setCurrentUserId(null);
   }, []);
 
-  const setUser = useCallback((user) => {
+  const setUser = useCallback((user: User | null) => {
     if (user) {
       setState((prev) => ({
         ...prev,
@@ -246,7 +323,7 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  const updateUserRole = useCallback(async (userId, role) => {
+  const updateUserRole = useCallback(async (userId: string, role: UserRole) => {
     await usersApi.updateRole(userId, role);
     setState((prev) => ({
       ...prev,
@@ -254,15 +331,10 @@ export const AppProvider = ({ children }) => {
         if (user.id !== userId) {
           return user;
         }
-        const normalizedRole =
-          role === USER_ROLES.ADMIN
-            ? USER_ROLES.ADMIN
-            : role === USER_ROLES.LEADER
-              ? USER_ROLES.LEADER
-              : USER_ROLES.APPLICANT;
-        const leaderStatus =
-          normalizedRole === USER_ROLES.LEADER
-            ? (user.leaderStatus ?? LEADER_STATUS.PENDING)
+        const normalizedRole = role as UserRole;
+        const leaderStatus: LeaderStatus | null =
+          normalizedRole === (USER_ROLES.LEADER as UserRole)
+            ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
             : null;
         return {
           ...user,
@@ -273,7 +345,7 @@ export const AppProvider = ({ children }) => {
     }));
   }, []);
 
-  const updateLeaderStatus = useCallback(async (userId, status) => {
+  const updateLeaderStatus = useCallback(async (userId: string, status: LeaderStatus) => {
     await usersApi.updateLeaderStatus(userId, status);
     setState((prev) => ({
       ...prev,
@@ -281,15 +353,16 @@ export const AppProvider = ({ children }) => {
         user.id === userId
           ? {
               ...user,
-              leaderStatus: status === 'approved' ? 'approved' : 'pending',
+              leaderStatus: status,
             }
           : user
       ),
     }));
   }, []);
 
-  const submitApplication = useCallback(async (userId, payload) => {
-    const application = await applicationsApi.submit({ ...payload, userId });
+  const submitApplication = useCallback(async (userId: string, payload: ApplicationPayload) => {
+    const { userId: _, ...payloadWithoutUserId } = payload;
+    const application = await applicationsApi.submit(payloadWithoutUserId);
     setState((prev) => {
       const existing = prev.applications.find((app) => app.userId === userId);
       if (existing) {
@@ -307,8 +380,8 @@ export const AppProvider = ({ children }) => {
     });
   }, []);
 
-  const submitLeaderRecommendation = useCallback(async (leaderId, payload) => {
-    const { id, ...formData } = payload;
+  const submitLeaderRecommendation = useCallback(async (leaderId: string, payload: RecommendationPayload) => {
+    const { id, leaderId: _, ...formData } = payload;
     if (id) {
       const recommendation = await recommendationsApi.update(id, formData);
       setState((prev) => ({
@@ -318,10 +391,7 @@ export const AppProvider = ({ children }) => {
         ),
       }));
     } else {
-      const recommendation = await recommendationsApi.submit({
-        ...formData,
-        leaderId,
-      });
+      const recommendation = await recommendationsApi.submit(formData);
       setState((prev) => ({
         ...prev,
         leaderRecommendations: [
@@ -333,7 +403,7 @@ export const AppProvider = ({ children }) => {
   }, []);
 
   const deleteLeaderRecommendation = useCallback(
-    async (leaderId, recommendationId) => {
+    async (leaderId: string, recommendationId: string) => {
       await recommendationsApi.delete(recommendationId);
       setState((prev) => ({
         ...prev,
@@ -345,7 +415,7 @@ export const AppProvider = ({ children }) => {
     []
   );
 
-  const updateApplicationStatus = useCallback(async (applicationId, status) => {
+  const updateApplicationStatus = useCallback(async (applicationId: string, status: ApplicationStatus) => {
     await applicationsApi.updateStatus(applicationId, status);
     setState((prev) => ({
       ...prev,
@@ -362,7 +432,7 @@ export const AppProvider = ({ children }) => {
   }, []);
 
   const updateLeaderRecommendationStatus = useCallback(
-    async (recommendationId, status) => {
+    async (recommendationId: string, status: RecommendationStatus) => {
       await recommendationsApi.updateStatus(recommendationId, status);
       setState((prev) => ({
         ...prev,

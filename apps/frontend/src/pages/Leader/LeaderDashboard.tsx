@@ -13,12 +13,44 @@ import {
   YAxis,
   Cell,
 } from 'recharts';
-import { useApp } from '../../context/AppContext.jsx';
+import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui';
-import { ROUTES } from '../../utils/constants.js';
+import { ROUTES } from '../../utils/constants';
+import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
 import './LeaderDashboard.scss';
 
 const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];
+
+interface LocationData {
+  name: string;
+  Recommendations: number;
+  Applications: number;
+}
+
+interface GenderData {
+  name: string;
+  Recommendations: number;
+  Applications: number;
+  value: number;
+  [key: string]: string | number;
+}
+
+interface CombinedItem {
+  id?: string;
+  name?: string;
+  age?: number;
+  email?: string;
+  phone?: string;
+  stake?: string;
+  ward?: string;
+  gender?: string;
+  moreInfo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  linkedApplicationId?: string;
+  isApplication?: boolean;
+  hasApplication?: boolean;
+}
 
 const LeaderDashboard = () => {
   const navigate = useNavigate();
@@ -59,19 +91,19 @@ const LeaderDashboard = () => {
       return [];
     }
 
-    const applicationById = new Map();
+    const applicationById = new Map<string, Application>();
     applications
       .filter((app) => app.stake === currentUser.stake)
       .forEach((app) => {
         applicationById.set(app.id, app);
       });
 
-    const mappedRecommendations = recommendations.map((rec) => ({
+    const mappedRecommendations: CombinedItem[] = recommendations.map((rec) => ({
       ...rec,
       hasApplication: rec.linkedApplicationId && applicationById.has(rec.linkedApplicationId),
     }));
 
-    const mappedApplications = applicantsInStake.map((app) => ({
+    const mappedApplications: CombinedItem[] = applicantsInStake.map((app) => ({
       ...app,
       isApplication: true,
     }));
@@ -104,7 +136,7 @@ const LeaderDashboard = () => {
   );
 
   const locationCounts = useMemo(() => {
-    const groups = combinedItems.reduce((acc, item) => {
+    const groups = combinedItems.reduce<Record<string, { recommendations: number; applications: number }>>((acc, item) => {
       const stake = item.stake || 'Unknown Stake';
       const ward = item.ward || 'Unknown Ward';
       const key = `${stake} • ${ward}`;
@@ -118,7 +150,7 @@ const LeaderDashboard = () => {
       }
       return acc;
     }, {});
-    return Object.entries(groups).map(([name, counts]) => ({ 
+    return Object.entries(groups).map(([name, counts]): LocationData => ({ 
       name, 
       Recommendations: counts.recommendations,
       Applications: counts.applications
@@ -126,7 +158,7 @@ const LeaderDashboard = () => {
   }, [combinedItems]);
 
   const genderCounts = useMemo(() => {
-    const map = combinedItems.reduce((acc, item) => {
+    const map = combinedItems.reduce<Record<string, { recommendations: number; applications: number }>>((acc, item) => {
       const key =
         item.gender === 'male' || item.gender === 'female'
           ? item.gender
@@ -141,7 +173,7 @@ const LeaderDashboard = () => {
       }
       return acc;
     }, {});
-    return Object.entries(map).map(([name, counts]) => ({ 
+    return Object.entries(map).map(([name, counts]): GenderData => ({ 
       name, 
       Recommendations: counts.recommendations,
       Applications: counts.applications,
@@ -151,7 +183,7 @@ const LeaderDashboard = () => {
 
   const pieData = genderCounts.length
     ? genderCounts
-    : [{ name: 'No Data', value: 1 }];
+    : [{ name: 'No Data', Recommendations: 0, Applications: 0, value: 1 }];
 
   const handleCreateRecommendation = () => {
     navigate(ROUTES.LEADER_RECOMMENDATIONS, { state: { action: 'create' } });

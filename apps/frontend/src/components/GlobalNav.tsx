@@ -1,19 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext.jsx';
-import { Button, Avatar } from './ui';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants.js';
+import { useApp } from '../context/AppContext';
+import { Avatar } from './ui';
+import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants';
 import './GlobalNav.scss';
+
+interface NavItem {
+  to: string;
+  label: string;
+}
 
 const GlobalNav = () => {
   const { currentUser, signOut } = useApp();
   const navigate = useNavigate();
-  const gnbRef = useRef(null);
+  const gnbRef = useRef<HTMLElement>(null);
   const [showMenu, setShowMenu] = useState(false);
-  const menuRef = useRef(null);
-  const avatarRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const avatarRef = useRef<HTMLDivElement>(null);
 
-  const navItems = (() => {
+  const navItems: NavItem[] = (() => {
     if (currentUser.role === USER_ROLES.ADMIN) {
       return [
         { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
@@ -59,18 +64,18 @@ const GlobalNav = () => {
     setShowMenu((prev) => !prev);
   };
 
-  const handleMenuAction = (action) => {
+  const handleMenuAction = (action: () => void) => {
     setShowMenu(false);
     action();
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         menuRef.current &&
-        !menuRef.current.contains(event.target) &&
+        !menuRef.current.contains(event.target as Node) &&
         avatarRef.current &&
-        !avatarRef.current.contains(event.target)
+        !avatarRef.current.contains(event.target as Node)
       ) {
         setShowMenu(false);
       }
@@ -85,7 +90,6 @@ const GlobalNav = () => {
     };
   }, [showMenu]);
 
-  // Update CSS custom property with actual GNB height
   useEffect(() => {
     const updateGnbHeight = () => {
       if (gnbRef.current) {
@@ -96,14 +100,13 @@ const GlobalNav = () => {
 
     updateGnbHeight();
     
-    // Update on resize to handle orientation changes
     const handleResize = () => {
-      setTimeout(updateGnbHeight, 100); // Small delay to ensure layout is complete
+      setTimeout(updateGnbHeight, 100);
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentUser]); // Re-run when user changes (different nav items)
+  }, [currentUser]);
 
   if (!currentUser) {
     return null;

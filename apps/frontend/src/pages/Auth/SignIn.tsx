@@ -1,25 +1,30 @@
-import { useState } from 'react';
+import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useApp } from '../../context/AppContext.jsx';
+import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui';
-import { getDefaultPathForUser } from '../../utils/navigation.js';
-import { ROUTES } from '../../utils/constants.js';
+import { getDefaultPathForUser } from '../../utils/navigation';
+import { ROUTES } from '../../utils/constants';
 import './SignIn.scss';
+
+interface SignInForm {
+  email: string;
+  password: string;
+}
 
 const SignIn = () => {
   const { signIn } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState<SignInForm>({ email: '', password: '' });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setIsSubmitting(true);
@@ -30,14 +35,13 @@ const SignIn = () => {
         location.state?.from?.pathname ?? getDefaultPathForUser(user);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = () => {
-    // Redirect to backend Google OAuth endpoint
     const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     const redirectUrl = `${backendUrl}/api/auth/google`;
     window.location.href = redirectUrl;

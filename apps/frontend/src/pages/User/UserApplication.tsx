@@ -1,9 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useApp } from '../../context/AppContext.jsx';
+import type { ChangeEvent, FormEvent } from 'react';
+import { useApp } from '../../context/AppContext';
 import { Button, ComboBox, StatusChip, TextField } from '../../components/ui';
+import type { ApplicationStatus } from '@vibe-apply/shared';
 import './UserApplication.scss';
 
-const emptyForm = {
+interface ApplicationForm {
+  name: string;
+  age: string;
+  email: string;
+  phone: string;
+  gender: string;
+  stake: string;
+  ward: string;
+  moreInfo: string;
+}
+
+interface ValidationErrors {
+  [key: string]: string;
+}
+
+const emptyForm: ApplicationForm = {
   name: '',
   age: '',
   email: '',
@@ -14,7 +31,9 @@ const emptyForm = {
   moreInfo: '',
 };
 
-const STATUS_DISPLAY = {
+type ToneValue = 'draft' | 'awaiting' | 'approved' | 'rejected' | 'reviewed' | 'admin' | 'leader' | 'applicant';
+
+const STATUS_DISPLAY: Record<string, { label: string; tone: ToneValue }> = {
   draft: { label: 'Draft', tone: 'draft' },
   awaiting: { label: 'Submitted', tone: 'awaiting' },
   approved: { label: 'Reviewed', tone: 'reviewed' },
@@ -31,13 +50,13 @@ const UserApplication = () => {
     [applications, currentUser?.id]
   );
 
-  const isEditable = !existingApplication || (existingApplication.canEdit && existingApplication.canDelete);
+  const isEditable = !existingApplication || existingApplication.status === 'draft' || existingApplication.status === 'awaiting';
 
   const [form, setForm] = useState(emptyForm);
   const [isEditing, setIsEditing] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [formError, setFormError] = useState('');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   useEffect(() => {
     if (isInitializing || !currentUser) {
@@ -72,7 +91,7 @@ const UserApplication = () => {
     }
   }, [existingApplication, currentUser, isInitializing]);
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => {
@@ -92,7 +111,7 @@ const UserApplication = () => {
   };
 
   const validateForm = () => {
-    const validationErrors = {};
+    const validationErrors: ValidationErrors = {};
     const trimmedName = form.name.trim();
     const trimmedEmail = form.email.trim();
     const trimmedPhone = form.phone.trim();
@@ -146,7 +165,7 @@ const UserApplication = () => {
     };
   };
 
-  const handleSubmitApplication = (event) => {
+  const handleSubmitApplication = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!currentUser) {
       return;
@@ -181,7 +200,6 @@ const UserApplication = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
-      status: 'awaiting',
     })
       .then(() => {
         setErrors({});
@@ -189,7 +207,7 @@ const UserApplication = () => {
         setIsEditing(false);
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to submit application.');
+        setFormError((error as Error).message || 'Failed to submit application.');
       });
   };
 
@@ -214,7 +232,6 @@ const UserApplication = () => {
       stake: form.stake.trim(),
       ward: form.ward.trim(),
       moreInfo: form.moreInfo.trim(),
-      status: 'draft',
     })
       .then(() => {
         setFeedback(
@@ -222,7 +239,7 @@ const UserApplication = () => {
         );
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to save draft.');
+        setFormError((error as Error).message || 'Failed to save draft.');
       });
   };
 
@@ -395,7 +412,7 @@ const UserApplication = () => {
               onChange={handleChange}
               showRequiredIndicator={false}
               error={errors.gender}
-              variant='input'
+              variant='default'
               options={[
                 { value: '', label: 'Select gender', disabled: true },
                 { value: 'male', label: 'Male' },

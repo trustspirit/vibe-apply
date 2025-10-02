@@ -1,6 +1,7 @@
-import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants.js';
+import { User } from '@vibe-apply/shared';
+import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants';
 
-export const getDefaultPathForUser = (user) => {
+export const getDefaultPathForUser = (user: User | null): string => {
   if (!user) {
     return ROUTES.SIGN_IN;
   }

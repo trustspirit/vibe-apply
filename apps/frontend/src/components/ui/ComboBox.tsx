@@ -1,7 +1,35 @@
-import { forwardRef } from 'react';
-import classNames from '../../utils/classNames.js';
+import { forwardRef, SelectHTMLAttributes, ReactNode } from 'react';
+import classNames from '../../utils/classNames';
 
-const ComboBox = forwardRef(
+interface ComboBoxOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+  hidden?: boolean;
+}
+
+interface ComboBoxProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className'> {
+  id?: string;
+  name?: string;
+  label?: string;
+  options?: ComboBoxOption[];
+  children?: ReactNode;
+  value?: string;
+  tone?: string;
+  required?: boolean;
+  showRequiredIndicator?: boolean;
+  error?: string;
+  helperText?: string;
+  wrapperClassName?: string;
+  selectClassName?: string;
+  labelClassName?: string;
+  requiredClassName?: string;
+  variant?: 'combo' | 'default';
+  ariaLabel?: string;
+  className?: string;
+}
+
+const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
   (
     {
       id,

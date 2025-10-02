@@ -2,13 +2,13 @@ export const USER_ROLES = {
   ADMIN: 'admin',
   LEADER: 'leader',
   APPLICANT: 'applicant',
-};
+} as const;
 
 export const LEADER_STATUS = {
   PENDING: 'pending',
   APPROVED: 'approved',
   REJECTED: 'rejected',
-};
+} as const;
 
 export const ROUTES = {
   SIGN_IN: '/signin',
@@ -24,4 +24,4 @@ export const ROUTES = {
   LEADER_PENDING: '/leader/pending',
   APPLICATION: '/application',
   ACCOUNT_SETTINGS: '/settings',
-};
+} as const;

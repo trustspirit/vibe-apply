@@ -1,34 +1,73 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useApp } from '../../context/AppContext.jsx';
+import { useApp } from '../../context/AppContext';
 import { Button, ComboBox, StatusChip, Tabs } from '../../components/ui';
+import type { Application, LeaderRecommendation, ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import './AdminReview.scss';
 
-const TABS = [
+interface LocationState {
+  initialTab?: string;
+  focus?: string;
+}
+
+interface TabItem {
+  id: string;
+  label: string;
+}
+
+interface StatusOption {
+  value: string;
+  label: string;
+}
+
+interface ReviewItem {
+  key: string;
+  type: 'application' | 'recommendation';
+  entityId: string;
+  status: string;
+  rawStatus: ApplicationStatus | RecommendationStatus;
+  name: string;
+  email: string;
+  phone: string;
+  age: number;
+  gender: string;
+  stake: string;
+  ward: string;
+  moreInfo: string;
+  createdAt: string;
+  updatedAt: string;
+  hasRecommendation?: boolean;
+  recommendationId?: string;
+  hasApplication?: boolean;
+  applicationId?: string;
+}
+
+const TABS: TabItem[] = [
   { id: 'all', label: 'All' },
   { id: 'awaiting', label: 'Awaiting' },
   { id: 'approved', label: 'Approved' },
   { id: 'rejected', label: 'Rejected' },
 ];
 
-const STATUS_OPTIONS = [
+const STATUS_OPTIONS: StatusOption[] = [
   { value: 'awaiting', label: 'Awaiting' },
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
 ];
 
-const normalizeRecommendationStatus = (status) => {
+const normalizeRecommendationStatus = (status: RecommendationStatus): string => {
   if (status === 'submitted') {
     return 'awaiting';
   }
   return status;
 };
 
-const remapStatusForRecommendation = (status) => {
+const remapStatusForRecommendation = (status: string): RecommendationStatus => {
   if (status === 'awaiting') {
-    return 'submitted';
+    return 'submitted' as RecommendationStatus;
   }
-  return status;
+  return status as RecommendationStatus;
 };
 
 const AdminReview = () => {
@@ -39,18 +78,18 @@ const AdminReview = () => {
     updateLeaderRecommendationStatus,
   } = useApp();
   const location = useLocation();
-  const locationStateRef = useRef(null);
+  const locationStateRef = useRef<LocationState | null>(null);
 
   const [activeTab, setActiveTab] = useState(() => {
-    const requestedTab = location.state?.initialTab;
+    const requestedTab = (location.state as LocationState)?.initialTab;
     return requestedTab && TABS.some((tab) => tab.id === requestedTab)
       ? requestedTab
       : 'awaiting';
   });
-  const [selectedId, setSelectedId] = useState(null);
-  const [statusSelection, setStatusSelection] = useState(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [statusSelection, setStatusSelection] = useState<string | null>(null);
   const [showTodayOnly, setShowTodayOnly] = useState(
-    () => location.state?.focus === 'today'
+    () => (location.state as LocationState)?.focus === 'today'
   );
   const todayTimestamp = useMemo(() => {
     const today = new Date();
@@ -59,28 +98,28 @@ const AdminReview = () => {
   }, []);
 
   useEffect(() => {
-    if (locationStateRef.current === location.state) {
+    if (locationStateRef.current === (location.state as LocationState)) {
       return;
     }
-    locationStateRef.current = location.state;
-    const requestedTab = location.state?.initialTab;
+    locationStateRef.current = location.state as LocationState;
+    const requestedTab = (location.state as LocationState)?.initialTab;
     if (requestedTab && TABS.some((tab) => tab.id === requestedTab)) {
       setActiveTab(requestedTab);
     }
-    setShowTodayOnly(location.state?.focus === 'today');
+    setShowTodayOnly((location.state as LocationState)?.focus === 'today');
   }, [location.state]);
 
-  const getStatusLabel = (status) =>
+  const getStatusLabel = (status: string) =>
     STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 
   const reviewItems = useMemo(() => {
-    const applicationById = new Map();
+    const applicationById = new Map<string, Application>();
     applications.forEach((app) => {
       applicationById.set(app.id, app);
     });
 
-    const recommendationById = new Map();
-    const recommendationsByLinkedAppId = new Map();
+    const recommendationById = new Map<string, LeaderRecommendation>();
+    const recommendationsByLinkedAppId = new Map<string, LeaderRecommendation>();
     leaderRecommendations
       .filter((rec) => rec.status !== 'draft')
       .forEach((rec) => {
@@ -90,8 +129,8 @@ const AdminReview = () => {
         }
       });
 
-    const processedIds = new Set();
-    const items = [];
+    const processedIds = new Set<string>();
+    const items: ReviewItem[] = [];
 
     applications.forEach((app) => {
       if (processedIds.has(app.id)) {
@@ -174,7 +213,7 @@ const AdminReview = () => {
   );
 
   const statusCounts = useMemo(() => {
-    const counts = {
+    const counts: Record<string, number> = {
       all: reviewItems.length,
       awaiting: 0,
       approved: 0,
@@ -237,14 +276,14 @@ const AdminReview = () => {
     ? `review-status-${selectedItem.key}`
     : 'review-status-select';
 
-  const handleStatusSelect = (event) => {
+  const handleStatusSelect = (event: ChangeEvent<HTMLSelectElement>) => {
     if (!selectedItem) {
       return;
     }
     const nextStatus = event.target.value;
     setStatusSelection(nextStatus);
     if (selectedItem.type === 'application') {
-      updateApplicationStatus(selectedItem.entityId, nextStatus);
+      updateApplicationStatus(selectedItem.entityId, nextStatus as ApplicationStatus);
     } else {
       updateLeaderRecommendationStatus(
         selectedItem.entityId,
@@ -253,12 +292,12 @@ const AdminReview = () => {
     }
   };
 
-  const handleTabClick = (tabId) => {
+  const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
     setShowTodayOnly(false);
   };
 
-  const handleInlineStatusChange = (entryKey, status) => {
+  const handleInlineStatusChange = (entryKey: string, status: string) => {
     if (!status) {
       return;
     }
@@ -268,7 +307,7 @@ const AdminReview = () => {
     }
 
     if (item.type === 'application') {
-      updateApplicationStatus(item.entityId, status);
+      updateApplicationStatus(item.entityId, status as ApplicationStatus);
     } else {
       updateLeaderRecommendationStatus(
         item.entityId,
@@ -315,7 +354,7 @@ const AdminReview = () => {
       app.moreInfo?.replace(/\r?\n/g, ' ') ?? '',
     ]);
 
-    const escapeCell = (value) => {
+    const escapeCell = (value: string | number) => {
       const cell = String(value ?? '');
       if (cell.includes('"') || cell.includes(',') || cell.includes('\n')) {
         return `"${cell.replace(/"/g, '""')}"`;

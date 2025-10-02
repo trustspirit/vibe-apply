@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import classNames from '../../utils/classNames.js';
-import { useApp } from '../../context/AppContext.jsx';
+import classNames from '../../utils/classNames';
+import { useApp } from '../../context/AppContext';
+import type { Application, LeaderRecommendation, RecommendationStatus } from '@vibe-apply/shared';
 import {
   Button,
   ComboBox,
@@ -11,7 +13,50 @@ import {
 } from '../../components/ui';
 import './LeaderRecommendations.scss';
 
-const emptyForm = {
+interface RecommendationForm {
+  id: string | null;
+  name: string;
+  age: string;
+  email: string;
+  phone: string;
+  gender: string;
+  stake: string;
+  ward: string;
+  moreInfo: string;
+}
+
+interface ValidationErrors {
+  [key: string]: string;
+}
+
+interface LocationState {
+  action?: string;
+}
+
+interface TabItem {
+  id: string;
+  label: string;
+}
+
+interface GenderOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+interface ExtendedRecommendation extends LeaderRecommendation {
+  hasApplication?: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+interface ExtendedApplication extends Application {
+  isApplication: boolean;
+}
+
+type CombinedItem = ExtendedRecommendation | ExtendedApplication;
+
+const emptyForm: RecommendationForm = {
   id: null,
   name: '',
   age: '',
@@ -23,7 +68,7 @@ const emptyForm = {
   moreInfo: '',
 };
 
-const TAB_DEFS = [
+const TAB_DEFS: TabItem[] = [
   { id: 'all', label: 'All' },
   { id: 'draft', label: 'Draft' },
   { id: 'submitted', label: 'Awaiting Review' },
@@ -31,7 +76,7 @@ const TAB_DEFS = [
   { id: 'rejected', label: 'Rejected' },
 ];
 
-const genderOptions = [
+const genderOptions: GenderOption[] = [
   { value: '', label: 'Select gender', disabled: true },
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
@@ -49,16 +94,16 @@ const LeaderRecommendations = () => {
   const leaderId = currentUser?.id ?? null;
 
   const [activeTab, setActiveTab] = useState('all');
-  const [currentFormId, setCurrentFormId] = useState(undefined);
-  const [selectedId, setSelectedId] = useState(null);
-  const [editingOriginStatus, setEditingOriginStatus] = useState(null);
-  const [form, setForm] = useState(emptyForm);
-  const [errors, setErrors] = useState({});
+  const [currentFormId, setCurrentFormId] = useState<string | null | undefined>(undefined);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editingOriginStatus, setEditingOriginStatus] = useState<RecommendationStatus | null>(null);
+  const [form, setForm] = useState<RecommendationForm>(emptyForm);
+  const [errors, setErrors] = useState<ValidationErrors>({});
   const [formError, setFormError] = useState('');
   const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
-    if (state?.action === 'create') {
+    if ((state as LocationState)?.action === 'create') {
       setCurrentFormId(null);
       setSelectedId(null);
     }
@@ -100,24 +145,24 @@ const LeaderRecommendations = () => {
   }, [applications, currentUser, recommendations]);
 
   const combinedItems = useMemo(() => {
-    const applicationById = new Map();
+    const applicationById = new Map<string, Application>();
     applications
       .filter((app) => app.stake === currentUser?.stake)
       .forEach((app) => {
         applicationById.set(app.id, app);
       });
 
-    const mappedRecommendations = recommendations.map((rec) => {
+    const mappedRecommendations: ExtendedRecommendation[] = recommendations.map((rec) => {
       const canModify = rec.status !== 'approved' && rec.status !== 'rejected';
       return {
         ...rec,
-        hasApplication: rec.linkedApplicationId && applicationById.has(rec.linkedApplicationId),
-        canEdit: rec.canEdit !== undefined ? rec.canEdit : canModify,
-        canDelete: rec.canDelete !== undefined ? rec.canDelete : canModify,
+        hasApplication: rec.linkedApplicationId ? applicationById.has(rec.linkedApplicationId) : false,
+        canEdit: canModify,
+        canDelete: canModify,
       };
     });
 
-    const mappedApplications = applicantsInStake.map((app) => ({
+    const mappedApplications: ExtendedApplication[] = applicantsInStake.map((app) => ({
       ...app,
       isApplication: true,
     }));
@@ -133,7 +178,7 @@ const LeaderRecommendations = () => {
     if (activeTab === 'all') {
       return combinedItems;
     }
-    return combinedItems.filter((item) => !item.isApplication && item.status === activeTab);
+    return combinedItems.filter((item) => !('isApplication' in item && item.isApplication) && 'status' in item && item.status === activeTab);
   }, [combinedItems, activeTab]);
 
   const listRecommendations = filteredRecommendations;
@@ -206,7 +251,7 @@ const LeaderRecommendations = () => {
     }
   }, [currentFormId, recommendations, currentUser]);
 
-  const handleTabChange = (tabId) => {
+  const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
   };
 
@@ -216,13 +261,12 @@ const LeaderRecommendations = () => {
     setFeedback('');
   };
 
-  const handleRecommendApplicant = (application) => {
+  const handleRecommendApplicant = (application: Application) => {
     if (!leaderId) {
       return;
     }
     submitLeaderRecommendation(leaderId, {
       id: null,
-      status: 'submitted',
       name: application.name,
       age: application.age ?? null,
       email: application.email,
@@ -236,15 +280,15 @@ const LeaderRecommendations = () => {
         setFeedback(`${application.name} has been recommended for review.`);
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to recommend applicant.');
+        setFormError((error as Error).message || 'Failed to recommend applicant.');
       });
   };
 
-  const handleSelect = (recommendationId) => {
+  const handleSelect = (recommendationId: string) => {
     setSelectedId(recommendationId);
   };
 
-  const handleFormChange = (event) => {
+  const handleFormChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -260,7 +304,7 @@ const LeaderRecommendations = () => {
   };
 
   const validateForm = () => {
-    const nextErrors = {};
+    const nextErrors: ValidationErrors = {};
     const trimmedName = form.name.trim();
     const trimmedEmail = form.email.trim();
     const trimmedPhone = form.phone.trim();
@@ -307,7 +351,7 @@ const LeaderRecommendations = () => {
     };
   };
 
-  const handleSubmitDraft = (status) => {
+  const handleSubmitDraft = (status: string) => {
     if (!leaderId) {
       return;
     }
@@ -331,7 +375,6 @@ const LeaderRecommendations = () => {
 
     submitLeaderRecommendation(leaderId, {
       id: form.id,
-      status,
       name: trimmedName,
       age: Number.isNaN(normalizedAge) ? null : normalizedAge,
       email: trimmedEmail,
@@ -350,11 +393,11 @@ const LeaderRecommendations = () => {
         setCurrentFormId(undefined);
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to save recommendation.');
+        setFormError((error as Error).message || 'Failed to save recommendation.');
       });
   };
 
-  const handleDelete = (recommendationId) => {
+  const handleDelete = (recommendationId: string) => {
     if (!leaderId) {
       return;
     }
@@ -387,11 +430,11 @@ const LeaderRecommendations = () => {
         }
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to delete recommendation.');
+        setFormError((error as Error).message || 'Failed to delete recommendation.');
       });
   };
 
-  const handleQuickSubmit = (recommendationId) => {
+  const handleQuickSubmit = (recommendationId: string) => {
     if (!leaderId) {
       return;
     }
@@ -403,7 +446,6 @@ const LeaderRecommendations = () => {
     }
     submitLeaderRecommendation(leaderId, {
       id: recommendation.id,
-      status: 'submitted',
       name: recommendation.name,
       age: recommendation.age ?? null,
       email: recommendation.email,
@@ -418,11 +460,11 @@ const LeaderRecommendations = () => {
         setSelectedId(recommendationId);
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to submit recommendation.');
+        setFormError((error as Error).message || 'Failed to submit recommendation.');
       });
   };
 
-  const handleCancelSubmission = (recommendationId) => {
+  const handleCancelSubmission = (recommendationId: string) => {
     if (!leaderId) {
       return;
     }
@@ -446,7 +488,6 @@ const LeaderRecommendations = () => {
     }
     submitLeaderRecommendation(leaderId, {
       id: recommendation.id,
-      status: 'draft',
       name: recommendation.name,
       age: recommendation.age ?? null,
       email: recommendation.email,
@@ -461,11 +502,11 @@ const LeaderRecommendations = () => {
         setSelectedId(recommendationId);
       })
       .catch((error) => {
-        setFormError(error.message || 'Failed to cancel submission.');
+        setFormError((error as Error).message || 'Failed to cancel submission.');
       });
   };
 
-  const handleModify = (recommendationId) => {
+  const handleModify = (recommendationId: string) => {
     const recommendation = recommendations.find(
       (item) => item.id === recommendationId
     );
@@ -500,7 +541,7 @@ const LeaderRecommendations = () => {
     setEditingOriginStatus(null);
   };
 
-  const renderListItem = (item) => {
+  const renderListItem = (item: CombinedItem) => {
     const isSelected = selectedId === item.id;
     const isActive = currentFormId === item.id;
     const listItemClassName = classNames(
@@ -519,10 +560,10 @@ const LeaderRecommendations = () => {
       >
         <div className='review__list-top'>
           <span className='review__list-name'>{item.name}</span>
-          {item.isApplication ? (
-            <StatusChip status={item.status || 'awaiting'} />
+          {'isApplication' in item && item.isApplication ? (
+            <StatusChip status={'status' in item ? item.status : 'awaiting'} />
           ) : (
-            <StatusChip status={item.status} />
+            <StatusChip status={'status' in item ? item.status : 'draft'} />
           )}
         </div>
         <div className='review__list-bottom'>
@@ -532,17 +573,17 @@ const LeaderRecommendations = () => {
             {new Date(dateToShow).toLocaleDateString()}
           </span>
           <div className='review__list-tags'>
-            {!item.isApplication && (
+            {!('isApplication' in item && item.isApplication) && (
               <span className='review__list-tag review__list-tag--recommendation'>
                 Recommended
               </span>
             )}
-            {item.isApplication && (
+            {'isApplication' in item && item.isApplication && (
               <span className='review__list-tag review__list-tag--application'>
                 Applied
               </span>
             )}
-            {!item.isApplication && item.hasApplication && (
+            {!('isApplication' in item && item.isApplication) && 'hasApplication' in item && item.hasApplication && (
               <span className='review__list-tag review__list-tag--application'>
                 Applied
               </span>
@@ -553,13 +594,13 @@ const LeaderRecommendations = () => {
     );
   };
 
-  const renderForm = (variant = 'desktop') => (
+  const renderForm = (variant: 'desktop' | 'mobile' = 'desktop') => (
     <form
       className={classNames(
         'leader-recommendations__form',
         variant === 'mobile' && 'leader-recommendations__form--mobile'
       )}
-      onSubmit={(event) => {
+      onSubmit={(event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         handleSubmitDraft('submitted');
       }}
@@ -638,7 +679,7 @@ const LeaderRecommendations = () => {
           showRequiredIndicator={false}
           error={errors.gender}
           options={genderOptions}
-          variant='input'
+          variant='default'
         />
       </div>
       <TextField
@@ -694,7 +735,7 @@ const LeaderRecommendations = () => {
     }
 
     if (selectedItem) {
-      if (selectedItem.isApplication) {
+      if ('isApplication' in selectedItem && selectedItem.isApplication) {
         return (
           <div className='review__details-card'>
             <header className='review__details-header'>
@@ -707,7 +748,7 @@ const LeaderRecommendations = () => {
                   {new Date(selectedItem.createdAt).toLocaleString()}
                 </p>
               </div>
-              <StatusChip status={selectedItem.status || 'awaiting'} />
+              <StatusChip status={'status' in selectedItem ? selectedItem.status : 'awaiting'} />
             </header>
             <dl className='review__grid'>
               <div>
@@ -739,7 +780,7 @@ const LeaderRecommendations = () => {
               <Button
                 type='button'
                 variant='primary'
-                onClick={() => handleRecommendApplicant(selectedItem)}
+                onClick={() => handleRecommendApplicant(selectedItem as Application)}
                 className='leader-recommendations__btn'
               >
                 Recommend
@@ -750,7 +791,7 @@ const LeaderRecommendations = () => {
       }
 
       const updatedLabel = `Updated ${new Date(selectedItem.updatedAt).toLocaleString()}`;
-      const canModify = selectedItem.canEdit && selectedItem.canDelete;
+      const canModify = 'canEdit' in selectedItem && selectedItem.canEdit && 'canDelete' in selectedItem && selectedItem.canDelete;
 
       return (
         <div className='review__details-card'>
@@ -762,7 +803,7 @@ const LeaderRecommendations = () => {
                   <span className='review__details-tag review__details-tag--recommendation'>
                     Recommended
                   </span>
-                  {selectedItem.hasApplication && (
+                  {'hasApplication' in selectedItem && selectedItem.hasApplication && (
                     <span className='review__details-tag review__details-tag--application'>
                       Applied
                     </span>
@@ -771,7 +812,7 @@ const LeaderRecommendations = () => {
               </div>
               <p className='review__details-meta'>{updatedLabel}</p>
             </div>
-            {selectedItem.status && <StatusChip status={selectedItem.status} />}
+            {'status' in selectedItem && selectedItem.status && <StatusChip status={selectedItem.status} />}
           </header>
           <dl className='review__grid'>
             <div>
@@ -815,7 +856,7 @@ const LeaderRecommendations = () => {
                 >
                   Modify
                 </Button>
-                {selectedItem.status === 'draft' ? (
+                {'status' in selectedItem && selectedItem.status === 'draft' ? (
                   <Button
                     type='button'
                     variant='primary'
@@ -861,8 +902,8 @@ const LeaderRecommendations = () => {
     );
   };
 
-  const renderMobileCard = (item) => {
-    if (item.isApplication) {
+  const renderMobileCard = (item: CombinedItem) => {
+    if ('isApplication' in item && item.isApplication) {
       return (
         <article
           key={item.id}
@@ -875,7 +916,7 @@ const LeaderRecommendations = () => {
                 Submitted {new Date(item.createdAt).toLocaleString()}
               </p>
             </div>
-            <StatusChip status={item.status || 'awaiting'} />
+            <StatusChip status={'status' in item ? item.status : 'awaiting'} />
           </div>
           <dl className='review-card__grid'>
             <div>
@@ -907,7 +948,7 @@ const LeaderRecommendations = () => {
               <Button
                 type='button'
                 variant='primary'
-                onClick={() => handleRecommendApplicant(item)}
+                onClick={() => handleRecommendApplicant(item as Application)}
                 className='leader-recommendations__btn'
               >
                 Recommend
@@ -918,7 +959,6 @@ const LeaderRecommendations = () => {
     }
 
     const isEditingThis = currentFormId === item.id;
-    const isLocked = item.status === 'approved' || item.status === 'rejected';
 
     return (
       <article
@@ -936,13 +976,13 @@ const LeaderRecommendations = () => {
               Updated {new Date(item.updatedAt).toLocaleString()}
             </p>
           </div>
-          <StatusChip status={item.status} />
+          {'status' in item && <StatusChip status={item.status} />}
         </div>
         <div className='review-card__tags'>
           <span className='review-card__tag review-card__tag--recommendation'>
             Recommended
           </span>
-          {item.hasApplication && (
+          {'hasApplication' in item && item.hasApplication && (
             <span className='review-card__tag review-card__tag--application'>
               Applied
             </span>
@@ -979,7 +1019,7 @@ const LeaderRecommendations = () => {
           <p>{item.moreInfo || 'No additional information provided.'}</p>
         </div>
         <div className='leader-recommendations__card-actions'>
-          {item.canEdit && item.canDelete ? (
+          {'canEdit' in item && item.canEdit && 'canDelete' in item && item.canDelete ? (
             <>
               <Button
                 type='button'
@@ -988,7 +1028,7 @@ const LeaderRecommendations = () => {
               >
                 Modify
               </Button>
-              {item.status === 'draft' ? (
+              {'status' in item && item.status === 'draft' ? (
                 <Button
                   type='button'
                   variant='primary'
@@ -1061,7 +1101,7 @@ const LeaderRecommendations = () => {
         ariaLabel='Recommendation status filters'
         getBadge={(tab) =>
           combinedItems.filter((item) =>
-            tab.id === 'all' ? true : !item.isApplication && item.status === tab.id
+            tab.id === 'all' ? true : !('isApplication' in item && item.isApplication) && 'status' in item && item.status === tab.id
           ).length
         }
       />
