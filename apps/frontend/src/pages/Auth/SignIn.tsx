@@ -127,9 +127,6 @@ const SignIn = () => {
         <p className='auth__footer'>
           New here? <Link to={ROUTES.SIGN_UP}>Create an account</Link>
         </p>
-        <p className='auth__hint'>
-          Default admin: admin@vibeapply.com / admin123
-        </p>
       </div>
     </div>
   );
