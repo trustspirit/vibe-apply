@@ -18,7 +18,15 @@ RUN pnpm install --frozen-lockfile --filter backend...
 # 3) Build Nest.js backend
 # -------------------------
 FROM base AS builder
-COPY --from=deps /app ./
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
+
+# 👉 빌드에 필요한 소스/설정 복사
+COPY tsconfig*.json ./
+COPY apps/backend ./apps/backend
+COPY packages/shared ./packages/shared
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
 WORKDIR /app/apps/backend
 RUN pnpm build
 
@@ -29,14 +37,11 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# 빌드 결과 복사
+# 빌드 결과와 실행에 필요한 의존성 복사
 COPY --from=builder /app/apps/backend/dist ./dist
-COPY --from=deps /app/apps/backend/package.json ./package.json
+COPY --from=builder /app/apps/backend/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
-# 실행에 필요한 의존성만 설치
-RUN pnpm install --prod --filter backend...
-
-# Cloud Run은 반드시 PORT env 사용
+# Cloud Run은 반드시 PORT 사용
 EXPOSE 8080
-
 CMD ["node", "dist/main.js"]
