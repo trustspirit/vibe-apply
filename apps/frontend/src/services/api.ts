@@ -124,7 +124,11 @@ api.interceptors.response.use(
         clearRefreshToken();
         retriedRequests.clear();
         const currentPath = window.location.pathname;
-        const publicPaths = [ROUTES.SIGN_IN, ROUTES.SIGN_UP, ROUTES.AUTH_CALLBACK] as string[];
+        const publicPaths = [
+          ROUTES.SIGN_IN,
+          ROUTES.SIGN_UP,
+          ROUTES.AUTH_CALLBACK,
+        ] as string[];
         if (!publicPaths.includes(currentPath)) {
           window.location.href = ROUTES.SIGN_IN;
         }
@@ -147,7 +151,11 @@ api.interceptors.response.use(
         clearRefreshToken();
         retriedRequests.clear();
         const currentPath = window.location.pathname;
-        const publicPaths = [ROUTES.SIGN_IN, ROUTES.SIGN_UP, ROUTES.AUTH_CALLBACK] as string[];
+        const publicPaths = [
+          ROUTES.SIGN_IN,
+          ROUTES.SIGN_UP,
+          ROUTES.AUTH_CALLBACK,
+        ] as string[];
         if (!publicPaths.includes(currentPath)) {
           window.location.href = ROUTES.SIGN_IN;
         }

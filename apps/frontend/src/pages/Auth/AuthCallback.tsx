@@ -22,7 +22,11 @@ const AuthCallback = () => {
         const response = await authApi.exchangeAuthorizationCode(code);
         tokenStorage.setTokens(response.accessToken, response.refreshToken);
 
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
 
         const user = await authApi.getCurrentUser();
         setUser(user);

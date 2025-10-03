@@ -420,33 +420,36 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     }
   }, []);
 
-  const updateUserRole = useCallback(async (userId: string, role: UserRole) => {
-    await usersApi.updateRole(userId, role);
-    setState((prev) => ({
-      ...prev,
-      users: prev.users.map((user) => {
-        if (user.id !== userId) {
-          return user;
-        }
-        const normalizedRole = role as UserRole;
-        const leaderStatus: LeaderStatus | null =
-          normalizedRole === (USER_ROLES.LEADER as UserRole)
-            ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
-            : null;
-        return {
-          ...user,
-          role: normalizedRole,
-          leaderStatus,
-        };
-      }),
-    }));
+  const updateUserRole = useCallback(
+    async (userId: string, role: UserRole) => {
+      await usersApi.updateRole(userId, role);
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((user) => {
+          if (user.id !== userId) {
+            return user;
+          }
+          const normalizedRole = role as UserRole;
+          const leaderStatus: LeaderStatus | null =
+            normalizedRole === (USER_ROLES.LEADER as UserRole)
+              ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
+              : null;
+          return {
+            ...user,
+            role: normalizedRole,
+            leaderStatus,
+          };
+        }),
+      }));
 
-    if (userId === currentUserId) {
-      hasFetchedApplications.current = false;
-      hasFetchedRecommendations.current = false;
-      hasFetchedMyApplication.current = false;
-    }
-  }, [currentUserId]);
+      if (userId === currentUserId) {
+        hasFetchedApplications.current = false;
+        hasFetchedRecommendations.current = false;
+        hasFetchedMyApplication.current = false;
+      }
+    },
+    [currentUserId]
+  );
 
   const updateLeaderStatus = useCallback(
     async (userId: string, status: LeaderStatus) => {
