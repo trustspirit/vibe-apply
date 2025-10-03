@@ -236,7 +236,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (currentUser?.role === USER_ROLES.ADMIN && !hasFetchedRecommendations.current) {
+      if (
+        currentUser?.role === USER_ROLES.ADMIN &&
+        !hasFetchedRecommendations.current
+      ) {
         hasFetchedRecommendations.current = true;
         try {
           const recommendations = await recommendationsApi.getAll();
@@ -273,7 +276,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   useEffect(() => {
     const fetchUserApplication = async () => {
-      if (currentUser?.role === USER_ROLES.APPLICANT && currentUser?.id && !hasFetchedMyApplication.current) {
+      if (
+        currentUser?.role === USER_ROLES.APPLICANT &&
+        currentUser?.id &&
+        !hasFetchedMyApplication.current
+      ) {
         hasFetchedMyApplication.current = true;
         try {
           setIsLoadingApplications(true);
