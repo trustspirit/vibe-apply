@@ -30,6 +30,6 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/package.json ./packa
 
 USER nestjs
 
-EXPOSE 3001
+EXPOSE 8080
 
 CMD ["node", "dist/main.js"]
