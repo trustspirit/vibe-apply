@@ -1,5 +1,5 @@
-import axios, { AxiosError } from 'axios';
-import {
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import type {
   User,
   UserRole,
   LeaderStatus,
@@ -7,6 +7,7 @@ import {
   ApplicationStatus,
   LeaderRecommendation,
   RecommendationStatus,
+  TokenResponse,
 } from '@vibe-apply/shared';
 
 interface ErrorData {
@@ -26,21 +27,124 @@ export class ApiError extends Error {
   }
 }
 
+let accessToken: string | null = null;
+
+const getAccessToken = (): string | null => accessToken;
+const setAccessToken = (token: string): void => {
+  accessToken = token;
+};
+const clearAccessToken = (): void => {
+  accessToken = null;
+};
+
+const getRefreshToken = (): string | null =>
+  localStorage.getItem('vibe-apply-refresh-token');
+const setRefreshToken = (token: string): void => {
+  localStorage.setItem('vibe-apply-refresh-token', token);
+};
+const clearRefreshToken = (): void => {
+  localStorage.removeItem('vibe-apply-refresh-token');
+};
+
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
 });
+
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+let isRefreshing = false;
+interface QueueItem {
+  resolve: (value: unknown) => void;
+  reject: (reason?: unknown) => void;
+}
+let failedQueue: QueueItem[] = [];
+const retriedRequests = new Set<string>();
+
+const processQueue = (error: unknown, token: string | null = null): void => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
 
 api.interceptors.response.use(
   (response) => response.data,
-  (error: AxiosError<ErrorData>) => {
+  async (error: AxiosError<ErrorData>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig;
+    const requestId = `${originalRequest.method}-${originalRequest.url}`;
+
+    if (error.response?.status === 401 && !retriedRequests.has(requestId)) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            retriedRequests.add(requestId);
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      retriedRequests.add(requestId);
+      isRefreshing = true;
+
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) {
+        clearAccessToken();
+        clearRefreshToken();
+        retriedRequests.clear();
+        window.location.href = '/auth/signin';
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post<TokenResponse>(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/refresh`,
+          { refreshToken }
+        );
+        const { accessToken: newAccessToken } = response.data;
+        setAccessToken(newAccessToken);
+        processQueue(null, newAccessToken);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        clearAccessToken();
+        clearRefreshToken();
+        retriedRequests.clear();
+        window.location.href = '/auth/signin';
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     const status = error.response?.status || 500;
     const errorData = error.response?.data || { message: 'An error occurred' };
 
-    throw new ApiError(errorData.message || `HTTP ${status}`, status, errorData);
+    throw new ApiError(
+      errorData.message || `HTTP ${status}`,
+      status,
+      errorData
+    );
   }
 );
 
@@ -64,18 +168,30 @@ interface ProfileData {
 }
 
 export const authApi = {
-  signIn: async (data: SignInData): Promise<User> => {
-    await api.post('/auth/signin', data);
-    return api.get('/auth/profile');
+  signIn: async (data: SignInData): Promise<Omit<User, 'password'>> => {
+    const tokenResponse = (await api.post(
+      '/auth/signin',
+      data
+    )) as TokenResponse;
+    setAccessToken(tokenResponse.accessToken);
+    setRefreshToken(tokenResponse.refreshToken);
+    return tokenResponse.user;
   },
 
-  signUp: async (data: SignUpData): Promise<User> => {
-    await api.post('/auth/signup', data);
-    return api.get('/auth/profile');
+  signUp: async (data: SignUpData): Promise<Omit<User, 'password'>> => {
+    const tokenResponse = (await api.post(
+      '/auth/signup',
+      data
+    )) as TokenResponse;
+    setAccessToken(tokenResponse.accessToken);
+    setRefreshToken(tokenResponse.refreshToken);
+    return tokenResponse.user;
   },
 
   signOut: async (): Promise<void> => {
     localStorage.removeItem('vibe-apply-session');
+    clearAccessToken();
+    clearRefreshToken();
 
     try {
       await api.post('/auth/signout');
@@ -85,29 +201,34 @@ export const authApi = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    return api.get('/auth/profile');
+    return api.get('/auth/profile') as Promise<User>;
   },
 
   completeProfile: async (profileData: ProfileData): Promise<User> => {
-    return api.put('/auth/profile/complete', profileData);
+    return api.put('/auth/profile/complete', profileData) as Promise<User>;
   },
 
   updateProfile: async (profileData: Partial<ProfileData>): Promise<User> => {
-    return api.put('/auth/profile', profileData);
+    return api.put('/auth/profile', profileData) as Promise<User>;
   },
 };
 
 export const usersApi = {
   getAll: async (): Promise<User[]> => {
-    return api.get('/auth/users');
+    return api.get('/auth/users') as Promise<User[]>;
   },
 
   updateRole: async (userId: string, role: UserRole): Promise<User> => {
-    return api.put(`/auth/users/${userId}/role`, { role });
+    return api.put(`/auth/users/${userId}/role`, { role }) as Promise<User>;
   },
 
-  updateLeaderStatus: async (userId: string, status: LeaderStatus): Promise<User> => {
-    return api.put(`/auth/users/${userId}/leader-status`, { leaderStatus: status });
+  updateLeaderStatus: async (
+    userId: string,
+    status: LeaderStatus
+  ): Promise<User> => {
+    return api.put(`/auth/users/${userId}/leader-status`, {
+      leaderStatus: status,
+    }) as Promise<User>;
   },
 };
 
@@ -124,27 +245,42 @@ interface ApplicationFormData {
 
 export const applicationsApi = {
   getAll: async (): Promise<Application[]> => {
-    return api.get('/applications');
+    return api.get('/applications') as Promise<Application[]>;
   },
 
   getByUser: async (userId: string): Promise<Application[]> => {
-    return api.get(`/applications/user/${userId}`);
+    return api.get(`/applications/user/${userId}`) as Promise<Application[]>;
   },
 
   getMyApplication: async (): Promise<Application | null> => {
-    return api.get('/applications/my-application');
+    return api.get(
+      '/applications/my-application'
+    ) as Promise<Application | null>;
   },
 
-  submit: async (applicationData: ApplicationFormData): Promise<Application> => {
-    return api.post('/applications', applicationData);
+  submit: async (
+    applicationData: ApplicationFormData
+  ): Promise<Application> => {
+    return api.post('/applications', applicationData) as Promise<Application>;
   },
 
-  update: async (applicationId: string, applicationData: Partial<ApplicationFormData>): Promise<Application> => {
-    return api.put(`/applications/${applicationId}`, applicationData);
+  update: async (
+    applicationId: string,
+    applicationData: Partial<ApplicationFormData>
+  ): Promise<Application> => {
+    return api.put(
+      `/applications/${applicationId}`,
+      applicationData
+    ) as Promise<Application>;
   },
 
-  updateStatus: async (applicationId: string, status: ApplicationStatus): Promise<Application> => {
-    return api.patch(`/applications/${applicationId}/status`, { status });
+  updateStatus: async (
+    applicationId: string,
+    status: ApplicationStatus
+  ): Promise<Application> => {
+    return api.patch(`/applications/${applicationId}/status`, {
+      status,
+    }) as Promise<Application>;
   },
 };
 
@@ -161,33 +297,50 @@ interface RecommendationFormData {
 
 export const recommendationsApi = {
   getAll: async (): Promise<LeaderRecommendation[]> => {
-    return api.get('/recommendations');
+    return api.get('/recommendations') as Promise<LeaderRecommendation[]>;
   },
 
   getByLeader: async (leaderId: string): Promise<LeaderRecommendation[]> => {
-    return api.get(`/recommendations/leader/${leaderId}`);
+    return api.get(`/recommendations/leader/${leaderId}`) as Promise<
+      LeaderRecommendation[]
+    >;
   },
 
   getMyRecommendations: async (): Promise<LeaderRecommendation[]> => {
-    return api.get('/recommendations/my-recommendations');
+    return api.get('/recommendations/my-recommendations') as Promise<
+      LeaderRecommendation[]
+    >;
   },
 
-  submit: async (recommendationData: RecommendationFormData): Promise<LeaderRecommendation> => {
-    return api.post('/recommendations', recommendationData);
+  submit: async (
+    recommendationData: RecommendationFormData
+  ): Promise<LeaderRecommendation> => {
+    return api.post(
+      '/recommendations',
+      recommendationData
+    ) as Promise<LeaderRecommendation>;
   },
 
   update: async (
     recommendationId: string,
     recommendationData: Partial<RecommendationFormData>
   ): Promise<LeaderRecommendation> => {
-    return api.put(`/recommendations/${recommendationId}`, recommendationData);
+    return api.put(
+      `/recommendations/${recommendationId}`,
+      recommendationData
+    ) as Promise<LeaderRecommendation>;
   },
 
-  updateStatus: async (recommendationId: string, status: RecommendationStatus): Promise<LeaderRecommendation> => {
-    return api.patch(`/recommendations/${recommendationId}/status`, { status });
+  updateStatus: async (
+    recommendationId: string,
+    status: RecommendationStatus
+  ): Promise<LeaderRecommendation> => {
+    return api.patch(`/recommendations/${recommendationId}/status`, {
+      status,
+    }) as Promise<LeaderRecommendation>;
   },
 
   delete: async (recommendationId: string): Promise<void> => {
-    return api.delete(`/recommendations/${recommendationId}`);
+    return api.delete(`/recommendations/${recommendationId}`) as Promise<void>;
   },
 };

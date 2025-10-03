@@ -1,7 +1,9 @@
 import { User } from '@vibe-apply/shared';
 import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants';
 
-export const getDefaultPathForUser = (user: User | null): string => {
+export const getDefaultPathForUser = (
+  user: Omit<User, 'password'> | null
+): string => {
   if (!user) {
     return ROUTES.SIGN_IN;
   }
@@ -15,7 +17,9 @@ export const getDefaultPathForUser = (user: User | null): string => {
   }
 
   if (user.role === USER_ROLES.LEADER) {
-    return user.leaderStatus === LEADER_STATUS.APPROVED ? ROUTES.LEADER_DASHBOARD : ROUTES.LEADER_PENDING;
+    return user.leaderStatus === LEADER_STATUS.APPROVED
+      ? ROUTES.LEADER_DASHBOARD
+      : ROUTES.LEADER_PENDING;
   }
 
   return ROUTES.APPLICATION;

@@ -25,8 +25,10 @@ import type {
   RecommendationStatus,
 } from '@vibe-apply/shared';
 
+type UserWithoutPassword = Omit<User, 'password'>;
+
 interface AppState {
-  users: User[];
+  users: UserWithoutPassword[];
   applications: Application[];
   leaderRecommendations: LeaderRecommendation[];
 }
@@ -68,29 +70,46 @@ interface RecommendationPayload {
 }
 
 interface AppContextValue {
-  users: User[];
+  users: UserWithoutPassword[];
   applications: Application[];
   leaderRecommendations: LeaderRecommendation[];
-  currentUser: User | null;
+  currentUser: UserWithoutPassword | null;
   isLoading: boolean;
   isInitializing: boolean;
   isLoadingApplications: boolean;
-  signUp: (data: SignUpData) => Promise<User>;
-  signIn: (data: SignInData) => Promise<User>;
+  signUp: (data: SignUpData) => Promise<UserWithoutPassword>;
+  signIn: (data: SignInData) => Promise<UserWithoutPassword>;
   signOut: () => Promise<void>;
-  setUser: (user: User | null) => void;
+  setUser: (user: UserWithoutPassword | null) => void;
   updateUserRole: (userId: string, role: UserRole) => Promise<void>;
   updateLeaderStatus: (userId: string, status: LeaderStatus) => Promise<void>;
-  submitApplication: (userId: string, payload: ApplicationPayload) => Promise<void>;
-  updateApplicationStatus: (applicationId: string, status: ApplicationStatus) => Promise<void>;
-  submitLeaderRecommendation: (leaderId: string, payload: RecommendationPayload) => Promise<void>;
-  updateLeaderRecommendationStatus: (recommendationId: string, status: RecommendationStatus) => Promise<void>;
-  deleteLeaderRecommendation: (leaderId: string, recommendationId: string) => Promise<void>;
+  submitApplication: (
+    userId: string,
+    payload: ApplicationPayload
+  ) => Promise<void>;
+  updateApplicationStatus: (
+    applicationId: string,
+    status: ApplicationStatus
+  ) => Promise<void>;
+  submitLeaderRecommendation: (
+    leaderId: string,
+    payload: RecommendationPayload
+  ) => Promise<void>;
+  updateLeaderRecommendationStatus: (
+    recommendationId: string,
+    status: RecommendationStatus
+  ) => Promise<void>;
+  deleteLeaderRecommendation: (
+    leaderId: string,
+    recommendationId: string
+  ) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const normalizeUserRecord = (user: User | null): User | null => {
+const normalizeUserRecord = (
+  user: UserWithoutPassword | null
+): UserWithoutPassword | null => {
   if (!user) {
     return user;
   }
@@ -183,7 +202,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   useEffect(() => {
     const fetchApplications = async () => {
-      if (currentUser?.role === USER_ROLES.ADMIN || (currentUser?.role === USER_ROLES.LEADER && currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) {
+      if (
+        currentUser?.role === USER_ROLES.ADMIN ||
+        (currentUser?.role === USER_ROLES.LEADER &&
+          currentUser?.leaderStatus === LEADER_STATUS.APPROVED)
+      ) {
         try {
           const applications = await applicationsApi.getAll();
           setState((prev) => ({
@@ -211,9 +234,13 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         } catch (error) {
           console.warn('Failed to fetch admin recommendations:', error);
         }
-      } else if (currentUser?.role === USER_ROLES.LEADER && currentUser?.leaderStatus === LEADER_STATUS.APPROVED) {
+      } else if (
+        currentUser?.role === USER_ROLES.LEADER &&
+        currentUser?.leaderStatus === LEADER_STATUS.APPROVED
+      ) {
         try {
-          const recommendations = await recommendationsApi.getMyRecommendations();
+          const recommendations =
+            await recommendationsApi.getMyRecommendations();
           setState((prev) => ({
             ...prev,
             leaderRecommendations: recommendations,
@@ -249,7 +276,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   }, [currentUser?.role, currentUser?.id]);
 
   const signUp = useCallback(
-    async ({ name, email, password }: SignUpData): Promise<User> => {
+    async ({
+      name,
+      email,
+      password,
+    }: SignUpData): Promise<UserWithoutPassword> => {
       try {
         setIsLoading(true);
         const user = await authApi.signUp({ name, email, password });
@@ -274,7 +305,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   );
 
   const signIn = useCallback(
-    async ({ email, password }: SignInData): Promise<User> => {
+    async ({ email, password }: SignInData): Promise<UserWithoutPassword> => {
       try {
         setIsLoading(true);
         const user = await authApi.signIn({ email, password });
@@ -345,62 +376,71 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     }));
   }, []);
 
-  const updateLeaderStatus = useCallback(async (userId: string, status: LeaderStatus) => {
-    await usersApi.updateLeaderStatus(userId, status);
-    setState((prev) => ({
-      ...prev,
-      users: prev.users.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              leaderStatus: status,
-            }
-          : user
-      ),
-    }));
-  }, []);
-
-  const submitApplication = useCallback(async (userId: string, payload: ApplicationPayload) => {
-    const { userId: _, ...payloadWithoutUserId } = payload;
-    const application = await applicationsApi.submit(payloadWithoutUserId);
-    setState((prev) => {
-      const existing = prev.applications.find((app) => app.userId === userId);
-      if (existing) {
-        return {
-          ...prev,
-          applications: prev.applications.map((app) =>
-            app.id === existing.id ? application : app
-          ),
-        };
-      }
-      return {
-        ...prev,
-        applications: [application, ...prev.applications],
-      };
-    });
-  }, []);
-
-  const submitLeaderRecommendation = useCallback(async (leaderId: string, payload: RecommendationPayload) => {
-    const { id, leaderId: _, ...formData } = payload;
-    if (id) {
-      const recommendation = await recommendationsApi.update(id, formData);
+  const updateLeaderStatus = useCallback(
+    async (userId: string, status: LeaderStatus) => {
+      await usersApi.updateLeaderStatus(userId, status);
       setState((prev) => ({
         ...prev,
-        leaderRecommendations: prev.leaderRecommendations.map((rec) =>
-          rec.id === id ? recommendation : rec
+        users: prev.users.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                leaderStatus: status,
+              }
+            : user
         ),
       }));
-    } else {
-      const recommendation = await recommendationsApi.submit(formData);
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: [
-          recommendation,
-          ...prev.leaderRecommendations,
-        ],
-      }));
-    }
-  }, []);
+    },
+    []
+  );
+
+  const submitApplication = useCallback(
+    async (userId: string, payload: ApplicationPayload) => {
+      const { userId: _, ...payloadWithoutUserId } = payload;
+      const application = await applicationsApi.submit(payloadWithoutUserId);
+      setState((prev) => {
+        const existing = prev.applications.find((app) => app.userId === userId);
+        if (existing) {
+          return {
+            ...prev,
+            applications: prev.applications.map((app) =>
+              app.id === existing.id ? application : app
+            ),
+          };
+        }
+        return {
+          ...prev,
+          applications: [application, ...prev.applications],
+        };
+      });
+    },
+    []
+  );
+
+  const submitLeaderRecommendation = useCallback(
+    async (leaderId: string, payload: RecommendationPayload) => {
+      const { id, leaderId: _, ...formData } = payload;
+      if (id) {
+        const recommendation = await recommendationsApi.update(id, formData);
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: prev.leaderRecommendations.map((rec) =>
+            rec.id === id ? recommendation : rec
+          ),
+        }));
+      } else {
+        const recommendation = await recommendationsApi.submit(formData);
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: [
+            recommendation,
+            ...prev.leaderRecommendations,
+          ],
+        }));
+      }
+    },
+    []
+  );
 
   const deleteLeaderRecommendation = useCallback(
     async (leaderId: string, recommendationId: string) => {
@@ -415,21 +455,24 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     []
   );
 
-  const updateApplicationStatus = useCallback(async (applicationId: string, status: ApplicationStatus) => {
-    await applicationsApi.updateStatus(applicationId, status);
-    setState((prev) => ({
-      ...prev,
-      applications: prev.applications.map((app) =>
-        app.id === applicationId
-          ? {
-              ...app,
-              status,
-              updatedAt: new Date().toISOString(),
-            }
-          : app
-      ),
-    }));
-  }, []);
+  const updateApplicationStatus = useCallback(
+    async (applicationId: string, status: ApplicationStatus) => {
+      await applicationsApi.updateStatus(applicationId, status);
+      setState((prev) => ({
+        ...prev,
+        applications: prev.applications.map((app) =>
+          app.id === applicationId
+            ? {
+                ...app,
+                status,
+                updatedAt: new Date().toISOString(),
+              }
+            : app
+        ),
+      }));
+    },
+    []
+  );
 
   const updateLeaderRecommendationStatus = useCallback(
     async (recommendationId: string, status: RecommendationStatus) => {
