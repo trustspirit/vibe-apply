@@ -1,47 +1,58 @@
-# -------------------------
-# 1) Base image
-# -------------------------
 FROM node:20-alpine AS base
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # -------------------------
-# 2) Install dependencies
+# 1) Install dependencies
 # -------------------------
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
 COPY packages/shared/package.json ./packages/shared/
-RUN pnpm install --frozen-lockfile --filter backend...
+RUN pnpm install --frozen-lockfile
 
 # -------------------------
-# 3) Build Nest.js backend
+# 2) Build shared package & backend
 # -------------------------
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
-
-# 👉 빌드에 필요한 소스/설정 복사
-COPY tsconfig*.json ./
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/backend/package.json ./apps/backend/
+COPY packages/shared/package.json ./packages/shared/
 COPY apps/backend ./apps/backend
 COPY packages/shared ./packages/shared
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
+# Build shared package first (use root node_modules for typescript)
+WORKDIR /app
+RUN ./node_modules/.bin/tsc -p packages/shared/tsconfig.json
+
+# Build backend
 WORKDIR /app/apps/backend
 RUN pnpm build
 
 # -------------------------
-# 4) Production image
+# 3) Production runner
 # -------------------------
-FROM base AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 빌드 결과와 실행에 필요한 의존성 복사
-COPY --from=builder /app/apps/backend/dist ./dist
-COPY --from=builder /app/apps/backend/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
+# Copy workspace config
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/apps/backend/package.json ./apps/backend/
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 
-# Cloud Run은 반드시 PORT 사용
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy built artifacts
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+
+WORKDIR /app/apps/backend
+
 EXPOSE 8080
 CMD ["node", "dist/main.js"]
