@@ -12,7 +12,7 @@
     "build": "pnpm --recursive run build",
     "frontend:dev": "pnpm --filter frontend dev",
     "backend:dev": "pnpm --filter backend start:dev",
-    "frontend:build": "pnpm --filter frontend build",
+    "frontend:build": "pnpm --filter @vibe-apply/shared build && pnpm --filter frontend build",
     "backend:build": "pnpm --filter backend build",
     "lint": "pnpm --recursive run lint",
     "lint:fix": "pnpm --recursive run lint:fix",
