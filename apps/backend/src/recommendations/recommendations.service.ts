@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { FirebaseService } from '../firebase/firebase.service';
 import {
   LeaderRecommendation,
@@ -21,6 +25,9 @@ export class RecommendationsService {
 
     const recommendationData = {
       ...createRecommendationDto,
+      stake: createRecommendationDto.stake.trim().toLowerCase(),
+      ward: createRecommendationDto.ward.trim().toLowerCase(),
+      email: createRecommendationDto.email.toLowerCase(),
       moreInfo: createRecommendationDto.moreInfo || '',
       leaderId,
       status,
@@ -72,20 +79,23 @@ export class RecommendationsService {
     userWard?: string,
     userStake?: string,
   ): Promise<LeaderRecommendation[]> {
-    let query = this.firebaseService
+    const baseQuery = this.firebaseService
       .getFirestore()
-      .collection('recommendations')
-      .orderBy('createdAt', 'desc');
+      .collection('recommendations');
+
+    let query: FirebaseFirestore.Query;
 
     if (userRole === UserRole.BISHOP && userWard) {
-      query = query.where('ward', '==', userWard);
+      query = baseQuery.where('ward', '==', userWard.toLowerCase());
     } else if (userRole === UserRole.STAKE_PRESIDENT && userStake) {
-      query = query.where('stake', '==', userStake);
+      query = baseQuery.where('stake', '==', userStake.toLowerCase());
+    } else {
+      query = baseQuery.orderBy('createdAt', 'desc');
     }
 
     const recommendationsSnapshot = await query.get();
 
-    return recommendationsSnapshot.docs
+    const recommendations = recommendationsSnapshot.docs
       .filter((doc) => {
         const data = doc.data();
         return data.status !== RecommendationStatus.DRAFT;
@@ -93,8 +103,10 @@ export class RecommendationsService {
       .map((doc) => {
         const data = doc.data();
         const status = data.status as RecommendationStatus;
-        const canModify = status !== RecommendationStatus.APPROVED && status !== RecommendationStatus.REJECTED;
-        
+        const canModify =
+          status !== RecommendationStatus.APPROVED &&
+          status !== RecommendationStatus.REJECTED;
+
         return {
           id: doc.id,
           ...data,
@@ -102,6 +114,15 @@ export class RecommendationsService {
           canDelete: canModify,
         } as unknown as LeaderRecommendation;
       });
+
+    if (userRole === UserRole.BISHOP || userRole === UserRole.STAKE_PRESIDENT) {
+      recommendations.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    }
+
+    return recommendations;
   }
 
   async findByLeaderId(leaderId: string): Promise<LeaderRecommendation[]> {
@@ -115,8 +136,10 @@ export class RecommendationsService {
       .map((doc) => {
         const data = doc.data();
         const status = data.status as RecommendationStatus;
-        const canModify = status !== RecommendationStatus.APPROVED && status !== RecommendationStatus.REJECTED;
-        
+        const canModify =
+          status !== RecommendationStatus.APPROVED &&
+          status !== RecommendationStatus.REJECTED;
+
         return {
           id: doc.id,
           ...data,
@@ -125,7 +148,10 @@ export class RecommendationsService {
           canDelete: canModify,
         } as unknown as LeaderRecommendation;
       })
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
   }
 
   async findOne(id: string): Promise<LeaderRecommendation> {
@@ -155,13 +181,21 @@ export class RecommendationsService {
     updateRecommendationDto: UpdateRecommendationDto,
   ): Promise<LeaderRecommendation> {
     const existing = await this.findOne(id);
-    
-    if (existing.status === RecommendationStatus.APPROVED || existing.status === RecommendationStatus.REJECTED) {
-      throw new BadRequestException('Cannot modify a recommendation that has been reviewed');
+
+    if (
+      existing.status === RecommendationStatus.APPROVED ||
+      existing.status === RecommendationStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        'Cannot modify a recommendation that has been reviewed',
+      );
     }
 
     const updateData = {
       ...updateRecommendationDto,
+      ...(updateRecommendationDto.stake && { stake: updateRecommendationDto.stake.trim().toLowerCase() }),
+      ...(updateRecommendationDto.ward && { ward: updateRecommendationDto.ward.trim().toLowerCase() }),
+      ...(updateRecommendationDto.email && { email: updateRecommendationDto.email.toLowerCase() }),
       updatedAt: new Date().toISOString(),
     };
 
@@ -183,9 +217,14 @@ export class RecommendationsService {
 
   async remove(id: string): Promise<void> {
     const existing = await this.findOne(id);
-    
-    if (existing.status === RecommendationStatus.APPROVED || existing.status === RecommendationStatus.REJECTED) {
-      throw new BadRequestException('Cannot delete a recommendation that has been reviewed');
+
+    if (
+      existing.status === RecommendationStatus.APPROVED ||
+      existing.status === RecommendationStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        'Cannot delete a recommendation that has been reviewed',
+      );
     }
 
     await this.firebaseService

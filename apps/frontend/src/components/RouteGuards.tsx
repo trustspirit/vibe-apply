@@ -28,18 +28,29 @@ export const RequireAuth = ({ children }: RouteGuardProps) => {
 };
 
 export const RequireAdmin = ({ children }: RouteGuardProps) => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
   const location = useLocation();
+
+  if (isInitializing) {
+    return null;
+  }
 
   if (!currentUser) {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  if (currentUser.role !== USER_ROLES.ADMIN && currentUser.role !== USER_ROLES.SESSION_LEADER) {
-    return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
+  if (currentUser.role === USER_ROLES.ADMIN) {
+    return children;
   }
 
-  return children;
+  if (currentUser.role === USER_ROLES.SESSION_LEADER) {
+    if (currentUser.leaderStatus !== LEADER_STATUS.APPROVED) {
+      return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
+    }
+    return children;
+  }
+
+  return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
 };
 
 export const PublicOnly = ({ children }: RouteGuardProps) => {
@@ -60,8 +71,10 @@ export const PublicOnly = ({ children }: RouteGuardProps) => {
 };
 
 export const RequireUser = ({ children }: RouteGuardProps) => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
   const location = useLocation();
+
+  if (isInitializing) return null;
 
   if (!currentUser) {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
@@ -82,15 +95,22 @@ export const RequireLeader = ({
   children,
   requireApproved = false,
 }: RequireLeaderProps) => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
   const location = useLocation();
+
+  if (isInitializing) {
+    return null;
+  }
 
   if (!currentUser) {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  const isLeader = currentUser.role === USER_ROLES.BISHOP || currentUser.role === USER_ROLES.STAKE_PRESIDENT;
-  
+  const isLeader =
+    currentUser.role === USER_ROLES.BISHOP ||
+    currentUser.role === USER_ROLES.STAKE_PRESIDENT ||
+    currentUser.role === USER_ROLES.SESSION_LEADER;
+
   if (!isLeader) {
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
@@ -103,7 +123,11 @@ export const RequireLeader = ({
 };
 
 export const RequireIncompleteProfile = ({ children }: RouteGuardProps) => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
+
+  if (isInitializing) {
+    return null;
+  }
 
   if (!currentUser) {
     return <Navigate to={ROUTES.SIGN_IN} replace />;

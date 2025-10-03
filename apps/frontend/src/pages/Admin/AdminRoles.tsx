@@ -1,4 +1,4 @@
-import { type ChangeEvent, useMemo } from 'react';
+import { type ChangeEvent, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ComboBox, StatusChip, ToggleButton } from '../../components/ui';
 import { USER_ROLES, LEADER_STATUS } from '../../utils/constants';
@@ -14,7 +14,11 @@ const ROLE_OPTIONS = [
 ];
 
 const AdminRoles = () => {
-  const { users, currentUser, updateUserRole, updateLeaderStatus } = useApp();
+  const { users, currentUser, updateUserRole, updateLeaderStatus, refetchUsers } = useApp();
+
+  useEffect(() => {
+    refetchUsers();
+  }, [refetchUsers]);
 
   const sortedUsers = useMemo(
     () =>
@@ -86,7 +90,9 @@ const AdminRoles = () => {
                       user.role === USER_ROLES.ADMIN
                         ? 'Admin'
                         : user.role === USER_ROLES.SESSION_LEADER
-                          ? 'Session Leader'
+                          ? user.leaderStatus === LEADER_STATUS.APPROVED
+                            ? 'Session Leader'
+                            : 'Session Leader (Pending)'
                           : user.role === USER_ROLES.STAKE_PRESIDENT
                             ? user.leaderStatus === LEADER_STATUS.APPROVED
                               ? 'Stake President'
@@ -125,7 +131,7 @@ const AdminRoles = () => {
                   )}
                 </td>
                 <td>
-                  {user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
+                  {user.role === USER_ROLES.SESSION_LEADER || user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
                     <ToggleButton
                       checked={user.leaderStatus === LEADER_STATUS.APPROVED}
                       onChange={(next: boolean) => handleLeaderToggle(user.id, next)}

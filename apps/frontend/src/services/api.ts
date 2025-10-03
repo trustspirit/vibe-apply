@@ -101,8 +101,9 @@ api.interceptors.response.use(
   async (error: AxiosError<ErrorData>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig;
     const requestId = `${originalRequest.method}-${originalRequest.url}`;
+    const isAuthEndpoint = originalRequest.url?.includes('/auth/signin') || originalRequest.url?.includes('/auth/signup');
 
-    if (error.response?.status === 401 && !retriedRequests.has(requestId)) {
+    if (error.response?.status === 401 && !retriedRequests.has(requestId) && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -237,6 +238,18 @@ export const authApi = {
     }>;
   },
 
+  refreshAccessToken: async (): Promise<void> => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+    const response = await axios.post<TokenResponse>(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/refresh`,
+      { refreshToken }
+    );
+    setAccessToken(response.data.accessToken);
+  },
+
   getCurrentUser: async (): Promise<User> => {
     return api.get('/auth/profile') as Promise<User>;
   },
@@ -330,6 +343,7 @@ interface RecommendationFormData {
   ward: string;
   gender: string;
   moreInfo: string;
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected';
 }
 
 export const recommendationsApi = {

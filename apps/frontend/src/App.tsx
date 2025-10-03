@@ -25,9 +25,13 @@ import { getDefaultPathForUser } from './utils/navigation';
 import { ROUTES } from './utils/constants';
 
 const App = () => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
 
   const defaultAuthedPath = getDefaultPathForUser(currentUser);
+
+  if (isInitializing) {
+    return null;
+  }
 
   return (
     <Routes>
@@ -48,13 +52,13 @@ const App = () => {
         }
       />
       <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallback />} />
-      <Route 
-        path={ROUTES.COMPLETE_PROFILE} 
+      <Route
+        path={ROUTES.COMPLETE_PROFILE}
         element={
           <RequireIncompleteProfile>
             <CompleteProfile />
           </RequireIncompleteProfile>
-        } 
+        }
       />
       <Route
         element={
@@ -104,10 +108,7 @@ const App = () => {
             </RequireUser>
           }
         />
-        <Route
-          path={ROUTES.ACCOUNT_SETTINGS}
-          element={<AccountSettings />}
-        />
+        <Route path={ROUTES.ACCOUNT_SETTINGS} element={<AccountSettings />} />
         <Route
           path={ROUTES.LEADER_DASHBOARD}
           element={
@@ -136,7 +137,10 @@ const App = () => {
       <Route
         path='*'
         element={
-          <Navigate to={currentUser ? defaultAuthedPath : ROUTES.SIGN_IN} replace />
+          <Navigate
+            to={currentUser ? defaultAuthedPath : ROUTES.SIGN_IN}
+            replace
+          />
         }
       />
     </Routes>

@@ -13,7 +13,7 @@ const STATUS_TONES = {
 const STATUS_LABELS = {
   draft: 'Draft',
   awaiting: 'Awaiting',
-  submitted: 'Submitted',
+  submitted: 'Awaiting',
   approved: 'Approved',
   rejected: 'Rejected',
   reviewed: 'Reviewed',

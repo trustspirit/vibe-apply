@@ -25,6 +25,9 @@ export class ApplicationsService {
 
     const applicationData = {
       ...createApplicationDto,
+      stake: createApplicationDto.stake.trim().toLowerCase(),
+      ward: createApplicationDto.ward.trim().toLowerCase(),
+      email: createApplicationDto.email.toLowerCase(),
       moreInfo: createApplicationDto.moreInfo || '',
       userId,
       status,
@@ -76,21 +79,24 @@ export class ApplicationsService {
     userWard?: string,
     userStake?: string,
   ): Promise<Application[]> {
-    let query = this.firebaseService
+    const baseQuery = this.firebaseService
       .getFirestore()
-      .collection('applications')
-      .orderBy('createdAt', 'desc');
+      .collection('applications');
+
+    let query: FirebaseFirestore.Query;
 
     if (userRole === UserRole.BISHOP && userWard) {
-      query = query.where('ward', '==', userWard);
+      query = baseQuery.where('ward', '==', userWard.toLowerCase());
     } else if (userRole === UserRole.STAKE_PRESIDENT && userStake) {
-      query = query.where('stake', '==', userStake);
+      query = baseQuery.where('stake', '==', userStake.toLowerCase());
+    } else {
+      query = baseQuery.orderBy('createdAt', 'desc');
     }
 
     const applicationsSnapshot = await query.get();
 
-    return applicationsSnapshot.docs.map((doc) => {
-      const data = doc.data();
+    const applications = applicationsSnapshot.docs.map((doc) => {
+      const data = doc.data() as Record<string, unknown>;
       const status = data.status as ApplicationStatus;
       const canModify =
         status !== ApplicationStatus.APPROVED &&
@@ -114,6 +120,15 @@ export class ApplicationsService {
         canDelete: canModify,
       } as Application & { canEdit: boolean; canDelete: boolean };
     });
+
+    if (userRole === UserRole.BISHOP || userRole === UserRole.STAKE_PRESIDENT) {
+      applications.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    }
+
+    return applications;
   }
 
   async findByUserId(userId: string): Promise<Application | null> {
@@ -129,7 +144,7 @@ export class ApplicationsService {
     }
 
     const doc = applicationsSnapshot.docs[0];
-    const data = doc.data();
+    const data = doc.data() as Record<string, unknown>;
     const status = data.status as ApplicationStatus;
     const canModify =
       status !== ApplicationStatus.APPROVED &&
@@ -165,7 +180,7 @@ export class ApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    const data = doc.data();
+    const data = doc.data() as Record<string, unknown> | undefined;
     if (!data) {
       throw new NotFoundException('Application data not found');
     }
@@ -193,6 +208,9 @@ export class ApplicationsService {
 
     const updateData = {
       ...updateApplicationDto,
+      ...(updateApplicationDto.stake && { stake: updateApplicationDto.stake.trim().toLowerCase() }),
+      ...(updateApplicationDto.ward && { ward: updateApplicationDto.ward.trim().toLowerCase() }),
+      ...(updateApplicationDto.email && { email: updateApplicationDto.email.toLowerCase() }),
       updatedAt: new Date().toISOString(),
     };
 
@@ -229,7 +247,10 @@ export class ApplicationsService {
 
     if (!recommendationsSnapshot.empty) {
       const recommendationDoc = recommendationsSnapshot.docs[0];
-      const recommendationData = recommendationDoc.data();
+      const recommendationData = recommendationDoc.data() as Record<
+        string,
+        unknown
+      >;
       const email = recommendationData.email as string | undefined;
       const stake = recommendationData.stake as string;
       const ward = recommendationData.ward as string;

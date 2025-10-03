@@ -76,9 +76,16 @@ const AdminReview = () => {
     leaderRecommendations,
     updateApplicationStatus,
     updateLeaderRecommendationStatus,
+    refetchApplications,
+    refetchRecommendations,
   } = useApp();
   const location = useLocation();
   const locationStateRef = useRef<LocationState | null>(null);
+
+  useEffect(() => {
+    refetchApplications();
+    refetchRecommendations();
+  }, [refetchApplications, refetchRecommendations]);
 
   const [activeTab, setActiveTab] = useState(() => {
     const requestedTab = (location.state as LocationState)?.initialTab;

@@ -68,6 +68,7 @@ interface RecommendationPayload {
   ward: string;
   gender: string;
   moreInfo: string;
+  status?: RecommendationStatus;
 }
 
 interface AppContextValue {
@@ -104,6 +105,9 @@ interface AppContextValue {
     leaderId: string,
     recommendationId: string
   ) => Promise<void>;
+  refetchApplications: () => Promise<void>;
+  refetchRecommendations: () => Promise<void>;
+  refetchUsers: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -114,6 +118,15 @@ const normalizeUserRecord = (
   if (!user) {
     return user;
   }
+
+  if (user.role === null) {
+    return {
+      ...user,
+      role: null,
+      leaderStatus: null,
+    };
+  }
+
   const normalizedRole: UserRole =
     user.role === (USER_ROLES.ADMIN as UserRole)
       ? (USER_ROLES.ADMIN as UserRole)
@@ -125,8 +138,8 @@ const normalizeUserRecord = (
             ? (USER_ROLES.BISHOP as UserRole)
             : (USER_ROLES.APPLICANT as UserRole);
   const leaderStatus: LeaderStatus | null =
-    normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) || 
-    normalizedRole === (USER_ROLES.BISHOP as UserRole) || 
+    normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) ||
+    normalizedRole === (USER_ROLES.BISHOP as UserRole) ||
     normalizedRole === (USER_ROLES.SESSION_LEADER as UserRole)
       ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
         ? (LEADER_STATUS.APPROVED as LeaderStatus)
@@ -152,7 +165,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   });
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(() => {
+    return !!localStorage.getItem('vibe-apply-refresh-token');
+  });
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
   const hasInitializedAuth = useRef(false);
   const hasFetchedUsers = useRef(false);
@@ -167,33 +182,48 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      if (hasInitializedAuth.current) {
+        return;
+      }
+      hasInitializedAuth.current = true;
+
       const isAuthCallback = window.location.pathname === '/auth/callback';
 
-      if (!currentUserId && !isAuthCallback && !hasInitializedAuth.current) {
-        try {
-          setIsLoading(true);
-          const user = await authApi.getCurrentUser();
-          hasInitializedAuth.current = true;
-          setCurrentUserId(user.id);
+      if (isAuthCallback) {
+        setIsInitializing(false);
+        return;
+      }
+
+      const refreshToken = localStorage.getItem('vibe-apply-refresh-token');
+      if (!refreshToken) {
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        await authApi.refreshAccessToken();
+        const user = await authApi.getCurrentUser();
+        const normalized = normalizeUserRecord(user);
+        if (normalized) {
+          setCurrentUserId(normalized.id);
           setState((prev) => ({
             ...prev,
-            users: prev.users.some((u) => u.id === user.id)
-              ? prev.users.map((u) => (u.id === user.id ? user : u))
-              : [...prev.users, user],
+            users: prev.users.some((u) => u.id === normalized.id)
+              ? prev.users.map((u) => (u.id === normalized.id ? normalized : u))
+              : [...prev.users, normalized],
           }));
-        } catch {
-          hasInitializedAuth.current = true;
-        } finally {
-          setIsLoading(false);
-          setIsInitializing(false);
         }
-      } else if (currentUserId || isAuthCallback) {
+      } catch {
+        localStorage.removeItem('vibe-apply-refresh-token');
+      } finally {
+        setIsLoading(false);
         setIsInitializing(false);
       }
     };
 
     initializeAuth();
-  }, [currentUserId]);
+  }, []);
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -220,7 +250,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       if (
         (currentUser?.role === USER_ROLES.ADMIN ||
           ((currentUser?.role === USER_ROLES.SESSION_LEADER ||
-            currentUser?.role === USER_ROLES.BISHOP || 
+            currentUser?.role === USER_ROLES.BISHOP ||
             currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
             currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
         !hasFetchedApplications.current
@@ -245,8 +275,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     const fetchRecommendations = async () => {
       if (
-        (currentUser?.role === USER_ROLES.ADMIN || 
-          (currentUser?.role === USER_ROLES.SESSION_LEADER && 
+        (currentUser?.role === USER_ROLES.ADMIN ||
+          ((currentUser?.role === USER_ROLES.BISHOP ||
+            currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
+            currentUser?.leaderStatus === LEADER_STATUS.APPROVED) ||
+          (currentUser?.role === USER_ROLES.SESSION_LEADER &&
             currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
         !hasFetchedRecommendations.current
       ) {
@@ -258,24 +291,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             leaderRecommendations: recommendations,
           }));
         } catch (error) {
-          console.warn('Failed to fetch admin recommendations:', error);
-          hasFetchedRecommendations.current = false;
-        }
-      } else if (
-        (currentUser?.role === USER_ROLES.BISHOP || currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
-        currentUser?.leaderStatus === LEADER_STATUS.APPROVED &&
-        !hasFetchedRecommendations.current
-      ) {
-        hasFetchedRecommendations.current = true;
-        try {
-          const recommendations =
-            await recommendationsApi.getMyRecommendations();
-          setState((prev) => ({
-            ...prev,
-            leaderRecommendations: recommendations,
-          }));
-        } catch (error) {
-          console.warn('Failed to fetch leader recommendations:', error);
+          console.warn('Failed to fetch recommendations:', error);
           hasFetchedRecommendations.current = false;
         }
       }
@@ -320,21 +336,24 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       try {
         setIsLoading(true);
         const user = await authApi.signUp({ name, email, password });
+        const normalized = normalizeUserRecord(user);
 
-        setState((prev) => ({
-          ...prev,
-          users: prev.users.some((u) => u.id === user.id)
-            ? prev.users.map((u) => (u.id === user.id ? user : u))
-            : [...prev.users, user],
-        }));
-        setCurrentUserId(user.id);
+        if (normalized) {
+          setState((prev) => ({
+            ...prev,
+            users: prev.users.some((u) => u.id === normalized.id)
+              ? prev.users.map((u) => (u.id === normalized.id ? normalized : u))
+              : [...prev.users, normalized],
+          }));
+          setCurrentUserId(normalized.id);
+        }
 
         hasFetchedUsers.current = false;
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
         hasFetchedMyApplication.current = false;
 
-        return user;
+        return normalized || user;
       } catch (error) {
         if (error instanceof ApiError) {
           throw new Error(error.message);
@@ -352,22 +371,24 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       try {
         setIsLoading(true);
         const user = await authApi.signIn({ email, password });
+        const normalized = normalizeUserRecord(user);
 
-        setState((prev) => ({
-          ...prev,
-          users: prev.users.some((u) => u.id === user.id)
-            ? prev.users.map((u) => (u.id === user.id ? user : u))
-            : [...prev.users, user],
-        }));
-        setCurrentUserId(user.id);
+        if (normalized) {
+          setState((prev) => ({
+            ...prev,
+            users: prev.users.some((u) => u.id === normalized.id)
+              ? prev.users.map((u) => (u.id === normalized.id ? normalized : u))
+              : [...prev.users, normalized],
+          }));
+          setCurrentUserId(normalized.id);
+        }
 
-        // Reset fetch flags for new user session
         hasFetchedUsers.current = false;
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
         hasFetchedMyApplication.current = false;
 
-        return user;
+        return normalized || user;
       } catch (error) {
         if (error instanceof ApiError) {
           throw new Error(error.message);
@@ -433,6 +454,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const updateUserRole = useCallback(
     async (userId: string, role: UserRole) => {
       await usersApi.updateRole(userId, role);
+      let updatedUser: UserWithoutPassword | null = null;
       setState((prev) => ({
         ...prev,
         users: prev.users.map((user) => {
@@ -441,20 +463,22 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }
           const normalizedRole = role as UserRole;
           const leaderStatus: LeaderStatus | null =
-            normalizedRole === (USER_ROLES.BISHOP as UserRole) || 
-            normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) || 
+            normalizedRole === (USER_ROLES.BISHOP as UserRole) ||
+            normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) ||
             normalizedRole === (USER_ROLES.SESSION_LEADER as UserRole)
               ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
               : null;
-          return {
+          updatedUser = {
             ...user,
             role: normalizedRole,
             leaderStatus,
           };
+          return updatedUser;
         }),
       }));
 
-      if (userId === currentUserId) {
+      if (userId === currentUserId && updatedUser) {
+        setCurrentUserId(updatedUser.id);
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
         hasFetchedMyApplication.current = false;
@@ -466,19 +490,23 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const updateLeaderStatus = useCallback(
     async (userId: string, status: LeaderStatus) => {
       await usersApi.updateLeaderStatus(userId, status);
+      let updatedUser: UserWithoutPassword | null = null;
       setState((prev) => ({
         ...prev,
-        users: prev.users.map((user) =>
-          user.id === userId
-            ? {
-                ...user,
-                leaderStatus: status,
-              }
-            : user
-        ),
+        users: prev.users.map((user) => {
+          if (user.id === userId) {
+            updatedUser = {
+              ...user,
+              leaderStatus: status,
+            };
+            return updatedUser;
+          }
+          return user;
+        }),
       }));
 
-      if (userId === currentUserId) {
+      if (userId === currentUserId && updatedUser) {
+        setCurrentUserId(updatedUser.id);
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
       }
@@ -586,6 +614,77 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     []
   );
 
+  const refetchApplications = useCallback(async () => {
+    if (!currentUser) {
+      return;
+    }
+
+    try {
+      if (
+        currentUser.role === USER_ROLES.ADMIN ||
+        ((currentUser.role === USER_ROLES.SESSION_LEADER ||
+          currentUser.role === USER_ROLES.BISHOP ||
+          currentUser.role === USER_ROLES.STAKE_PRESIDENT) &&
+          currentUser.leaderStatus === LEADER_STATUS.APPROVED)
+      ) {
+        const applications = await applicationsApi.getAll();
+        setState((prev) => ({
+          ...prev,
+          applications,
+        }));
+      } else if (currentUser.role === USER_ROLES.APPLICANT) {
+        const application = await applicationsApi.getMyApplication();
+        setState((prev) => ({
+          ...prev,
+          applications: application ? [application] : [],
+        }));
+      }
+    } catch (error) {
+      console.warn('Failed to refetch applications:', error);
+    }
+  }, [currentUser]);
+
+  const refetchRecommendations = useCallback(async () => {
+    if (!currentUser) {
+      return;
+    }
+
+    try {
+      if (
+        currentUser.role === USER_ROLES.ADMIN ||
+        ((currentUser.role === USER_ROLES.BISHOP ||
+          currentUser.role === USER_ROLES.STAKE_PRESIDENT) &&
+          currentUser.leaderStatus === LEADER_STATUS.APPROVED) ||
+        (currentUser.role === USER_ROLES.SESSION_LEADER &&
+          currentUser.leaderStatus === LEADER_STATUS.APPROVED)
+      ) {
+        const recommendations = await recommendationsApi.getAll();
+        setState((prev) => ({
+          ...prev,
+          leaderRecommendations: recommendations,
+        }));
+      }
+    } catch (error) {
+      console.warn('Failed to refetch recommendations:', error);
+    }
+  }, [currentUser]);
+
+  const refetchUsers = useCallback(async () => {
+    if (currentUser?.role !== USER_ROLES.ADMIN) {
+      return;
+    }
+
+    try {
+      const users = await usersApi.getAll();
+      setState((prev) => ({
+        ...prev,
+        users: users.map((u) => normalizeUserRecord(u)!),
+      }));
+    } catch (error) {
+      console.warn('Failed to refetch users:', error);
+    }
+  }, [currentUser]);
+
   const value = useMemo(
     () => ({
       users: state.users,
@@ -606,6 +705,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       submitLeaderRecommendation,
       updateLeaderRecommendationStatus,
       deleteLeaderRecommendation,
+      refetchApplications,
+      refetchRecommendations,
+      refetchUsers,
     }),
     [
       state,
@@ -624,6 +726,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       submitLeaderRecommendation,
       updateLeaderRecommendationStatus,
       deleteLeaderRecommendation,
+      refetchApplications,
+      refetchRecommendations,
+      refetchUsers,
     ]
   );
 

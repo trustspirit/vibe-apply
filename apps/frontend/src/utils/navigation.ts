@@ -17,7 +17,9 @@ export const getDefaultPathForUser = (
   }
 
   if (user.role === USER_ROLES.SESSION_LEADER) {
-    return ROUTES.ADMIN_DASHBOARD;
+    return user.leaderStatus === LEADER_STATUS.APPROVED
+      ? ROUTES.ADMIN_DASHBOARD
+      : ROUTES.LEADER_PENDING;
   }
 
   if (user.role === USER_ROLES.BISHOP || user.role === USER_ROLES.STAKE_PRESIDENT) {

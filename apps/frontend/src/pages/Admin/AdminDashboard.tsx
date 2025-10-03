@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bar,
@@ -47,8 +47,13 @@ interface StakeWardData {
 }
 
 const AdminDashboard = () => {
-  const { applications, leaderRecommendations } = useApp();
+  const { applications, leaderRecommendations, refetchApplications, refetchRecommendations } = useApp();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    refetchApplications();
+    refetchRecommendations();
+  }, [refetchApplications, refetchRecommendations]);
 
   const { totals, weeklyTrend, genderSplit, stakeWardCounts } = useMemo(() => {
     const submittedRecommendations = leaderRecommendations.filter(

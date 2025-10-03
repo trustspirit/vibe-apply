@@ -90,8 +90,15 @@ const LeaderRecommendations = () => {
     leaderRecommendations,
     submitLeaderRecommendation,
     deleteLeaderRecommendation,
+    refetchApplications,
+    refetchRecommendations,
   } = useApp();
   const leaderId = currentUser?.id ?? null;
+
+  useEffect(() => {
+    refetchApplications();
+    refetchRecommendations();
+  }, [refetchApplications, refetchRecommendations]);
 
   const [activeTab, setActiveTab] = useState('all');
   const [currentFormId, setCurrentFormId] = useState<string | null | undefined>(undefined);
@@ -109,22 +116,14 @@ const LeaderRecommendations = () => {
     }
   }, [state]);
 
-  const recommendations = useMemo(
-    () =>
-      leaderRecommendations
-        .filter((recommendation) => recommendation.leaderId === leaderId)
-        .sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        ),
-    [leaderRecommendations, leaderId]
-  );
+  const recommendations = useMemo(() => {
+    return leaderRecommendations.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+  }, [leaderRecommendations]);
 
   const applicantsInStake = useMemo(() => {
-    if (!currentUser?.stake) {
-      return [];
-    }
-
     const linkedApplicationIds = new Set(
       recommendations
         .filter((rec) => rec.linkedApplicationId)
@@ -132,22 +131,20 @@ const LeaderRecommendations = () => {
     );
 
     const filtered = applications.filter((app) => {
-      const inStake = app.stake === currentUser.stake;
       const notRecommended = !linkedApplicationIds.has(app.id);
-
-      return inStake && notRecommended;
+      return notRecommended;
     });
 
     return filtered.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-  }, [applications, currentUser, recommendations]);
+  }, [applications, recommendations]);
 
   const combinedItems = useMemo(() => {
     const applicationById = new Map<string, Application>();
     applications
-      .filter((app) => app.stake === currentUser?.stake)
+      .filter((app) => app.stake.toLowerCase() === currentUser?.stake.toLowerCase())
       .forEach((app) => {
         applicationById.set(app.id, app);
       });
@@ -177,6 +174,14 @@ const LeaderRecommendations = () => {
   const filteredRecommendations = useMemo(() => {
     if (activeTab === 'all') {
       return combinedItems;
+    }
+    if (activeTab === 'submitted') {
+      return combinedItems.filter((item) => {
+        if ('isApplication' in item && item.isApplication) {
+          return 'status' in item && item.status === 'awaiting';
+        }
+        return 'status' in item && item.status === 'submitted';
+      });
     }
     return combinedItems.filter((item) => !('isApplication' in item && item.isApplication) && 'status' in item && item.status === activeTab);
   }, [combinedItems, activeTab]);
@@ -221,7 +226,7 @@ const LeaderRecommendations = () => {
       setForm({
         ...emptyForm,
         stake: currentUser?.stake || '',
-        ward: '',
+        ward: currentUser?.role === 'bishop' ? currentUser?.ward || '' : '',
       });
       setErrors({});
       setFormError('');
@@ -351,7 +356,7 @@ const LeaderRecommendations = () => {
     };
   };
 
-  const handleSubmitDraft = (status: string) => {
+  const handleSubmitDraft = (status: RecommendationStatus) => {
     if (!leaderId) {
       return;
     }
@@ -383,6 +388,7 @@ const LeaderRecommendations = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
+      status,
     })
       .then(() => {
         setFeedback(
@@ -454,6 +460,7 @@ const LeaderRecommendations = () => {
       stake: recommendation.stake,
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
+      status: 'submitted' as RecommendationStatus,
     })
       .then(() => {
         setFeedback('Recommendation submitted for review.');
@@ -496,6 +503,7 @@ const LeaderRecommendations = () => {
       stake: recommendation.stake,
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
+      status: 'draft' as RecommendationStatus,
     })
       .then(() => {
         setFeedback('Recommendation moved back to draft.');
@@ -602,7 +610,7 @@ const LeaderRecommendations = () => {
       )}
       onSubmit={(event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        handleSubmitDraft('submitted');
+        handleSubmitDraft('submitted' as RecommendationStatus);
       }}
     >
       {editingOriginStatus === 'submitted' && (
@@ -670,6 +678,7 @@ const LeaderRecommendations = () => {
           onChange={handleFormChange}
           required
           error={errors.ward}
+          disabled={currentUser?.role === 'bishop'}
         />
         <ComboBox
           name='gender'
@@ -708,7 +717,7 @@ const LeaderRecommendations = () => {
         </Button>
         <Button
           type='button'
-          onClick={() => handleSubmitDraft('draft')}
+          onClick={() => handleSubmitDraft('draft' as RecommendationStatus)}
           className='leader-recommendations__btn'
         >
           Save Draft
@@ -1076,7 +1085,7 @@ const LeaderRecommendations = () => {
     <section className='review leader-recommendations'>
       <div className='review__header'>
         <div className='review__header-copy'>
-          <h1 className='review__title'>My Recommendations</h1>
+          <h1 className='review__title'>Recommendations</h1>
           <p className='review__subtitle'>
             Manage drafts and submitted recommendations. Update details and
             resubmit when ready.
@@ -1100,9 +1109,16 @@ const LeaderRecommendations = () => {
         badgeClassName='review__tab-pill'
         ariaLabel='Recommendation status filters'
         getBadge={(tab) =>
-          combinedItems.filter((item) =>
-            tab.id === 'all' ? true : !('isApplication' in item && item.isApplication) && 'status' in item && item.status === tab.id
-          ).length
+          combinedItems.filter((item) => {
+            if (tab.id === 'all') return true;
+            if (tab.id === 'submitted') {
+              if ('isApplication' in item && item.isApplication) {
+                return 'status' in item && item.status === 'awaiting';
+              }
+              return 'status' in item && item.status === 'submitted';
+            }
+            return !('isApplication' in item && item.isApplication) && 'status' in item && item.status === tab.id;
+          }).length
         }
       />
 

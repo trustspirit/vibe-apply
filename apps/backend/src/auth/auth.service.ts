@@ -237,10 +237,10 @@ export class AuthService {
     };
 
     if (ward !== undefined) {
-      updateData.ward = ward;
+      updateData.ward = ward.trim().toLowerCase();
     }
     if (stake !== undefined) {
-      updateData.stake = stake;
+      updateData.stake = stake.trim().toLowerCase();
     }
 
     await this.firebaseService
@@ -393,11 +393,11 @@ export class AuthService {
       | undefined;
 
     if (ward !== undefined) {
-      updateData.ward = ward;
+      updateData.ward = ward.trim().toLowerCase();
     }
 
     if (stake !== undefined) {
-      updateData.stake = stake;
+      updateData.stake = stake.trim().toLowerCase();
     }
 
     if (phone !== undefined) {
@@ -424,10 +424,10 @@ export class AuthService {
       const appUpdatePromises = applicationsSnapshot.docs.map(async (doc) => {
         const appUpdateData: Record<string, string> = {};
         if (wardChanged && ward !== undefined) {
-          appUpdateData.ward = ward;
+          appUpdateData.ward = ward.trim().toLowerCase();
         }
         if (stakeChanged && stake !== undefined) {
-          appUpdateData.stake = stake;
+          appUpdateData.stake = stake.trim().toLowerCase();
         }
         if (phoneChanged && phone !== undefined) {
           appUpdateData.phone = phone;
@@ -445,10 +445,10 @@ export class AuthService {
         async (doc) => {
           const recUpdateData: Record<string, string> = {};
           if (wardChanged && ward !== undefined) {
-            recUpdateData.ward = ward;
+            recUpdateData.ward = ward.trim().toLowerCase();
           }
           if (stakeChanged && stake !== undefined) {
-            recUpdateData.stake = stake;
+            recUpdateData.stake = stake.trim().toLowerCase();
           }
           if (phoneChanged && phone !== undefined) {
             recUpdateData.phone = phone;

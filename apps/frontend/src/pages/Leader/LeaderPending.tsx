@@ -1,13 +1,16 @@
 import { Navigate } from 'react-router-dom';
 import { Button } from '../../components/ui';
 import { useApp } from '../../context/AppContext';
-import { ROUTES } from '../../utils/constants';
+import { ROUTES, USER_ROLES } from '../../utils/constants';
 import './LeaderPending.scss';
 
 const LeaderPending = () => {
   const { currentUser, signOut } = useApp();
 
   if (currentUser?.leaderStatus === 'approved') {
+    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
+      return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+    }
     return <Navigate to={ROUTES.LEADER_DASHBOARD} replace />;
   }
 

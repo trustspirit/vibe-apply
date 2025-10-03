@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bar,
@@ -54,25 +54,24 @@ interface CombinedItem {
 
 const LeaderDashboard = () => {
   const navigate = useNavigate();
-  const { currentUser, applications, leaderRecommendations } = useApp();
+  const { currentUser, applications, leaderRecommendations, refetchApplications, refetchRecommendations } = useApp();
   const leaderId = currentUser?.id ?? null;
+
+  useEffect(() => {
+    refetchApplications();
+    refetchRecommendations();
+  }, [refetchApplications, refetchRecommendations]);
 
   const recommendations = useMemo(
     () =>
-      leaderRecommendations
-        .filter((recommendation) => recommendation.leaderId === leaderId)
-        .sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        ),
-    [leaderRecommendations, leaderId]
+      leaderRecommendations.sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      ),
+    [leaderRecommendations]
   );
 
   const applicantsInStake = useMemo(() => {
-    if (!currentUser?.stake) {
-      return [];
-    }
-
     const linkedApplicationIds = new Set(
       recommendations
         .filter((rec) => rec.linkedApplicationId)
@@ -80,11 +79,10 @@ const LeaderDashboard = () => {
     );
 
     return applications.filter((app) => {
-      const inStake = app.stake === currentUser.stake;
       const notRecommended = !linkedApplicationIds.has(app.id);
-      return inStake && notRecommended;
+      return notRecommended;
     });
-  }, [applications, currentUser, recommendations]);
+  }, [applications, recommendations]);
 
   const combinedItems = useMemo(() => {
     if (!currentUser?.stake) {
@@ -93,7 +91,7 @@ const LeaderDashboard = () => {
 
     const applicationById = new Map<string, Application>();
     applications
-      .filter((app) => app.stake === currentUser.stake)
+      .filter((app) => app.stake.toLowerCase() === currentUser.stake.toLowerCase())
       .forEach((app) => {
         applicationById.set(app.id, app);
       });
@@ -121,7 +119,13 @@ const LeaderDashboard = () => {
           (recommendation) => recommendation.status === 'draft'
         ).length,
         submitted: recommendations.filter(
-          (recommendation) => recommendation.status === 'submitted' || recommendation.status === 'approved' || recommendation.status === 'rejected'
+          (recommendation) => recommendation.status === 'submitted'
+        ).length,
+        approved: recommendations.filter(
+          (recommendation) => recommendation.status === 'approved'
+        ).length,
+        rejected: recommendations.filter(
+          (recommendation) => recommendation.status === 'rejected'
         ).length,
         applications: applicantsInStake.length,
         newRecommendationsToday: recommendations.filter(
@@ -219,10 +223,26 @@ const LeaderDashboard = () => {
         </div>
         <div className='leader-dashboard__stat-card'>
           <span className='leader-dashboard__stat-label'>
-            Submitted Recommendations
+            Awaiting Review
           </span>
           <span className='leader-dashboard__stat-value'>
             {statusCounts.submitted}
+          </span>
+        </div>
+        <div className='leader-dashboard__stat-card'>
+          <span className='leader-dashboard__stat-label'>
+            Approved
+          </span>
+          <span className='leader-dashboard__stat-value'>
+            {statusCounts.approved}
+          </span>
+        </div>
+        <div className='leader-dashboard__stat-card'>
+          <span className='leader-dashboard__stat-label'>
+            Rejected
+          </span>
+          <span className='leader-dashboard__stat-value'>
+            {statusCounts.rejected}
           </span>
         </div>
         <div className='leader-dashboard__stat-card'>

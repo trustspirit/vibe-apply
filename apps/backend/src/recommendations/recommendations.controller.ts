@@ -41,19 +41,26 @@ export class RecommendationsController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER)
-  async findAll(@CurrentUser() user: JwtPayload): Promise<LeaderRecommendation[]> {
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SESSION_LEADER,
+    UserRole.STAKE_PRESIDENT,
+    UserRole.BISHOP,
+  )
+  async findAll(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<LeaderRecommendation[]> {
     const userDetails = await this.recommendationsService['firebaseService']
       .getFirestore()
       .collection('users')
       .doc(user.sub)
       .get();
-    const userData = userDetails.data();
-    
+    const userData = userDetails.data() as Record<string, unknown> | undefined;
+
     return this.recommendationsService.findAll(
       user.role || undefined,
-      userData?.ward,
-      userData?.stake,
+      userData?.ward as string | undefined,
+      userData?.stake as string | undefined,
     );
   }
 

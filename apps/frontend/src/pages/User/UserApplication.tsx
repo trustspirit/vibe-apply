@@ -41,7 +41,7 @@ const STATUS_DISPLAY: Record<string, { label: string; tone: ToneValue }> = {
 };
 
 const UserApplication = () => {
-  const { applications, currentUser, submitApplication, isInitializing, isLoadingApplications } = useApp();
+  const { applications, currentUser, submitApplication, isInitializing, isLoadingApplications, refetchApplications } = useApp();
   const existingApplication = useMemo(
     () =>
       applications.find(
@@ -57,6 +57,10 @@ const UserApplication = () => {
   const [feedback, setFeedback] = useState('');
   const [formError, setFormError] = useState('');
   const [errors, setErrors] = useState<ValidationErrors>({});
+
+  useEffect(() => {
+    refetchApplications();
+  }, [refetchApplications]);
 
   useEffect(() => {
     if (isInitializing || !currentUser) {
