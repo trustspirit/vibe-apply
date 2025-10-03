@@ -164,10 +164,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       const isAuthCallback = window.location.pathname === '/auth/callback';
 
       if (!currentUserId && !isAuthCallback && !hasInitializedAuth.current) {
-        hasInitializedAuth.current = true;
         try {
           setIsLoading(true);
           const user = await authApi.getCurrentUser();
+          hasInitializedAuth.current = true;
           setCurrentUserId(user.id);
           setState((prev) => ({
             ...prev,
@@ -176,6 +176,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
               : [...prev.users, user],
           }));
         } catch {
+          hasInitializedAuth.current = true;
         } finally {
           setIsLoading(false);
           setIsInitializing(false);
@@ -312,11 +313,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
         setState((prev) => ({
           ...prev,
-          users: [...prev.users, user],
+          users: prev.users.some((u) => u.id === user.id)
+            ? prev.users.map((u) => (u.id === user.id ? user : u))
+            : [...prev.users, user],
         }));
         setCurrentUserId(user.id);
 
-        // Reset fetch flags for new user session
         hasFetchedUsers.current = false;
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
@@ -375,8 +377,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       console.warn('API signout failed:', error);
     }
     setCurrentUserId(null);
+    setState({
+      users: [],
+      applications: [],
+      leaderRecommendations: [],
+    });
 
-    // Reset all fetch flags for next login
     hasInitializedAuth.current = false;
     hasFetchedUsers.current = false;
     hasFetchedApplications.current = false;
@@ -393,8 +399,24 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           : [...prev.users, user],
       }));
       setCurrentUserId(user.id);
+
+      hasFetchedUsers.current = false;
+      hasFetchedApplications.current = false;
+      hasFetchedRecommendations.current = false;
+      hasFetchedMyApplication.current = false;
     } else {
       setCurrentUserId(null);
+      setState({
+        users: [],
+        applications: [],
+        leaderRecommendations: [],
+      });
+
+      hasInitializedAuth.current = false;
+      hasFetchedUsers.current = false;
+      hasFetchedApplications.current = false;
+      hasFetchedRecommendations.current = false;
+      hasFetchedMyApplication.current = false;
     }
   }, []);
 
@@ -418,7 +440,13 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         };
       }),
     }));
-  }, []);
+
+    if (userId === currentUserId) {
+      hasFetchedApplications.current = false;
+      hasFetchedRecommendations.current = false;
+      hasFetchedMyApplication.current = false;
+    }
+  }, [currentUserId]);
 
   const updateLeaderStatus = useCallback(
     async (userId: string, status: LeaderStatus) => {
@@ -434,8 +462,13 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             : user
         ),
       }));
+
+      if (userId === currentUserId) {
+        hasFetchedApplications.current = false;
+        hasFetchedRecommendations.current = false;
+      }
     },
-    []
+    [currentUserId]
   );
 
   const submitApplication = useCallback(
