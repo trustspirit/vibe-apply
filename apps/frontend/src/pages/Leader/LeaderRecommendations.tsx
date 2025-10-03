@@ -785,16 +785,18 @@ const LeaderRecommendations = () => {
                 <dd>{selectedItem.gender ?? 'N/A'}</dd>
               </div>
             </dl>
-            <div className='leader-recommendations__detail-actions'>
-              <Button
-                type='button'
-                variant='primary'
-                onClick={() => handleRecommendApplicant(selectedItem as Application)}
-                className='leader-recommendations__btn'
-              >
-                Recommend
-              </Button>
-            </div>
+            {selectedItem.status !== 'approved' && (
+              <div className='leader-recommendations__detail-actions'>
+                <Button
+                  type='button'
+                  variant='primary'
+                  onClick={() => handleRecommendApplicant(selectedItem as Application)}
+                  className='leader-recommendations__btn'
+                >
+                  Recommend
+                </Button>
+              </div>
+            )}
           </div>
         );
       }
@@ -953,16 +955,18 @@ const LeaderRecommendations = () => {
               <dd>{item.gender ?? 'N/A'}</dd>
             </div>
           </dl>
-          <div className='leader-recommendations__card-actions'>
-              <Button
-                type='button'
-                variant='primary'
-                onClick={() => handleRecommendApplicant(item as Application)}
-                className='leader-recommendations__btn'
-              >
-                Recommend
-              </Button>
-          </div>
+          {item.status !== 'approved' && (
+            <div className='leader-recommendations__card-actions'>
+                <Button
+                  type='button'
+                  variant='primary'
+                  onClick={() => handleRecommendApplicant(item as Application)}
+                  className='leader-recommendations__btn'
+                >
+                  Recommend
+                </Button>
+            </div>
+          )}
         </article>
       );
     }
