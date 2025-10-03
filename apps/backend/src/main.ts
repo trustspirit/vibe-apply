@@ -13,6 +13,7 @@ async function bootstrap() {
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3000',
+      'https://vibe-apply.pages.dev',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
