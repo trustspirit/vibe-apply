@@ -31,7 +31,7 @@ export class RecommendationsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.LEADER)
+  @Roles(UserRole.BISHOP, UserRole.STAKE_PRESIDENT)
   async create(
     @CurrentUser() user: JwtPayload,
     @Body() recommendation: CreateRecommendationDto,
@@ -41,14 +41,25 @@ export class RecommendationsController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async findAll(): Promise<LeaderRecommendation[]> {
-    return this.recommendationsService.findAll();
+  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER)
+  async findAll(@CurrentUser() user: JwtPayload): Promise<LeaderRecommendation[]> {
+    const userDetails = await this.recommendationsService['firebaseService']
+      .getFirestore()
+      .collection('users')
+      .doc(user.sub)
+      .get();
+    const userData = userDetails.data();
+    
+    return this.recommendationsService.findAll(
+      user.role || undefined,
+      userData?.ward,
+      userData?.stake,
+    );
   }
 
   @Get('my-recommendations')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.LEADER)
+  @Roles(UserRole.BISHOP, UserRole.STAKE_PRESIDENT)
   async findMyRecommendations(
     @CurrentUser() user: JwtPayload,
   ): Promise<LeaderRecommendation[]> {
@@ -72,7 +83,7 @@ export class RecommendationsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.LEADER)
+  @Roles(UserRole.BISHOP, UserRole.STAKE_PRESIDENT)
   async update(
     @Param('id') id: string,
     @Body() updateRecommendationDto: UpdateRecommendationDto,
@@ -82,7 +93,7 @@ export class RecommendationsController {
 
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER)
   async updateStatus(
     @Param('id') id: string,
     @Body() body: { status: RecommendationStatus },
@@ -92,7 +103,7 @@ export class RecommendationsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.LEADER)
+  @Roles(UserRole.BISHOP, UserRole.STAKE_PRESIDENT)
   async remove(@Param('id') id: string): Promise<{ message: string }> {
     await this.recommendationsService.remove(id);
     return { message: 'Recommendation deleted successfully' };

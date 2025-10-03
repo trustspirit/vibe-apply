@@ -1,3 +1,5 @@
+import js from '@eslint/js';
+import globals from 'globals';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
@@ -5,14 +7,17 @@ import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 export default [
   {
+    ignores: ['dist/**', 'node_modules/**', '*.config.js', '*.config.ts'],
+  },
+  {
     files: ['**/*.{js,jsx,ts,tsx}'],
-    ignores: ['dist/**', 'node_modules/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

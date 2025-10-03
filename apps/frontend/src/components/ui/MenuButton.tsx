@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import classNames from '../../utils/classNames.js';
+import clsx from 'clsx';
 import Button from './Button.jsx';
 import './MenuButton.scss';
 
@@ -74,12 +74,12 @@ const MenuButton = ({
   }
 
   return (
-    <div className={classNames('menu-button', className)}>
+    <div className={clsx('menu-button', className)}>
       <Button
         ref={buttonRef}
         type="button"
         variant={variant}
-        className={classNames('menu-button__toggle', buttonClassName)}
+        className={clsx('menu-button__toggle', buttonClassName)}
         onClick={handleToggle}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -92,7 +92,7 @@ const MenuButton = ({
       {open ? (
         <ul
           ref={menuRef}
-          className={classNames('menu-button__menu', `menu-button__menu--${align}`, menuClassName)}
+          className={clsx('menu-button__menu', `menu-button__menu--${align}`, menuClassName)}
           role="menu"
         >
           {items.map((item) => {
@@ -103,7 +103,7 @@ const MenuButton = ({
               <li key={item.id ?? item.label} role="none">
                 <button
                   type="button"
-                  className={classNames('menu-button__item', item.disabled && 'is-disabled')}
+                  className={clsx('menu-button__item', item.disabled && 'is-disabled')}
                   role="menuitem"
                   onClick={(event) => handleSelect(item, event)}
                   disabled={item.disabled}

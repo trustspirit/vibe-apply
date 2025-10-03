@@ -1,5 +1,5 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react';
-import classNames from '../../utils/classNames';
+import clsx from 'clsx';
 import './ToggleButton.scss';
 
 interface ToggleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'type'> {
@@ -30,7 +30,7 @@ const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
     return (
       <button
         type='button'
-        className={classNames('toggle-button', checked && 'toggle-button--on', disabled && 'is-disabled', className)}
+        className={clsx('toggle-button', checked && 'toggle-button--on', disabled && 'is-disabled', className)}
         aria-pressed={checked}
         onClick={handleClick}
         ref={ref}

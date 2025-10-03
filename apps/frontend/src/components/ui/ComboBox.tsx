@@ -1,5 +1,5 @@
 import { forwardRef, SelectHTMLAttributes, ReactNode } from 'react';
-import classNames from '../../utils/classNames';
+import clsx from 'clsx';
 
 interface ComboBoxOption {
   value: string;
@@ -74,7 +74,7 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
 
     return (
       <label
-        className={classNames('form-control', wrapperClassName, error && 'field--error')}
+        className={clsx('form-control', wrapperClassName, error && 'field--error')}
         htmlFor={fieldId}
       >
         {label && (
@@ -93,7 +93,7 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
           name={name}
           ref={ref}
           value={controlledValue}
-          className={classNames(baseClass, toneClass, controlClassName, selectClassName)}
+          className={clsx(baseClass, toneClass, controlClassName, selectClassName)}
           aria-invalid={Boolean(error)}
           aria-label={ariaLabel}
           aria-describedby={describedBy.length ? describedBy.join(' ') : undefined}

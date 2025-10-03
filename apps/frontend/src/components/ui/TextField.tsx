@@ -1,5 +1,5 @@
 import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
-import classNames from '../../utils/classNames';
+import clsx from 'clsx';
 
 interface BaseTextFieldProps {
   id?: string;
@@ -55,7 +55,7 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
     const Control = multiline ? 'textarea' : 'input';
 
     return (
-      <label className={classNames('form-control', wrapperClassName, error && 'field--error')} htmlFor={fieldId}>
+      <label className={clsx('form-control', wrapperClassName, error && 'field--error')} htmlFor={fieldId}>
         {label && (
           <span className={labelClassName}>
             {label}
@@ -73,7 +73,7 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
           type={multiline ? undefined : type}
           ref={ref as any}
           rows={multiline ? rows : undefined}
-          className={classNames(controlClassName as string, inputClassName, error && 'input--error')}
+          className={clsx(controlClassName as string, inputClassName, error && 'input--error')}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy.length ? describedBy.join(' ') : undefined}
           required={required}

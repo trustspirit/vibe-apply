@@ -5,6 +5,7 @@ import {
   CreateRecommendationDto,
   UpdateRecommendationDto,
   RecommendationStatus,
+  UserRole,
 } from '@vibe-apply/shared';
 
 @Injectable()
@@ -66,12 +67,23 @@ export class RecommendationsService {
     }
   }
 
-  async findAll(): Promise<LeaderRecommendation[]> {
-    const recommendationsSnapshot = await this.firebaseService
+  async findAll(
+    userRole?: string,
+    userWard?: string,
+    userStake?: string,
+  ): Promise<LeaderRecommendation[]> {
+    let query = this.firebaseService
       .getFirestore()
       .collection('recommendations')
-      .orderBy('createdAt', 'desc')
-      .get();
+      .orderBy('createdAt', 'desc');
+
+    if (userRole === UserRole.BISHOP && userWard) {
+      query = query.where('ward', '==', userWard);
+    } else if (userRole === UserRole.STAKE_PRESIDENT && userStake) {
+      query = query.where('stake', '==', userStake);
+    }
+
+    const recommendationsSnapshot = await query.get();
 
     return recommendationsSnapshot.docs
       .filter((doc) => {
@@ -88,7 +100,7 @@ export class RecommendationsService {
           ...data,
           canEdit: canModify,
           canDelete: canModify,
-        } as any;
+        } as unknown as LeaderRecommendation;
       });
   }
 
@@ -111,7 +123,7 @@ export class RecommendationsService {
           status: status,
           canEdit: canModify,
           canDelete: canModify,
-        } as any;
+        } as unknown as LeaderRecommendation;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }

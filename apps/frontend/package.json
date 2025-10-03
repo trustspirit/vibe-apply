@@ -35,6 +35,7 @@
   "dependencies": {
     "@vibe-apply/shared": "workspace:*",
     "axios": "^1.12.2",
+    "clsx": "^2.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.1",

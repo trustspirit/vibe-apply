@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import classNames from '../../utils/classNames';
+import clsx from 'clsx';
 
 interface TabItem {
   id: string;
@@ -48,7 +48,7 @@ const Tabs = ({
   };
 
   return (
-    <div className={classNames('tabs', className)} role='tablist' aria-label={ariaLabel}>
+    <div className={clsx('tabs', className)} role='tablist' aria-label={ariaLabel}>
       {items.map((item) => {
         const isActive = item.id === activeId;
         const badgeContent = typeof getBadge === 'function' ? getBadge(item, isActive) : item.badge;
@@ -61,7 +61,7 @@ const Tabs = ({
             role='tab'
             aria-selected={isActive}
             aria-controls={item.controls}
-            className={classNames(tabClassName, isActive && activeTabClassName, item.disabled && 'is-disabled')}
+            className={clsx(tabClassName, isActive && activeTabClassName, item.disabled && 'is-disabled')}
             onClick={() => handleClick(item)}
             disabled={item.disabled}
           >

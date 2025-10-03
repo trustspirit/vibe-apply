@@ -1,5 +1,5 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react';
-import { classNames } from '../../utils/classNames';
+import clsx from 'clsx';
 import './Avatar.scss';
 
 type AvatarSize = 'sm' | 'md' | 'lg';
@@ -35,7 +35,7 @@ const Avatar = forwardRef<HTMLButtonElement, AvatarProps>(({ name, picture, size
     <button
       ref={ref}
       type='button'
-      className={classNames('avatar', `avatar--${size}`, className)}
+      className={clsx('avatar', `avatar--${size}`, className)}
       style={!picture ? { backgroundColor } : undefined}
       {...props}
     >

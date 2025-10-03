@@ -9,6 +9,7 @@ import {
   CreateApplicationDto,
   UpdateApplicationDto,
   ApplicationStatus,
+  UserRole,
 } from '@vibe-apply/shared';
 
 @Injectable()
@@ -70,12 +71,23 @@ export class ApplicationsService {
     }
   }
 
-  async findAll(): Promise<Application[]> {
-    const applicationsSnapshot = await this.firebaseService
+  async findAll(
+    userRole?: string,
+    userWard?: string,
+    userStake?: string,
+  ): Promise<Application[]> {
+    let query = this.firebaseService
       .getFirestore()
       .collection('applications')
-      .orderBy('createdAt', 'desc')
-      .get();
+      .orderBy('createdAt', 'desc');
+
+    if (userRole === UserRole.BISHOP && userWard) {
+      query = query.where('ward', '==', userWard);
+    } else if (userRole === UserRole.STAKE_PRESIDENT && userStake) {
+      query = query.where('stake', '==', userStake);
+    }
+
+    const applicationsSnapshot = await query.get();
 
     return applicationsSnapshot.docs.map((doc) => {
       const data = doc.data();

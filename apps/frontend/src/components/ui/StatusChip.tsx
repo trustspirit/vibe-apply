@@ -1,5 +1,5 @@
 import { HTMLAttributes, ReactNode } from 'react';
-import classNames from '../../utils/classNames';
+import clsx from 'clsx';
 
 const STATUS_TONES = {
   draft: 'draft',
@@ -38,7 +38,7 @@ const StatusChip = ({ status, tone, label, className = '', children, ...props }:
   const content = label ?? (key ? STATUS_LABELS[key] : undefined) ?? children ?? status;
 
   return (
-    <span className={classNames('status-chip', `status-chip--${resolvedTone}`, className)} {...props}>
+    <span className={clsx('status-chip', `status-chip--${resolvedTone}`, className)} {...props}>
       {content}
     </span>
   );

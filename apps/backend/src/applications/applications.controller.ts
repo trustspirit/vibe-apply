@@ -38,9 +38,20 @@ export class ApplicationsController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.LEADER)
-  async findAll(): Promise<Application[]> {
-    return this.applicationsService.findAll();
+  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER, UserRole.STAKE_PRESIDENT, UserRole.BISHOP)
+  async findAll(@CurrentUser() user: JwtPayload): Promise<Application[]> {
+    const userDetails = await this.applicationsService['firebaseService']
+      .getFirestore()
+      .collection('users')
+      .doc(user.sub)
+      .get();
+    const userData = userDetails.data();
+    
+    return this.applicationsService.findAll(
+      user.role || undefined,
+      userData?.ward,
+      userData?.stake,
+    );
   }
 
   @Get('my-application')
@@ -53,7 +64,7 @@ export class ApplicationsController {
 
   @Get('user/:userId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.LEADER)
+  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER, UserRole.STAKE_PRESIDENT, UserRole.BISHOP)
   async findByUserId(
     @Param('userId') userId: string,
   ): Promise<Application | null> {
@@ -77,7 +88,7 @@ export class ApplicationsController {
 
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.LEADER)
+  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER, UserRole.STAKE_PRESIDENT, UserRole.BISHOP)
   async updateStatus(
     @Param('id') id: string,
     @Body() body: { status: ApplicationStatus },

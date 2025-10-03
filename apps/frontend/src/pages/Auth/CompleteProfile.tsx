@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { Button } from '../../components/ui';
+import { Button, ComboBox } from '../../components/ui';
 import { getDefaultPathForUser } from '../../utils/navigation';
 import { authApi } from '../../services/api';
 import { USER_ROLES, ROUTES } from '../../utils/constants';
@@ -26,9 +26,20 @@ const CompleteProfile = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const roleOptions = [
+    { value: USER_ROLES.APPLICANT, label: 'Applicant' },
+    { value: USER_ROLES.SESSION_LEADER, label: 'Session Leader' },
+    { value: USER_ROLES.BISHOP, label: 'Bishop' },
+    { value: USER_ROLES.STAKE_PRESIDENT, label: 'Stake President' },
+  ];
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRoleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => ({ ...prev, role: event.target.value as UserRole }));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -95,32 +106,15 @@ const CompleteProfile = () => {
             />
           </label>
 
-          <div className='auth__label auth__label--inline'>
+          <div className='auth__label'>
             <span>Account Type</span>
-            <div className='auth__options'>
-              <label className='auth__option'>
-                <input
-                  type='radio'
-                  name='role'
-                  value={USER_ROLES.APPLICANT}
-                  checked={form.role === USER_ROLES.APPLICANT}
-                  onChange={handleChange}
-                />
-                Applicant
-              </label>
-              <label className='auth__option'>
-                <input
-                  type='radio'
-                  name='role'
-                  value={USER_ROLES.LEADER}
-                  checked={form.role === USER_ROLES.LEADER}
-                  onChange={handleChange}
-                />
-                Leader
-              </label>
-            </div>
+            <ComboBox
+              options={roleOptions}
+              value={form.role}
+              onChange={handleRoleChange}
+            />
             <p className='auth__choice-hint'>
-              Leader access requires admin approval before activation.
+              Session Leader, Bishop and Stake President access requires admin approval before activation.
             </p>
           </div>
 

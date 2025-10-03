@@ -38,9 +38,11 @@ const AuthCallback = () => {
 
         switch (user.role) {
           case USER_ROLES.ADMIN:
+          case USER_ROLES.SESSION_LEADER:
             navigate(ROUTES.ADMIN_ROOT);
             break;
-          case USER_ROLES.LEADER:
+          case USER_ROLES.BISHOP:
+          case USER_ROLES.STAKE_PRESIDENT:
             navigate(ROUTES.LEADER_DASHBOARD);
             break;
           default:

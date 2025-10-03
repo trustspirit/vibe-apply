@@ -1,6 +1,8 @@
 export enum UserRole {
   ADMIN = 'admin',
-  LEADER = 'leader',
+  SESSION_LEADER = 'session_leader',
+  STAKE_PRESIDENT = 'stake_president',
+  BISHOP = 'bishop',
   APPLICANT = 'applicant',
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import classNames from '../../utils/classNames';
+import clsx from 'clsx';
 import { useApp } from '../../context/AppContext';
 import type { Application, LeaderRecommendation, RecommendationStatus } from '@vibe-apply/shared';
 import {
@@ -544,7 +544,7 @@ const LeaderRecommendations = () => {
   const renderListItem = (item: CombinedItem) => {
     const isSelected = selectedId === item.id;
     const isActive = currentFormId === item.id;
-    const listItemClassName = classNames(
+    const listItemClassName = clsx(
       'review__list-item',
       (isSelected || isActive) && 'review__list-item--active'
     );
@@ -596,7 +596,7 @@ const LeaderRecommendations = () => {
 
   const renderForm = (variant: 'desktop' | 'mobile' = 'desktop') => (
     <form
-      className={classNames(
+      className={clsx(
         'leader-recommendations__form',
         variant === 'mobile' && 'leader-recommendations__form--mobile'
       )}
@@ -694,7 +694,7 @@ const LeaderRecommendations = () => {
         showRequiredIndicator={false}
       />
       <div
-        className={classNames(
+        className={clsx(
           'leader-recommendations__actions',
           variant === 'mobile' && 'leader-recommendations__actions--mobile'
         )}
@@ -963,7 +963,7 @@ const LeaderRecommendations = () => {
     return (
       <article
         key={item.id}
-        className={classNames(
+        className={clsx(
           'review-card',
           'leader-recommendations__mobile-card',
           isEditingThis && 'leader-recommendations__mobile-card--editing'

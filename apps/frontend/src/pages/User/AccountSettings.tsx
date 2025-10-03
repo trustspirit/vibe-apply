@@ -62,10 +62,16 @@ const AccountSettings = () => {
 
   const getRoleLabel = () => {
     if (currentUser?.role === (USER_ROLES.ADMIN as UserRole)) return 'Administrator';
-    if (currentUser?.role === (USER_ROLES.LEADER as UserRole)) {
+    if (currentUser?.role === (USER_ROLES.SESSION_LEADER as UserRole)) return 'Session Leader';
+    if (currentUser?.role === (USER_ROLES.STAKE_PRESIDENT as UserRole)) {
       return currentUser?.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
-        ? 'Leader (Approved)' 
-        : 'Leader (Pending Approval)';
+        ? 'Stake President (Approved)' 
+        : 'Stake President (Pending Approval)';
+    }
+    if (currentUser?.role === (USER_ROLES.BISHOP as UserRole)) {
+      return currentUser?.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
+        ? 'Bishop (Approved)' 
+        : 'Bishop (Pending Approval)';
     }
     return 'Applicant';
   };
@@ -158,7 +164,7 @@ const AccountSettings = () => {
                 <span className='account-settings__role-label'>Current Role</span>
                 <span className='account-settings__role-value'>{getRoleLabel()}</span>
               </div>
-              {currentUser.role === (USER_ROLES.LEADER as UserRole) && currentUser.leaderStatus === (LEADER_STATUS.PENDING as LeaderStatus) && (
+              {((currentUser.role === (USER_ROLES.BISHOP as UserRole) || currentUser.role === (USER_ROLES.STAKE_PRESIDENT as UserRole)) && currentUser.leaderStatus === (LEADER_STATUS.PENDING as LeaderStatus)) && (
                 <p className='account-settings__role-note'>
                   Your leader access is pending approval by an administrator.
                 </p>

@@ -117,11 +117,17 @@ const normalizeUserRecord = (
   const normalizedRole: UserRole =
     user.role === (USER_ROLES.ADMIN as UserRole)
       ? (USER_ROLES.ADMIN as UserRole)
-      : user.role === (USER_ROLES.LEADER as UserRole)
-        ? (USER_ROLES.LEADER as UserRole)
-        : (USER_ROLES.APPLICANT as UserRole);
+      : user.role === (USER_ROLES.SESSION_LEADER as UserRole)
+        ? (USER_ROLES.SESSION_LEADER as UserRole)
+        : user.role === (USER_ROLES.STAKE_PRESIDENT as UserRole)
+          ? (USER_ROLES.STAKE_PRESIDENT as UserRole)
+          : user.role === (USER_ROLES.BISHOP as UserRole)
+            ? (USER_ROLES.BISHOP as UserRole)
+            : (USER_ROLES.APPLICANT as UserRole);
   const leaderStatus: LeaderStatus | null =
-    normalizedRole === (USER_ROLES.LEADER as UserRole)
+    normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) || 
+    normalizedRole === (USER_ROLES.BISHOP as UserRole) || 
+    normalizedRole === (USER_ROLES.SESSION_LEADER as UserRole)
       ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
         ? (LEADER_STATUS.APPROVED as LeaderStatus)
         : (LEADER_STATUS.PENDING as LeaderStatus)
@@ -213,7 +219,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     const fetchApplications = async () => {
       if (
         (currentUser?.role === USER_ROLES.ADMIN ||
-          (currentUser?.role === USER_ROLES.LEADER &&
+          ((currentUser?.role === USER_ROLES.SESSION_LEADER ||
+            currentUser?.role === USER_ROLES.BISHOP || 
+            currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
             currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
         !hasFetchedApplications.current
       ) {
@@ -237,7 +245,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     const fetchRecommendations = async () => {
       if (
-        currentUser?.role === USER_ROLES.ADMIN &&
+        (currentUser?.role === USER_ROLES.ADMIN || 
+          (currentUser?.role === USER_ROLES.SESSION_LEADER && 
+            currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
         !hasFetchedRecommendations.current
       ) {
         hasFetchedRecommendations.current = true;
@@ -252,7 +262,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           hasFetchedRecommendations.current = false;
         }
       } else if (
-        currentUser?.role === USER_ROLES.LEADER &&
+        (currentUser?.role === USER_ROLES.BISHOP || currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
         currentUser?.leaderStatus === LEADER_STATUS.APPROVED &&
         !hasFetchedRecommendations.current
       ) {
@@ -431,7 +441,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }
           const normalizedRole = role as UserRole;
           const leaderStatus: LeaderStatus | null =
-            normalizedRole === (USER_ROLES.LEADER as UserRole)
+            normalizedRole === (USER_ROLES.BISHOP as UserRole) || 
+            normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) || 
+            normalizedRole === (USER_ROLES.SESSION_LEADER as UserRole)
               ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
               : null;
           return {

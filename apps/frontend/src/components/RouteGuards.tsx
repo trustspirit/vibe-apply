@@ -35,7 +35,7 @@ export const RequireAdmin = ({ children }: RouteGuardProps) => {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  if (currentUser.role !== USER_ROLES.ADMIN) {
+  if (currentUser.role !== USER_ROLES.ADMIN && currentUser.role !== USER_ROLES.SESSION_LEADER) {
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
 
@@ -89,7 +89,9 @@ export const RequireLeader = ({
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  if (currentUser.role !== USER_ROLES.LEADER) {
+  const isLeader = currentUser.role === USER_ROLES.BISHOP || currentUser.role === USER_ROLES.STAKE_PRESIDENT;
+  
+  if (!isLeader) {
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
 

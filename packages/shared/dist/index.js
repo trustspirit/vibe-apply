@@ -4,7 +4,9 @@ exports.Gender = exports.RecommendationStatus = exports.ApplicationStatus = expo
 var UserRole;
 (function (UserRole) {
     UserRole["ADMIN"] = "admin";
-    UserRole["LEADER"] = "leader";
+    UserRole["SESSION_LEADER"] = "session_leader";
+    UserRole["STAKE_PRESIDENT"] = "stake_president";
+    UserRole["BISHOP"] = "bishop";
     UserRole["APPLICANT"] = "applicant";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var LeaderStatus;

@@ -42,12 +42,27 @@ export class RolesGuard implements CanActivate {
         return true;
       }
 
-      if (role === UserRole.LEADER) {
-        this.logger.debug(
-          `Leader check - user.role: ${user?.role}, UserRole.LEADER: ${UserRole.LEADER}, user.leaderStatus: ${user?.leaderStatus}, LeaderStatus.APPROVED: ${LeaderStatus.APPROVED}`,
-        );
+      if (role === UserRole.SESSION_LEADER) {
         if (
-          user?.role === UserRole.LEADER &&
+          user?.role === UserRole.SESSION_LEADER &&
+          user?.leaderStatus === LeaderStatus.APPROVED
+        ) {
+          return true;
+        }
+      }
+
+      if (role === UserRole.STAKE_PRESIDENT) {
+        if (
+          user?.role === UserRole.STAKE_PRESIDENT &&
+          user?.leaderStatus === LeaderStatus.APPROVED
+        ) {
+          return true;
+        }
+      }
+
+      if (role === UserRole.BISHOP) {
+        if (
+          user?.role === UserRole.BISHOP &&
           user?.leaderStatus === LeaderStatus.APPROVED
         ) {
           return true;

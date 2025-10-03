@@ -7,7 +7,9 @@ import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [
   { value: USER_ROLES.ADMIN, label: 'Admin' },
-  { value: USER_ROLES.LEADER, label: 'Leader' },
+  { value: USER_ROLES.SESSION_LEADER, label: 'Session Leader' },
+  { value: USER_ROLES.STAKE_PRESIDENT, label: 'Stake President' },
+  { value: USER_ROLES.BISHOP, label: 'Bishop' },
   { value: USER_ROLES.APPLICANT, label: 'Applicant' },
 ];
 
@@ -22,10 +24,12 @@ const AdminRoles = () => {
         }
         const order: Record<string, number> = {
           [USER_ROLES.ADMIN]: 0,
-          [USER_ROLES.LEADER]: 1,
-          [USER_ROLES.APPLICANT]: 2,
+          [USER_ROLES.SESSION_LEADER]: 1,
+          [USER_ROLES.STAKE_PRESIDENT]: 2,
+          [USER_ROLES.BISHOP]: 3,
+          [USER_ROLES.APPLICANT]: 4,
         };
-        return (order[a.role] ?? 3) - (order[b.role] ?? 3);
+        return (order[a.role] ?? 5) - (order[b.role] ?? 5);
       }),
     [users]
   );
@@ -46,8 +50,7 @@ const AdminRoles = () => {
       <header className='roles__header'>
         <h1 className='roles__title'>Manage Roles</h1>
         <p className='roles__subtitle'>
-          Manage admin, leader, and applicant access. Approve leader requests
-          when you are ready.
+          Manage user roles and permissions. Approve bishop and stake president requests when ready.
         </p>
       </header>
 
@@ -73,18 +76,26 @@ const AdminRoles = () => {
                     tone={
                       user.role === USER_ROLES.ADMIN
                         ? 'admin'
-                        : user.role === USER_ROLES.LEADER
-                          ? 'leader'
-                          : 'applicant'
+                        : user.role === USER_ROLES.SESSION_LEADER
+                          ? 'admin'
+                          : user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP
+                            ? 'leader'
+                            : 'applicant'
                     }
                     label={
                       user.role === USER_ROLES.ADMIN
                         ? 'Admin'
-                        : user.role === USER_ROLES.LEADER
-                          ? user.leaderStatus === LEADER_STATUS.APPROVED
-                            ? 'Leader'
-                            : 'Leader (Pending)'
-                          : 'Applicant'
+                        : user.role === USER_ROLES.SESSION_LEADER
+                          ? 'Session Leader'
+                          : user.role === USER_ROLES.STAKE_PRESIDENT
+                            ? user.leaderStatus === LEADER_STATUS.APPROVED
+                              ? 'Stake President'
+                              : 'Stake President (Pending)'
+                            : user.role === USER_ROLES.BISHOP
+                              ? user.leaderStatus === LEADER_STATUS.APPROVED
+                                ? 'Bishop'
+                                : 'Bishop (Pending)'
+                              : 'Applicant'
                     }
                   />
                 </td>
@@ -97,9 +108,9 @@ const AdminRoles = () => {
                     }
                     options={ROLE_OPTIONS}
                     tone={
-                      user.role === USER_ROLES.ADMIN
+                      user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SESSION_LEADER
                         ? 'admin'
-                        : user.role === USER_ROLES.LEADER
+                        : user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP
                           ? 'leader'
                           : 'applicant'
                     }
@@ -114,7 +125,7 @@ const AdminRoles = () => {
                   )}
                 </td>
                 <td>
-                  {user.role === USER_ROLES.LEADER ? (
+                  {user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
                     <ToggleButton
                       checked={user.leaderStatus === LEADER_STATUS.APPROVED}
                       onChange={(next: boolean) => handleLeaderToggle(user.id, next)}

@@ -26,7 +26,13 @@ const GlobalNav = () => {
         { to: ROUTES.ADMIN_ROLES, label: 'Manage Roles' },
       ];
     }
-    if (currentUser.role === USER_ROLES.LEADER) {
+    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
+      return [
+        { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
+        { to: ROUTES.ADMIN_REVIEW, label: 'Review Applications' },
+      ];
+    }
+    if (currentUser.role === USER_ROLES.BISHOP || currentUser.role === USER_ROLES.STAKE_PRESIDENT) {
       if (currentUser.leaderStatus === LEADER_STATUS.APPROVED) {
         return [
           { to: ROUTES.LEADER_DASHBOARD, label: 'Leader Dashboard' },
@@ -45,12 +51,34 @@ const GlobalNav = () => {
   })();
   const hasNav = navItems.length > 0;
 
+  const roleGreeting = (() => {
+    if (currentUser.role === USER_ROLES.ADMIN) {
+      return 'Admin';
+    }
+    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
+      return 'Session Leader';
+    }
+    if (currentUser.role === USER_ROLES.BISHOP) {
+      return 'Bishop';
+    }
+    if (currentUser.role === USER_ROLES.STAKE_PRESIDENT) {
+      return 'Stake President';
+    }
+    return 'Applicant';
+  })();
+
   const roleLabel = (() => {
     if (currentUser.role === USER_ROLES.ADMIN) {
       return 'Admin';
     }
-    if (currentUser.role === USER_ROLES.LEADER) {
-      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Leader' : 'Leader (Pending)';
+    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
+      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Session Leader' : 'Session Leader (Pending)';
+    }
+    if (currentUser.role === USER_ROLES.BISHOP) {
+      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Bishop' : 'Bishop (Pending)';
+    }
+    if (currentUser.role === USER_ROLES.STAKE_PRESIDENT) {
+      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Stake President' : 'Stake President (Pending)';
     }
     return 'Applicant';
   })();
@@ -134,7 +162,7 @@ const GlobalNav = () => {
         ) : null}
         <div className="gnb__profile">
           <div className="gnb__profile-info">
-            <span className="gnb__greeting">Hi, {currentUser.name}</span>
+            <span className="gnb__greeting">Hi, {roleGreeting}</span>
             <span className="gnb__role">{roleLabel}</span>
           </div>
           <div className="gnb__avatar-wrapper" ref={avatarRef}>

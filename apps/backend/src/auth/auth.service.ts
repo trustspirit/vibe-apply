@@ -220,7 +220,11 @@ export class AuthService {
     ward?: string,
     stake?: string,
   ): Promise<void> {
-    const leaderStatus = role === UserRole.LEADER ? LeaderStatus.PENDING : null;
+    const isLeaderRole = 
+      role === UserRole.BISHOP || 
+      role === UserRole.STAKE_PRESIDENT ||
+      role === UserRole.SESSION_LEADER;
+    const leaderStatus = isLeaderRole ? LeaderStatus.PENDING : null;
 
     const updateData: {
       role: UserRole;
