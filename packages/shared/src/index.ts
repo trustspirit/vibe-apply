@@ -184,3 +184,7 @@ export interface GoogleOAuthDto {
   name: string;
   picture?: string;
 }
+
+export interface ExchangeCodeDto {
+  code: string;
+}

@@ -53,6 +53,33 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  generateAuthorizationCode(
+    accessToken: string,
+    refreshToken: string,
+  ): string {
+    const codePayload = {
+      accessToken,
+      refreshToken,
+    };
+    return this.jwtService.sign(codePayload, { expiresIn: '60s' });
+  }
+
+  validateAuthorizationCode(code: string): {
+    accessToken: string;
+    refreshToken: string;
+  } {
+    try {
+      const decoded: { accessToken: string; refreshToken: string } =
+        this.jwtService.verify(code);
+      return {
+        accessToken: decoded.accessToken,
+        refreshToken: decoded.refreshToken,
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid or expired authorization code');
+    }
+  }
+
   async signUp(createUserDto: CreateUserDto): Promise<TokenResponse> {
     const { name, email, password } = createUserDto;
 
@@ -347,7 +374,7 @@ export class AuthService {
     const user = await this.getUser(uid);
     const oldWard = user.ward;
     const oldStake = user.stake;
-    const oldPhone: string = (user.phone as string | undefined) || '';
+    const oldPhone: string = (user.phone) || '';
 
     const updateData: Record<string, string> = {};
 

@@ -11,15 +11,19 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      const accessToken = searchParams.get('accessToken');
-      const refreshToken = searchParams.get('refreshToken');
+      const code = searchParams.get('code');
 
-      if (accessToken && refreshToken) {
-        // Store tokens from OAuth callback
-        tokenStorage.setTokens(accessToken, refreshToken);
+      if (!code) {
+        navigate(ROUTES.SIGN_IN);
+        return;
       }
 
       try {
+        const response = await authApi.exchangeAuthorizationCode(code);
+        tokenStorage.setTokens(response.accessToken, response.refreshToken);
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+
         const user = await authApi.getCurrentUser();
         setUser(user);
 

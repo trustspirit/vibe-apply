@@ -220,6 +220,15 @@ export const authApi = {
     }
   },
 
+  exchangeAuthorizationCode: async (
+    code: string
+  ): Promise<{ accessToken: string; refreshToken: string }> => {
+    return api.post('/auth/exchange', { code }) as Promise<{
+      accessToken: string;
+      refreshToken: string;
+    }>;
+  },
+
   getCurrentUser: async (): Promise<User> => {
     return api.get('/auth/profile') as Promise<User>;
   },

@@ -29,6 +29,7 @@ import type {
   RefreshTokenDto,
   GoogleOAuthDto,
   JwtPayload,
+  ExchangeCodeDto,
 } from '@vibe-apply/shared';
 
 @Controller('auth')
@@ -57,6 +58,13 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto);
   }
 
+  @Post('exchange')
+  exchangeCode(
+    @Body() exchangeCodeDto: ExchangeCodeDto,
+  ): { accessToken: string; refreshToken: string } {
+    return this.authService.validateAuthorizationCode(exchangeCodeDto.code);
+  }
+
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
   async googleAuth(): Promise<void> {
@@ -70,8 +78,12 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<void> {
     const tokenResponse = await this.authService.googleLogin(req.user);
+    const code = this.authService.generateAuthorizationCode(
+      tokenResponse.accessToken,
+      tokenResponse.refreshToken,
+    );
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${tokenResponse.accessToken}&refreshToken=${tokenResponse.refreshToken}`;
+    const redirectUrl = `${frontendUrl}/auth/callback?code=${code}`;
     res.redirect(redirectUrl);
   }
 
