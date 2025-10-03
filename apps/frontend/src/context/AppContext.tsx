@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
   useCallback,
+  useRef,
   ReactNode,
 } from 'react';
 import {
@@ -147,6 +148,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
+  const hasInitializedAuth = useRef(false);
+  const hasFetchedUsers = useRef(false);
+  const hasFetchedApplications = useRef(false);
+  const hasFetchedRecommendations = useRef(false);
+  const hasFetchedMyApplication = useRef(false);
 
   const currentUser = useMemo(
     () => state.users.find((user) => user.id === currentUserId) ?? null,
@@ -157,7 +163,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     const initializeAuth = async () => {
       const isAuthCallback = window.location.pathname === '/auth/callback';
 
-      if (!currentUserId && !isAuthCallback) {
+      if (!currentUserId && !isAuthCallback && !hasInitializedAuth.current) {
+        hasInitializedAuth.current = true;
         try {
           setIsLoading(true);
           const user = await authApi.getCurrentUser();
@@ -174,17 +181,18 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           setIsLoading(false);
           setIsInitializing(false);
         }
-      } else {
+      } else if (currentUserId || isAuthCallback) {
         setIsInitializing(false);
       }
     };
 
     initializeAuth();
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     const fetchAllUsers = async () => {
-      if (currentUser?.role === USER_ROLES.ADMIN) {
+      if (currentUser?.role === USER_ROLES.ADMIN && !hasFetchedUsers.current) {
+        hasFetchedUsers.current = true;
         try {
           const users = await usersApi.getAll();
           setState((prev) => ({
@@ -193,6 +201,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }));
         } catch (error) {
           console.warn('Failed to fetch all users:', error);
+          hasFetchedUsers.current = false;
         }
       }
     };
@@ -203,10 +212,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     const fetchApplications = async () => {
       if (
-        currentUser?.role === USER_ROLES.ADMIN ||
-        (currentUser?.role === USER_ROLES.LEADER &&
-          currentUser?.leaderStatus === LEADER_STATUS.APPROVED)
+        (currentUser?.role === USER_ROLES.ADMIN ||
+          (currentUser?.role === USER_ROLES.LEADER &&
+            currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
+        !hasFetchedApplications.current
       ) {
+        hasFetchedApplications.current = true;
         try {
           const applications = await applicationsApi.getAll();
           setState((prev) => ({
@@ -215,6 +226,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }));
         } catch (error) {
           console.warn('Failed to fetch applications:', error);
+          hasFetchedApplications.current = false;
         }
       }
     };
@@ -224,7 +236,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (currentUser?.role === USER_ROLES.ADMIN) {
+      if (currentUser?.role === USER_ROLES.ADMIN && !hasFetchedRecommendations.current) {
+        hasFetchedRecommendations.current = true;
         try {
           const recommendations = await recommendationsApi.getAll();
           setState((prev) => ({
@@ -233,11 +246,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }));
         } catch (error) {
           console.warn('Failed to fetch admin recommendations:', error);
+          hasFetchedRecommendations.current = false;
         }
       } else if (
         currentUser?.role === USER_ROLES.LEADER &&
-        currentUser?.leaderStatus === LEADER_STATUS.APPROVED
+        currentUser?.leaderStatus === LEADER_STATUS.APPROVED &&
+        !hasFetchedRecommendations.current
       ) {
+        hasFetchedRecommendations.current = true;
         try {
           const recommendations =
             await recommendationsApi.getMyRecommendations();
@@ -247,6 +263,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }));
         } catch (error) {
           console.warn('Failed to fetch leader recommendations:', error);
+          hasFetchedRecommendations.current = false;
         }
       }
     };
@@ -256,7 +273,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   useEffect(() => {
     const fetchUserApplication = async () => {
-      if (currentUser?.role === USER_ROLES.APPLICANT && currentUser?.id) {
+      if (currentUser?.role === USER_ROLES.APPLICANT && currentUser?.id && !hasFetchedMyApplication.current) {
+        hasFetchedMyApplication.current = true;
         try {
           setIsLoadingApplications(true);
           const application = await applicationsApi.getMyApplication();
@@ -266,6 +284,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }));
         } catch (error) {
           console.warn('Failed to fetch applicant application:', error);
+          hasFetchedMyApplication.current = false;
         } finally {
           setIsLoadingApplications(false);
         }
