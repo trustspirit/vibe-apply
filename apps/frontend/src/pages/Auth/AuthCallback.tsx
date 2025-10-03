@@ -1,15 +1,24 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { authApi } from '../../services/api';
+import { authApi, tokenStorage } from '../../services/api';
 import { USER_ROLES, ROUTES } from '../../utils/constants';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const { setUser } = useApp();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const handleOAuthCallback = async () => {
+      const accessToken = searchParams.get('accessToken');
+      const refreshToken = searchParams.get('refreshToken');
+
+      if (accessToken && refreshToken) {
+        // Store tokens from OAuth callback
+        tokenStorage.setTokens(accessToken, refreshToken);
+      }
+
       try {
         const user = await authApi.getCurrentUser();
         setUser(user);
@@ -30,16 +39,13 @@ const AuthCallback = () => {
             navigate(ROUTES.APPLICATION);
         }
       } catch (error) {
-        console.error('AuthCallback Debug - Error details:', error);
-        console.error(
-          'AuthCallback Debug - Redirecting to signin due to error'
-        );
+        console.error('AuthCallback error:', error);
         navigate(ROUTES.SIGN_IN);
       }
     };
 
-    fetchUserProfile();
-  }, [navigate, setUser]);
+    handleOAuthCallback();
+  }, [navigate, setUser, searchParams]);
 
   return (
     <div className='auth-callback'>

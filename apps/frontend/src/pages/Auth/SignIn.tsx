@@ -12,12 +12,16 @@ interface SignInForm {
 }
 
 const SignIn = () => {
-  const { signIn } = useApp();
+  const { signIn, isInitializing } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState<SignInForm>({ email: '', password: '' });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (isInitializing) {
+    return null;
+  }
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;

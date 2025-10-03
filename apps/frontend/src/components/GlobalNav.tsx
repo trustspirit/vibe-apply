@@ -143,23 +143,23 @@ const GlobalNav = () => {
               size="md"
               onClick={toggleMenu}
             />
+            {showMenu && (
+              <div className="gnb__menu" ref={menuRef}>
+                <button
+                  className="gnb__menu-item"
+                  onClick={() => handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))}
+                >
+                  Account Settings
+                </button>
+                <button
+                  className="gnb__menu-item"
+                  onClick={() => handleMenuAction(handleSignOut)}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
-          {showMenu && (
-            <div className="gnb__menu" ref={menuRef}>
-              <button
-                className="gnb__menu-item"
-                onClick={() => handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))}
-              >
-                Account Settings
-              </button>
-              <button
-                className="gnb__menu-item"
-                onClick={() => handleMenuAction(handleSignOut)}
-              >
-                Logout
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </header>

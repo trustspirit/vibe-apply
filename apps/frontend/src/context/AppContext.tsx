@@ -175,8 +175,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
               ? prev.users.map((u) => (u.id === user.id ? user : u))
               : [...prev.users, user],
           }));
-        } catch (error) {
-          console.error('No valid session found:', error);
+        } catch {
         } finally {
           setIsLoading(false);
           setIsInitializing(false);
@@ -317,6 +316,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         }));
         setCurrentUserId(user.id);
 
+        // Reset fetch flags for new user session
+        hasFetchedUsers.current = false;
+        hasFetchedApplications.current = false;
+        hasFetchedRecommendations.current = false;
+        hasFetchedMyApplication.current = false;
+
         return user;
       } catch (error) {
         if (error instanceof ApiError) {
@@ -344,6 +349,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         }));
         setCurrentUserId(user.id);
 
+        // Reset fetch flags for new user session
+        hasFetchedUsers.current = false;
+        hasFetchedApplications.current = false;
+        hasFetchedRecommendations.current = false;
+        hasFetchedMyApplication.current = false;
+
         return user;
       } catch (error) {
         if (error instanceof ApiError) {
@@ -364,6 +375,13 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       console.warn('API signout failed:', error);
     }
     setCurrentUserId(null);
+
+    // Reset all fetch flags for next login
+    hasInitializedAuth.current = false;
+    hasFetchedUsers.current = false;
+    hasFetchedApplications.current = false;
+    hasFetchedRecommendations.current = false;
+    hasFetchedMyApplication.current = false;
   }, []);
 
   const setUser = useCallback((user: User | null) => {

@@ -9,6 +9,7 @@ import type {
   RecommendationStatus,
   TokenResponse,
 } from '@vibe-apply/shared';
+import { ROUTES } from '../utils/constants';
 
 interface ErrorData {
   message: string;
@@ -44,6 +45,17 @@ const setRefreshToken = (token: string): void => {
 };
 const clearRefreshToken = (): void => {
   localStorage.removeItem('vibe-apply-refresh-token');
+};
+
+export const tokenStorage = {
+  setTokens: (access: string, refresh: string): void => {
+    setAccessToken(access);
+    setRefreshToken(refresh);
+  },
+  clearTokens: (): void => {
+    clearAccessToken();
+    clearRefreshToken();
+  },
 };
 
 const api = axios.create({
@@ -111,7 +123,11 @@ api.interceptors.response.use(
         clearAccessToken();
         clearRefreshToken();
         retriedRequests.clear();
-        window.location.href = '/auth/signin';
+        const currentPath = window.location.pathname;
+        const publicPaths = [ROUTES.SIGN_IN, ROUTES.SIGN_UP, ROUTES.AUTH_CALLBACK] as string[];
+        if (!publicPaths.includes(currentPath)) {
+          window.location.href = ROUTES.SIGN_IN;
+        }
         return Promise.reject(error);
       }
 
@@ -130,7 +146,11 @@ api.interceptors.response.use(
         clearAccessToken();
         clearRefreshToken();
         retriedRequests.clear();
-        window.location.href = '/auth/signin';
+        const currentPath = window.location.pathname;
+        const publicPaths = [ROUTES.SIGN_IN, ROUTES.SIGN_UP, ROUTES.AUTH_CALLBACK] as string[];
+        if (!publicPaths.includes(currentPath)) {
+          window.location.href = ROUTES.SIGN_IN;
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

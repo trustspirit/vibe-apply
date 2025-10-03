@@ -7,7 +7,9 @@ import {
   Param,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleOAuthGuard } from './guards/google-oauth.guard';
@@ -34,9 +36,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signUp(
-    @Body() createUserDto: CreateUserDto,
-  ): Promise<TokenResponse> {
+  async signUp(@Body() createUserDto: CreateUserDto): Promise<TokenResponse> {
     return this.authService.signUp(createUserDto);
   }
 
@@ -67,8 +67,12 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(
     @Req() req: { user: GoogleOAuthDto },
-  ): Promise<TokenResponse> {
-    return this.authService.googleLogin(req.user);
+    @Res() res: Response,
+  ): Promise<void> {
+    const tokenResponse = await this.authService.googleLogin(req.user);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${tokenResponse.accessToken}&refreshToken=${tokenResponse.refreshToken}`;
+    res.redirect(redirectUrl);
   }
 
   @Get('users')

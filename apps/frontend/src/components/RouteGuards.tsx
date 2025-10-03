@@ -43,11 +43,15 @@ export const RequireAdmin = ({ children }: RouteGuardProps) => {
 };
 
 export const PublicOnly = ({ children }: RouteGuardProps) => {
-  const { currentUser } = useApp();
+  const { currentUser, isInitializing } = useApp();
+
+  if (isInitializing) {
+    return null;
+  }
 
   if (currentUser) {
     if (!currentUser.role) {
-      return children;
+      return <Navigate to={ROUTES.COMPLETE_PROFILE} replace />;
     }
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
@@ -74,7 +78,10 @@ interface RequireLeaderProps extends RouteGuardProps {
   requireApproved?: boolean;
 }
 
-export const RequireLeader = ({ children, requireApproved = false }: RequireLeaderProps) => {
+export const RequireLeader = ({
+  children,
+  requireApproved = false,
+}: RequireLeaderProps) => {
   const { currentUser } = useApp();
   const location = useLocation();
 
