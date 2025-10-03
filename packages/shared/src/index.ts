@@ -40,6 +40,7 @@ export interface User {
   ward: string;
   stake: string;
   phone?: string;
+  picture?: string;
   createdAt: string;
 }
 

@@ -170,7 +170,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   });
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
   const hasInitializedAuth = useRef(false);
-  const hasFetchedUsers = useRef(false);
   const hasFetchedApplications = useRef(false);
   const hasFetchedRecommendations = useRef(false);
   const hasFetchedMyApplication = useRef(false);
@@ -225,25 +224,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     initializeAuth();
   }, []);
 
-  useEffect(() => {
-    const fetchAllUsers = async () => {
-      if (currentUser?.role === USER_ROLES.ADMIN && !hasFetchedUsers.current) {
-        hasFetchedUsers.current = true;
-        try {
-          const users = await usersApi.getAll();
-          setState((prev) => ({
-            ...prev,
-            users: users.map((u) => normalizeUserRecord(u)!),
-          }));
-        } catch (error) {
-          console.warn('Failed to fetch all users:', error);
-          hasFetchedUsers.current = false;
-        }
-      }
-    };
 
-    fetchAllUsers();
-  }, [currentUser?.role]);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -348,7 +329,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           setCurrentUserId(normalized.id);
         }
 
-        hasFetchedUsers.current = false;
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
         hasFetchedMyApplication.current = false;
@@ -383,7 +363,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           setCurrentUserId(normalized.id);
         }
 
-        hasFetchedUsers.current = false;
         hasFetchedApplications.current = false;
         hasFetchedRecommendations.current = false;
         hasFetchedMyApplication.current = false;
@@ -415,7 +394,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     });
 
     hasInitializedAuth.current = false;
-    hasFetchedUsers.current = false;
     hasFetchedApplications.current = false;
     hasFetchedRecommendations.current = false;
     hasFetchedMyApplication.current = false;
@@ -431,7 +409,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       }));
       setCurrentUserId(user.id);
 
-      hasFetchedUsers.current = false;
       hasFetchedApplications.current = false;
       hasFetchedRecommendations.current = false;
       hasFetchedMyApplication.current = false;
@@ -444,7 +421,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       });
 
       hasInitializedAuth.current = false;
-      hasFetchedUsers.current = false;
       hasFetchedApplications.current = false;
       hasFetchedRecommendations.current = false;
       hasFetchedMyApplication.current = false;
@@ -683,7 +659,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     } catch (error) {
       console.warn('Failed to refetch users:', error);
     }
-  }, [currentUser]);
+  }, [currentUser?.role]);
 
   const value = useMemo(
     () => ({

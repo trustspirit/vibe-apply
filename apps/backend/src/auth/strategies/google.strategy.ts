@@ -27,6 +27,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): void {
     const { id, emails, displayName, photos } = profile;
+    console.log('Google profile:', { id, emails, displayName, photos });
 
     const user: GoogleOAuthDto = {
       googleId: id,
@@ -34,6 +35,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       name: displayName,
       picture: photos[0]?.value,
     };
+    console.log('Extracted user data:', user);
 
     done(null, user);
   }

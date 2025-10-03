@@ -168,6 +168,7 @@ export class AuthService {
         ward: (userData.ward as string) || '',
         stake: (userData.stake as string) || '',
         phone: (userData.phone as string) || undefined,
+        picture: (userData.picture as string) || undefined,
       };
 
       const tokens = this.generateTokens(user);
@@ -211,6 +212,7 @@ export class AuthService {
       ward: (userData.ward as string) || '',
       stake: (userData.stake as string) || '',
       phone: (userData.phone as string) || undefined,
+      picture: (userData.picture as string) || undefined,
     };
   }
 
@@ -282,6 +284,7 @@ export class AuthService {
         ward: (data.ward as string) || '',
         stake: (data.stake as string) || '',
         phone: (data.phone as string) || undefined,
+        picture: (data.picture as string) || undefined,
       };
     });
   }
@@ -308,12 +311,26 @@ export class AuthService {
   }
 
   async googleLogin(googleUser: GoogleOAuthDto): Promise<TokenResponse> {
+    console.log('Google OAuth user data:', googleUser);
     try {
-      // Try to find existing user
       const userRecord = await this.firebaseService
         .getAuth()
         .getUserByEmail(googleUser.email);
       const user = await this.getUser(userRecord.uid);
+      console.log('User from Firestore:', user);
+
+      if (googleUser.picture && (!user.picture || googleUser.picture !== user.picture)) {
+        console.log('Updating picture in Firestore:', googleUser.picture);
+        await this.firebaseService
+          .getFirestore()
+          .collection('users')
+          .doc(userRecord.uid)
+          .update({
+            picture: googleUser.picture,
+          });
+        user.picture = googleUser.picture;
+      }
+      console.log('Final user object:', user);
 
       const tokens = this.generateTokens(user);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -325,7 +342,6 @@ export class AuthService {
         user: userWithoutPassword,
       };
     } catch {
-      // Create new user if not found
       const userRecord = await this.firebaseService.createUser(
         googleUser.email,
         Math.random().toString(36),
@@ -342,6 +358,7 @@ export class AuthService {
         ward: '',
         stake: '',
         phone: undefined,
+        picture: googleUser.picture,
         createdAt: new Date().toISOString(),
       };
 
@@ -352,8 +369,10 @@ export class AuthService {
         .set({
           name: user.name,
           email: user.email,
-          ...(user.role && { role: user.role }), // Only set role if not null
+          ...(user.role && { role: user.role }),
           leaderStatus: user.leaderStatus,
+          ward: user.ward,
+          stake: user.stake,
           createdAt: user.createdAt,
           googleId: googleUser.googleId,
           picture: googleUser.picture,

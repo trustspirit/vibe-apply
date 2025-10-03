@@ -168,6 +168,7 @@ const GlobalNav = () => {
           <div className="gnb__avatar-wrapper" ref={avatarRef}>
             <Avatar
               name={currentUser.name}
+              picture={currentUser.picture}
               size="md"
               onClick={toggleMenu}
             />

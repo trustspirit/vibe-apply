@@ -35,7 +35,7 @@ const Avatar = forwardRef<HTMLButtonElement, AvatarProps>(({ name, picture, size
     <button
       ref={ref}
       type='button'
-      className={clsx('avatar', `avatar--${size}`, className)}
+      className={clsx('avatar', `avatar--${size}`, { 'avatar--has-picture': picture }, className)}
       style={!picture ? { backgroundColor } : undefined}
       {...props}
     >
