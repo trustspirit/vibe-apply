@@ -16,18 +16,55 @@ import {
 export class ApplicationsService {
   constructor(private firebaseService: FirebaseService) {}
 
+  async checkExistingRecommendation(
+    email: string,
+    stake: string,
+    ward: string,
+  ): Promise<boolean> {
+    const normalizedEmail = email.toLowerCase();
+    const normalizedStake = stake.trim().toLowerCase();
+    const normalizedWard = ward.trim().toLowerCase();
+
+    const existingRecommendation = await this.firebaseService
+      .getFirestore()
+      .collection('recommendations')
+      .where('email', '==', normalizedEmail)
+      .where('stake', '==', normalizedStake)
+      .where('ward', '==', normalizedWard)
+      .limit(1)
+      .get();
+
+    return !existingRecommendation.empty;
+  }
+
   async create(
     userId: string,
     createApplicationDto: CreateApplicationDto,
   ): Promise<Application> {
+    const normalizedEmail = createApplicationDto.email.toLowerCase();
+    const normalizedStake = createApplicationDto.stake.trim().toLowerCase();
+    const normalizedWard = createApplicationDto.ward.trim().toLowerCase();
+
+    const hasRecommendation = await this.checkExistingRecommendation(
+      normalizedEmail,
+      normalizedStake,
+      normalizedWard,
+    );
+
+    if (hasRecommendation) {
+      throw new BadRequestException(
+        'You have already been recommended by your leader. Please contact your bishop or stake president.',
+      );
+    }
+
     const timestamp = new Date().toISOString();
     const status = createApplicationDto.status || ApplicationStatus.AWAITING;
 
     const applicationData = {
       ...createApplicationDto,
-      stake: createApplicationDto.stake.trim().toLowerCase(),
-      ward: createApplicationDto.ward.trim().toLowerCase(),
-      email: createApplicationDto.email.toLowerCase(),
+      stake: normalizedStake,
+      ward: normalizedWard,
+      email: normalizedEmail,
       moreInfo: createApplicationDto.moreInfo || '',
       userId,
       status,
@@ -45,33 +82,7 @@ export class ApplicationsService {
       ...applicationData,
     };
 
-    await this.linkMatchingRecommendation(application);
-
     return application;
-  }
-
-  private async linkMatchingRecommendation(
-    application: Application,
-  ): Promise<void> {
-    const recommendationsSnapshot = await this.firebaseService
-      .getFirestore()
-      .collection('recommendations')
-      .where('email', '==', application.email.toLowerCase())
-      .where('stake', '==', application.stake)
-      .where('ward', '==', application.ward)
-      .get();
-
-    if (!recommendationsSnapshot.empty) {
-      const recommendationDoc = recommendationsSnapshot.docs[0];
-      await this.firebaseService
-        .getFirestore()
-        .collection('recommendations')
-        .doc(recommendationDoc.id)
-        .update({
-          linkedApplicationId: application.id,
-          updatedAt: new Date().toISOString(),
-        });
-    }
   }
 
   async findAll(
@@ -95,31 +106,45 @@ export class ApplicationsService {
 
     const applicationsSnapshot = await query.get();
 
-    const applications = applicationsSnapshot.docs.map((doc) => {
-      const data = doc.data() as Record<string, unknown>;
-      const status = data.status as ApplicationStatus;
-      const canModify =
-        status !== ApplicationStatus.APPROVED &&
-        status !== ApplicationStatus.REJECTED;
+    const applications = await Promise.all(
+      applicationsSnapshot.docs.map(async (doc) => {
+        const data = doc.data() as Record<string, unknown>;
+        const status = data.status as ApplicationStatus;
+        const canModify =
+          status !== ApplicationStatus.APPROVED &&
+          status !== ApplicationStatus.REJECTED;
 
-      return {
-        id: doc.id,
-        userId: data.userId as string,
-        name: data.name as string,
-        age: data.age as number,
-        email: data.email as string,
-        phone: data.phone as string,
-        stake: data.stake as string,
-        ward: data.ward as string,
-        gender: data.gender as string,
-        moreInfo: data.moreInfo as string,
-        status: status,
-        createdAt: data.createdAt as string,
-        updatedAt: data.updatedAt as string,
-        canEdit: canModify,
-        canDelete: canModify,
-      } as Application & { canEdit: boolean; canDelete: boolean };
-    });
+        const memos =
+          userRole &&
+          [
+            UserRole.ADMIN,
+            UserRole.SESSION_LEADER,
+            UserRole.STAKE_PRESIDENT,
+            UserRole.BISHOP,
+          ].includes(userRole as UserRole)
+            ? await this.getMemos(doc.id)
+            : undefined;
+
+        return {
+          id: doc.id,
+          userId: data.userId as string,
+          name: data.name as string,
+          age: data.age as number,
+          email: data.email as string,
+          phone: data.phone as string,
+          stake: data.stake as string,
+          ward: data.ward as string,
+          gender: data.gender as string,
+          moreInfo: data.moreInfo as string,
+          status: status,
+          createdAt: data.createdAt as string,
+          updatedAt: data.updatedAt as string,
+          canEdit: canModify,
+          canDelete: canModify,
+          memos,
+        } as Application & { canEdit: boolean; canDelete: boolean };
+      }),
+    );
 
     if (userRole === UserRole.BISHOP || userRole === UserRole.STAKE_PRESIDENT) {
       applications.sort(
@@ -169,7 +194,7 @@ export class ApplicationsService {
     } as Application & { canEdit: boolean; canDelete: boolean };
   }
 
-  async findOne(id: string): Promise<Application> {
+  async findOne(id: string, userRole?: UserRole): Promise<Application> {
     const doc = await this.firebaseService
       .getFirestore()
       .collection('applications')
@@ -185,9 +210,21 @@ export class ApplicationsService {
       throw new NotFoundException('Application data not found');
     }
 
+    const memos =
+      userRole &&
+      [
+        UserRole.ADMIN,
+        UserRole.SESSION_LEADER,
+        UserRole.STAKE_PRESIDENT,
+        UserRole.BISHOP,
+      ].includes(userRole)
+        ? await this.getMemos(id)
+        : undefined;
+
     return {
       id: doc.id,
       ...data,
+      memos,
     } as Application;
   }
 
@@ -270,8 +307,6 @@ export class ApplicationsService {
           });
       }
     }
-
-    await this.linkMatchingRecommendation(application);
   }
 
   async updateStatus(
@@ -298,5 +333,28 @@ export class ApplicationsService {
       .collection('applications')
       .doc(id)
       .delete();
+  }
+
+  private async getMemos(applicationId: string) {
+    const memosSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection('memos')
+      .where('applicationId', '==', applicationId)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    return memosSnapshot.docs.map((doc) => {
+      const data = doc.data() as Record<string, unknown>;
+      return {
+        id: doc.id,
+        applicationId: data.applicationId as string,
+        authorId: data.authorId as string,
+        authorName: data.authorName as string,
+        authorRole: data.authorRole as UserRole,
+        content: data.content as string,
+        createdAt: data.createdAt as string,
+        updatedAt: data.updatedAt as string,
+      };
+    });
   }
 }

@@ -6,6 +6,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { MemosModule } from './memos/memos.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     AuthModule,
     ApplicationsModule,
     RecommendationsModule,
+    MemosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

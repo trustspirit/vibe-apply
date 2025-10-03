@@ -38,6 +38,16 @@ export interface User {
     picture?: string;
     createdAt: string;
 }
+export interface ApplicationMemo {
+    id: string;
+    applicationId: string;
+    authorId: string;
+    authorName: string;
+    authorRole: UserRole;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+}
 export interface Application {
     id: string;
     userId: string;
@@ -53,6 +63,7 @@ export interface Application {
     createdAt: string;
     updatedAt: string;
     linkedApplicationId?: string;
+    memos?: ApplicationMemo[];
 }
 export interface LeaderRecommendation {
     id: string;
@@ -137,6 +148,12 @@ export interface UpdateUserProfileDto {
     ward?: string;
     stake?: string;
     phone?: string;
+}
+export interface CreateMemoDto {
+    content: string;
+}
+export interface UpdateMemoDto {
+    content: string;
 }
 export interface UpdateLeaderStatusDto {
     leaderStatus: LeaderStatus;

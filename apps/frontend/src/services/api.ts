@@ -302,6 +302,12 @@ export const applicationsApi = {
     return api.get(`/applications/user/${userId}`) as Promise<Application[]>;
   },
 
+  checkRecommendation: async (): Promise<{ hasRecommendation: boolean }> => {
+    return api.get('/applications/check-recommendation') as Promise<{
+      hasRecommendation: boolean;
+    }>;
+  },
+
   getMyApplication: async (): Promise<Application | null> => {
     return api.get(
       '/applications/my-application'

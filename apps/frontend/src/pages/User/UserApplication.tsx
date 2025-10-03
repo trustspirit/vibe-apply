@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useApp } from '../../context/AppContext';
+import { applicationsApi } from '../../services/api';
 import { Button, ComboBox, StatusChip, TextField } from '../../components/ui';
-import type { ApplicationStatus } from '@vibe-apply/shared';
 import './UserApplication.scss';
 
 interface ApplicationForm {
@@ -57,10 +57,32 @@ const UserApplication = () => {
   const [feedback, setFeedback] = useState('');
   const [formError, setFormError] = useState('');
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [hasRecommendation, setHasRecommendation] = useState(false);
+  const [isCheckingRecommendation, setIsCheckingRecommendation] = useState(true);
 
   useEffect(() => {
     refetchApplications();
   }, [refetchApplications]);
+
+  useEffect(() => {
+    const checkRecommendation = async () => {
+      if (isInitializing || !currentUser || existingApplication) {
+        setIsCheckingRecommendation(false);
+        return;
+      }
+
+      try {
+        const result = await applicationsApi.checkRecommendation();
+        setHasRecommendation(result.hasRecommendation);
+      } catch {
+        setHasRecommendation(false);
+      } finally {
+        setIsCheckingRecommendation(false);
+      }
+    };
+
+    checkRecommendation();
+  }, [isInitializing, currentUser, existingApplication]);
 
   useEffect(() => {
     if (isInitializing || !currentUser) {
@@ -249,21 +271,31 @@ const UserApplication = () => {
 
   return (
     <section className='application'>
-      {(isInitializing || isLoadingApplications) ? null : (
+      {(isInitializing || isLoadingApplications || isCheckingRecommendation) ? null : (
         <>
           <header className='application__header'>
             <h1 className='application__title'>Application</h1>
             <p className='application__subtitle'>
-              {existingApplication
-                ? existingApplication.status === 'draft'
-                  ? 'Your draft is saved. Complete the required fields and submit when you are ready.'
-                  : isEditable
-                    ? 'You can update your submission while it is being reviewed.'
-                    : 'Your submission is locked while a decision is finalized.'
-                : 'Start your application to be considered.'}
+              {hasRecommendation
+                ? 'You have already been recommended by your leader.'
+                : existingApplication
+                  ? existingApplication.status === 'draft'
+                    ? 'Your draft is saved. Complete the required fields and submit when you are ready.'
+                    : isEditable
+                      ? 'You can update your submission while it is being reviewed.'
+                      : 'Your submission is locked while a decision is finalized.'
+                  : 'Start your application to be considered.'}
             </p>
           </header>
 
+      {hasRecommendation ? (
+        <div className='application__summary'>
+          <p className='application__feedback'>
+            You have already been recommended by your leader. Please contact your bishop or stake president if you have questions.
+          </p>
+        </div>
+      ) : (
+        <>
       {formError && (
         <p className='application__feedback application__feedback--error'>
           {formError}
@@ -465,6 +497,8 @@ const UserApplication = () => {
             Start Application
           </Button>
         </div>
+      )}
+        </>
       )}
         </>
       )}

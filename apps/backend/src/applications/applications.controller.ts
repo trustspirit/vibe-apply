@@ -59,6 +59,32 @@ export class ApplicationsController {
     );
   }
 
+  @Get('check-recommendation')
+  @UseGuards(JwtAuthGuard)
+  async checkRecommendation(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<{ hasRecommendation: boolean }> {
+    const userDetails = await this.applicationsService['firebaseService']
+      .getFirestore()
+      .collection('users')
+      .doc(user.sub)
+      .get();
+    const userData = userDetails.data() as Record<string, unknown> | undefined;
+
+    if (!userData?.email || !userData?.stake || !userData?.ward) {
+      return { hasRecommendation: false };
+    }
+
+    const hasRecommendation =
+      await this.applicationsService.checkExistingRecommendation(
+        userData.email as string,
+        userData.stake as string,
+        userData.ward as string,
+      );
+
+    return { hasRecommendation };
+  }
+
   @Get('my-application')
   @UseGuards(JwtAuthGuard)
   async findMyApplication(
@@ -83,8 +109,11 @@ export class ApplicationsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id') id: string): Promise<Application> {
-    return this.applicationsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<Application> {
+    return this.applicationsService.findOne(id, user.role || undefined);
   }
 
   @Put(':id')
