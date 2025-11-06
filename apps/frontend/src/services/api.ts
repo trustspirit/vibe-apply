@@ -11,6 +11,16 @@ import type {
 } from '@vibe-apply/shared';
 import { ROUTES } from '../utils/constants';
 
+// API Configuration Constants
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
+
+// Public routes that don't require authentication
+const PUBLIC_PATHS = [
+  ROUTES.SIGN_IN,
+  ROUTES.SIGN_UP,
+  ROUTES.AUTH_CALLBACK,
+] as string[];
+
 interface ErrorData {
   message: string;
   [key: string]: unknown;
@@ -59,7 +69,7 @@ export const tokenStorage = {
 };
 
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -125,12 +135,7 @@ api.interceptors.response.use(
         clearRefreshToken();
         retriedRequests.clear();
         const currentPath = window.location.pathname;
-        const publicPaths = [
-          ROUTES.SIGN_IN,
-          ROUTES.SIGN_UP,
-          ROUTES.AUTH_CALLBACK,
-        ] as string[];
-        if (!publicPaths.includes(currentPath)) {
+        if (!PUBLIC_PATHS.includes(currentPath)) {
           window.location.href = ROUTES.SIGN_IN;
         }
         return Promise.reject(error);
@@ -138,7 +143,7 @@ api.interceptors.response.use(
 
       try {
         const response = await axios.post<TokenResponse>(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/refresh`,
+          `${API_BASE_URL}/auth/refresh`,
           { refreshToken }
         );
         const { accessToken: newAccessToken } = response.data;
@@ -152,12 +157,7 @@ api.interceptors.response.use(
         clearRefreshToken();
         retriedRequests.clear();
         const currentPath = window.location.pathname;
-        const publicPaths = [
-          ROUTES.SIGN_IN,
-          ROUTES.SIGN_UP,
-          ROUTES.AUTH_CALLBACK,
-        ] as string[];
-        if (!publicPaths.includes(currentPath)) {
+        if (!PUBLIC_PATHS.includes(currentPath)) {
           window.location.href = ROUTES.SIGN_IN;
         }
         return Promise.reject(refreshError);
@@ -244,7 +244,7 @@ export const authApi = {
       throw new Error('No refresh token available');
     }
     const response = await axios.post<TokenResponse>(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/refresh`,
+      `${API_BASE_URL}/auth/refresh`,
       { refreshToken }
     );
     setAccessToken(response.data.accessToken);

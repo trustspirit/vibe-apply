@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { Button, ComboBox, StatusChip, Tabs } from '../../components/ui';
+import { ReviewItemTags } from '../../components/ReviewItemTags';
 import type { Application, LeaderRecommendation, ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import './AdminReview.scss';
 
@@ -461,28 +462,11 @@ const AdminReview = () => {
                       <span className='review__list-meta review__list-date'>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
-                      <div className='review__list-tags'>
-                        {item.type === 'application' && (
-                          <span className='review__list-tag review__list-tag--application'>
-                            Applied
-                          </span>
-                        )}
-                        {item.type === 'recommendation' && (
-                          <span className='review__list-tag review__list-tag--recommendation'>
-                            Recommended
-                          </span>
-                        )}
-                        {item.type === 'application' && item.hasRecommendation && (
-                          <span className='review__list-tag review__list-tag--recommendation'>
-                            Recommended
-                          </span>
-                        )}
-                        {item.type === 'recommendation' && item.hasApplication && (
-                          <span className='review__list-tag review__list-tag--application'>
-                            Applied
-                          </span>
-                        )}
-                      </div>
+                      <ReviewItemTags
+                        type={item.type}
+                        hasRecommendation={item.hasRecommendation}
+                        hasApplication={item.hasApplication}
+                      />
                     </div>
                   </button>
                 </li>

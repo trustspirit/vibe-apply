@@ -25,6 +25,11 @@ import type {
   ApplicationStatus,
   RecommendationStatus,
 } from '@vibe-apply/shared';
+import {
+  normalizeUserRole,
+  isLeaderRole,
+  isApprovedLeader,
+} from '@vibe-apply/shared';
 
 type UserWithoutPassword = Omit<User, 'password'>;
 
@@ -127,24 +132,12 @@ const normalizeUserRecord = (
     };
   }
 
-  const normalizedRole: UserRole =
-    user.role === (USER_ROLES.ADMIN as UserRole)
-      ? (USER_ROLES.ADMIN as UserRole)
-      : user.role === (USER_ROLES.SESSION_LEADER as UserRole)
-        ? (USER_ROLES.SESSION_LEADER as UserRole)
-        : user.role === (USER_ROLES.STAKE_PRESIDENT as UserRole)
-          ? (USER_ROLES.STAKE_PRESIDENT as UserRole)
-          : user.role === (USER_ROLES.BISHOP as UserRole)
-            ? (USER_ROLES.BISHOP as UserRole)
-            : (USER_ROLES.APPLICANT as UserRole);
-  const leaderStatus: LeaderStatus | null =
-    normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) ||
-    normalizedRole === (USER_ROLES.BISHOP as UserRole) ||
-    normalizedRole === (USER_ROLES.SESSION_LEADER as UserRole)
-      ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
-        ? (LEADER_STATUS.APPROVED as LeaderStatus)
-        : (LEADER_STATUS.PENDING as LeaderStatus)
-      : null;
+  const normalizedRole: UserRole = normalizeUserRole(user.role);
+  const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
+    ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
+      ? (LEADER_STATUS.APPROVED as LeaderStatus)
+      : (LEADER_STATUS.PENDING as LeaderStatus)
+    : null;
 
   return {
     ...user,
@@ -156,6 +149,19 @@ const normalizeUserRecord = (
 interface AppProviderProps {
   children: ReactNode;
 }
+
+/**
+ * Helper function to reset all fetch flags
+ */
+const resetFetchFlags = (
+  hasFetchedApplications: React.MutableRefObject<boolean>,
+  hasFetchedRecommendations: React.MutableRefObject<boolean>,
+  hasFetchedMyApplication: React.MutableRefObject<boolean>
+) => {
+  hasFetchedApplications.current = false;
+  hasFetchedRecommendations.current = false;
+  hasFetchedMyApplication.current = false;
+};
 
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState<AppState>({
@@ -229,11 +235,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     const fetchApplications = async () => {
       if (
-        (currentUser?.role === USER_ROLES.ADMIN ||
-          ((currentUser?.role === USER_ROLES.SESSION_LEADER ||
-            currentUser?.role === USER_ROLES.BISHOP ||
-            currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
-            currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
+        (currentUser?.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser)) &&
         !hasFetchedApplications.current
       ) {
         hasFetchedApplications.current = true;
@@ -256,12 +258,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     const fetchRecommendations = async () => {
       if (
-        (currentUser?.role === USER_ROLES.ADMIN ||
-          ((currentUser?.role === USER_ROLES.BISHOP ||
-            currentUser?.role === USER_ROLES.STAKE_PRESIDENT) &&
-            currentUser?.leaderStatus === LEADER_STATUS.APPROVED) ||
-          (currentUser?.role === USER_ROLES.SESSION_LEADER &&
-            currentUser?.leaderStatus === LEADER_STATUS.APPROVED)) &&
+        (currentUser?.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser)) &&
         !hasFetchedRecommendations.current
       ) {
         hasFetchedRecommendations.current = true;
@@ -329,9 +326,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           setCurrentUserId(normalized.id);
         }
 
-        hasFetchedApplications.current = false;
-        hasFetchedRecommendations.current = false;
-        hasFetchedMyApplication.current = false;
+        resetFetchFlags(
+          hasFetchedApplications,
+          hasFetchedRecommendations,
+          hasFetchedMyApplication
+        );
 
         return normalized || user;
       } catch (error) {
@@ -363,9 +362,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           setCurrentUserId(normalized.id);
         }
 
-        hasFetchedApplications.current = false;
-        hasFetchedRecommendations.current = false;
-        hasFetchedMyApplication.current = false;
+        resetFetchFlags(
+          hasFetchedApplications,
+          hasFetchedRecommendations,
+          hasFetchedMyApplication
+        );
 
         return normalized || user;
       } catch (error) {
@@ -394,9 +395,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     });
 
     hasInitializedAuth.current = false;
-    hasFetchedApplications.current = false;
-    hasFetchedRecommendations.current = false;
-    hasFetchedMyApplication.current = false;
+    resetFetchFlags(
+      hasFetchedApplications,
+      hasFetchedRecommendations,
+      hasFetchedMyApplication
+    );
   }, []);
 
   const setUser = useCallback((user: User | null) => {
@@ -409,9 +412,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       }));
       setCurrentUserId(user.id);
 
-      hasFetchedApplications.current = false;
-      hasFetchedRecommendations.current = false;
-      hasFetchedMyApplication.current = false;
+      resetFetchFlags(
+        hasFetchedApplications,
+        hasFetchedRecommendations,
+        hasFetchedMyApplication
+      );
     } else {
       setCurrentUserId(null);
       setState({
@@ -421,9 +426,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       });
 
       hasInitializedAuth.current = false;
-      hasFetchedApplications.current = false;
-      hasFetchedRecommendations.current = false;
-      hasFetchedMyApplication.current = false;
+      resetFetchFlags(
+        hasFetchedApplications,
+        hasFetchedRecommendations,
+        hasFetchedMyApplication
+      );
     }
   }, []);
 
@@ -438,12 +445,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             return user;
           }
           const normalizedRole = role as UserRole;
-          const leaderStatus: LeaderStatus | null =
-            normalizedRole === (USER_ROLES.BISHOP as UserRole) ||
-            normalizedRole === (USER_ROLES.STAKE_PRESIDENT as UserRole) ||
-            normalizedRole === (USER_ROLES.SESSION_LEADER as UserRole)
-              ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
-              : null;
+          const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
+            ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
+            : null;
           updatedUser = {
             ...user,
             role: normalizedRole,
@@ -455,9 +459,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
       if (userId === currentUserId && updatedUser) {
         setCurrentUserId(updatedUser.id);
-        hasFetchedApplications.current = false;
-        hasFetchedRecommendations.current = false;
-        hasFetchedMyApplication.current = false;
+        resetFetchFlags(
+          hasFetchedApplications,
+          hasFetchedRecommendations,
+          hasFetchedMyApplication
+        );
       }
     },
     [currentUserId]
@@ -598,10 +604,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     try {
       if (
         currentUser.role === USER_ROLES.ADMIN ||
-        ((currentUser.role === USER_ROLES.SESSION_LEADER ||
-          currentUser.role === USER_ROLES.BISHOP ||
-          currentUser.role === USER_ROLES.STAKE_PRESIDENT) &&
-          currentUser.leaderStatus === LEADER_STATUS.APPROVED)
+        isApprovedLeader(currentUser)
       ) {
         const applications = await applicationsApi.getAll();
         setState((prev) => ({
@@ -628,11 +631,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     try {
       if (
         currentUser.role === USER_ROLES.ADMIN ||
-        ((currentUser.role === USER_ROLES.BISHOP ||
-          currentUser.role === USER_ROLES.STAKE_PRESIDENT) &&
-          currentUser.leaderStatus === LEADER_STATUS.APPROVED) ||
-        (currentUser.role === USER_ROLES.SESSION_LEADER &&
-          currentUser.leaderStatus === LEADER_STATUS.APPROVED)
+        isApprovedLeader(currentUser)
       ) {
         const recommendations = await recommendationsApi.getAll();
         setState((prev) => ({
