@@ -1,4 +1,4 @@
-import { UserRole, type User } from '../index';
+import { UserRole, type User } from '../types';
 /**
  * Leader roles that have permission to review applications
  */
