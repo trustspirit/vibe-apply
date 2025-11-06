@@ -227,6 +227,27 @@ importers:
         specifier: ^0.14.1
         version: 0.14.2
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.36.0
+        version: 9.36.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.18.2
+        version: 8.44.1(@typescript-eslint/parser@8.44.1(eslint@9.36.0)(typescript@5.9.3))(eslint@9.36.0)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.18.2
+        version: 8.44.1(eslint@9.36.0)(typescript@5.9.3)
+      eslint:
+        specifier: ^9.18.0
+        version: 9.36.0
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.36.0)
+      eslint-plugin-prettier:
+        specifier: ^5.5.4
+        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.36.0))(eslint@9.36.0)(prettier@3.6.2)
+      prettier:
+        specifier: ^3.4.2
+        version: 3.6.2
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

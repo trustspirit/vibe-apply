@@ -1,5 +1,5 @@
-import { User } from '@vibe-apply/shared';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants';
+import { User, UserRole, isLeaderRole, isApprovedLeader, isAdmin } from '@vibe-apply/shared';
+import { USER_ROLES, ROUTES } from './constants';
 
 export const getDefaultPathForUser = (
   user: Omit<User, 'password'> | null
@@ -12,18 +12,18 @@ export const getDefaultPathForUser = (
     return ROUTES.COMPLETE_PROFILE;
   }
 
-  if (user.role === USER_ROLES.ADMIN) {
+  if (isAdmin(user.role)) {
     return ROUTES.ADMIN_DASHBOARD;
   }
 
   if (user.role === USER_ROLES.SESSION_LEADER) {
-    return user.leaderStatus === LEADER_STATUS.APPROVED
+    return isApprovedLeader(user)
       ? ROUTES.ADMIN_DASHBOARD
       : ROUTES.LEADER_PENDING;
   }
 
-  if (user.role === USER_ROLES.BISHOP || user.role === USER_ROLES.STAKE_PRESIDENT) {
-    return user.leaderStatus === LEADER_STATUS.APPROVED
+  if (isLeaderRole(user.role)) {
+    return isApprovedLeader(user)
       ? ROUTES.LEADER_DASHBOARD
       : ROUTES.LEADER_PENDING;
   }

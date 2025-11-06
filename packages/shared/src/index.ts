@@ -211,3 +211,7 @@ export interface GoogleOAuthDto {
 export interface ExchangeCodeDto {
   code: string;
 }
+
+// Utility functions
+export * from './utils/role.utils';
+export * from './utils/string.utils';

@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { getDefaultPathForUser } from '../utils/navigation';
 import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants';
 import { ReactNode } from 'react';
+import { isLeaderRole, isApprovedLeader, isAdmin } from '@vibe-apply/shared';
 
 interface RouteGuardProps {
   children: ReactNode;
@@ -39,12 +40,12 @@ export const RequireAdmin = ({ children }: RouteGuardProps) => {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  if (currentUser.role === USER_ROLES.ADMIN) {
+  if (isAdmin(currentUser.role)) {
     return children;
   }
 
   if (currentUser.role === USER_ROLES.SESSION_LEADER) {
-    if (currentUser.leaderStatus !== LEADER_STATUS.APPROVED) {
+    if (!isApprovedLeader(currentUser)) {
       return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
     }
     return children;
@@ -106,16 +107,11 @@ export const RequireLeader = ({
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  const isLeader =
-    currentUser.role === USER_ROLES.BISHOP ||
-    currentUser.role === USER_ROLES.STAKE_PRESIDENT ||
-    currentUser.role === USER_ROLES.SESSION_LEADER;
-
-  if (!isLeader) {
+  if (!isLeaderRole(currentUser.role)) {
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
 
-  if (requireApproved && currentUser.leaderStatus !== LEADER_STATUS.APPROVED) {
+  if (requireApproved && !isApprovedLeader(currentUser)) {
     return <Navigate to={ROUTES.LEADER_PENDING} replace />;
   }
 
