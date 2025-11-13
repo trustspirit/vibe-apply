@@ -11,6 +11,9 @@ import {
   Tabs,
   TextField,
 } from '@/components/ui';
+import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
+import { GENDER_OPTIONS, CONFIRMATION_MESSAGES, type GenderOption } from '@/utils/formConstants';
+import type { ValidationErrors, TabItem } from '@/types';
 import './LeaderRecommendations.scss';
 
 interface RecommendationForm {
@@ -25,23 +28,8 @@ interface RecommendationForm {
   moreInfo: string;
 }
 
-interface ValidationErrors {
-  [key: string]: string;
-}
-
 interface LocationState {
   action?: string;
-}
-
-interface TabItem {
-  id: string;
-  label: string;
-}
-
-interface GenderOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
 }
 
 interface ExtendedRecommendation extends LeaderRecommendation {
@@ -74,12 +62,6 @@ const TAB_DEFS: TabItem[] = [
   { id: 'submitted', label: 'Awaiting Review' },
   { id: 'approved', label: 'Approved' },
   { id: 'rejected', label: 'Rejected' },
-];
-
-const genderOptions: GenderOption[] = [
-  { value: '', label: 'Select gender', disabled: true },
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
 ];
 
 const LeaderRecommendations = () => {
@@ -324,10 +306,10 @@ const LeaderRecommendations = () => {
     }
     if (
       Number.isNaN(normalizedAge) ||
-      normalizedAge < 16 ||
-      normalizedAge > 120
+      normalizedAge < AGE_MIN ||
+      normalizedAge > AGE_MAX
     ) {
-      nextErrors.age = 'Age must be between 16 and 120.';
+      nextErrors.age = AGE_ERROR_MESSAGE;
     }
     if (!trimmedEmail) {
       nextErrors.email = 'Email is required.';
@@ -419,9 +401,7 @@ const LeaderRecommendations = () => {
     ) {
       return;
     }
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this recommendation? This action cannot be undone.'
-    );
+    const confirmed = window.confirm(CONFIRMATION_MESSAGES.DELETE_RECOMMENDATION);
     if (!confirmed) {
       return;
     }
@@ -487,9 +467,7 @@ const LeaderRecommendations = () => {
     ) {
       return;
     }
-    const confirmed = window.confirm(
-      'Cancel submission and move this recommendation back to draft? You can edit and resubmit it later.'
-    );
+    const confirmed = window.confirm(CONFIRMATION_MESSAGES.CANCEL_SUBMISSION);
     if (!confirmed) {
       return;
     }
@@ -677,7 +655,7 @@ const LeaderRecommendations = () => {
           onChange={handleFormChange}
           showRequiredIndicator={false}
           error={errors.gender}
-          options={genderOptions}
+          options={GENDER_OPTIONS}
           variant='default'
         />
       </div>

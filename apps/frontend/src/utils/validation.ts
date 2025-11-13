@@ -1,10 +1,23 @@
+import {
+  AGE_MIN,
+  AGE_MAX,
+  AGE_ERROR_MESSAGE,
+  EMAIL_REGEX,
+  EMAIL_REQUIRED_ERROR,
+  EMAIL_INVALID_ERROR,
+  PHONE_REQUIRED_ERROR,
+  VALID_GENDERS,
+  GENDER_ERROR_MESSAGE,
+} from './validationConstants';
+import type { StatusDisplayItem } from '@/types/shared';
+
 export const validateEmail = (email: string): string => {
   const trimmed = email.trim();
   if (!trimmed) {
-    return 'Email is required.';
+    return EMAIL_REQUIRED_ERROR;
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-    return 'Enter a valid email address.';
+  if (!EMAIL_REGEX.test(trimmed)) {
+    return EMAIL_INVALID_ERROR;
   }
   return '';
 };
@@ -14,8 +27,8 @@ export const validateAge = (age: string | number): string => {
   if (Number.isNaN(normalizedAge)) {
     return 'Enter a valid age.';
   }
-  if (normalizedAge < 16 || normalizedAge > 120) {
-    return 'Age must be between 16 and 120.';
+  if (normalizedAge < AGE_MIN || normalizedAge > AGE_MAX) {
+    return AGE_ERROR_MESSAGE;
   }
   return '';
 };
@@ -28,25 +41,18 @@ export const validateRequired = (value: string, fieldName: string): string => {
 };
 
 export const validateGender = (gender: string): string => {
-  if (gender !== 'male' && gender !== 'female') {
-    return 'Select male or female.';
+  if (!VALID_GENDERS.includes(gender as typeof VALID_GENDERS[number])) {
+    return GENDER_ERROR_MESSAGE;
   }
   return '';
 };
 
 export const validatePhone = (phone: string): string => {
   if (!phone.trim()) {
-    return 'Phone number is required.';
+    return PHONE_REQUIRED_ERROR;
   }
   return '';
 };
-
-type StatusTone = 'draft' | 'awaiting' | 'reviewed' | 'rejected';
-
-interface StatusDisplayItem {
-  label: string;
-  tone: StatusTone;
-}
 
 export const STATUS_DISPLAY: Record<string, StatusDisplayItem> = {
   draft: { label: 'Draft', tone: 'draft' },

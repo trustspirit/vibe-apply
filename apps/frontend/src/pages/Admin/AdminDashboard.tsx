@@ -18,15 +18,10 @@ import {
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, SummaryCard } from '@/components/ui';
 import { ROUTES } from '@/utils/constants';
+import { GENDER_COLORS } from '@/utils/chartConstants';
+import { resetTimeToMidnight } from '@/utils/validationConstants';
 import type { Application } from '@vibe-apply/shared';
 import styles from './AdminDashboard.module.scss';
-
-const GENDER_COLORS: Record<string, string> = {
-  male: '#1d4ed8',
-  female: '#f97316',
-  other: '#6b7280',
-  'No Data': '#d1d5db',
-};
 
 interface TrendData {
   day: string;
@@ -67,23 +62,19 @@ const AdminDashboard = () => {
     const awaitingRecommendations = leaderRecommendations.filter((rec) => rec.status === 'submitted').length;
     const awaitingCount = awaitingApplications + awaitingRecommendations;
     const approvedCount = applications.filter((app) => app.status === 'approved').length;
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
+    const todayDate = resetTimeToMidnight(new Date());
     const todaysApplications = applications.filter((app) => {
-      const created = new Date(app.createdAt);
-      created.setHours(0, 0, 0, 0);
+      const created = resetTimeToMidnight(new Date(app.createdAt));
       return created.getTime() === todayDate.getTime();
     }).length;
     const todaysRecommendations = submittedRecommendations.filter((rec) => {
-      const created = new Date(rec.createdAt);
-      created.setHours(0, 0, 0, 0);
+      const created = resetTimeToMidnight(new Date(rec.createdAt));
       return created.getTime() === todayDate.getTime();
     }).length;
     const todaysCount = todaysApplications + todaysRecommendations;
 
     const days = Array.from({ length: 7 }).map((_, index) => {
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
+      const date = resetTimeToMidnight(new Date());
       date.setDate(date.getDate() - (6 - index));
       return date;
     });
@@ -94,13 +85,11 @@ const AdminDashboard = () => {
         day: 'numeric',
       });
       const appCount = applications.filter((app) => {
-        const created = new Date(app.createdAt);
-        created.setHours(0, 0, 0, 0);
+        const created = resetTimeToMidnight(new Date(app.createdAt));
         return created.getTime() === date.getTime();
       }).length;
       const recCount = submittedRecommendations.filter((rec) => {
-        const created = new Date(rec.createdAt);
-        created.setHours(0, 0, 0, 0);
+        const created = resetTimeToMidnight(new Date(rec.createdAt));
         return created.getTime() === date.getTime();
       }).length;
       return { 

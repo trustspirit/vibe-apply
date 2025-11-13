@@ -1,21 +1,15 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-  ReactNode,
-} from 'react';
-import {
-  authApi,
-  usersApi,
-  applicationsApi,
-  recommendationsApi,
-  ApiError,
-} from '@/services/api';
-import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
+/**
+ * AppContext - Compatibility wrapper for legacy code
+ * This context combines all split contexts for backward compatibility
+ * New code should use individual contexts: useAuth, useApplications, useRecommendations, useUsers
+ */
+
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { AppProviders } from './AppProviders';
+import { useAuth } from './AuthContext';
+import { useApplications } from './ApplicationsContext';
+import { useRecommendations } from './RecommendationsContext';
+import { useUsers } from './UsersContext';
 import type {
   User,
   Application,
@@ -25,19 +19,8 @@ import type {
   ApplicationStatus,
   RecommendationStatus,
 } from '@vibe-apply/shared';
-import {
-  normalizeUserRole,
-  isLeaderRole,
-  isApprovedLeader,
-} from '@vibe-apply/shared';
 
 type UserWithoutPassword = Omit<User, 'password'>;
-
-interface AppState {
-  users: UserWithoutPassword[];
-  applications: Application[];
-  leaderRecommendations: LeaderRecommendation[];
-}
 
 interface SignUpData {
   name: string;
@@ -117,598 +100,69 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const normalizeUserRecord = (
-  user: UserWithoutPassword | null
-): UserWithoutPassword | null => {
-  if (!user) {
-    return user;
-  }
-
-  if (user.role === null) {
-    return {
-      ...user,
-      role: null,
-      leaderStatus: null,
-    };
-  }
-
-  const normalizedRole: UserRole = normalizeUserRole(user.role);
-  const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
-    ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
-      ? (LEADER_STATUS.APPROVED as LeaderStatus)
-      : (LEADER_STATUS.PENDING as LeaderStatus)
-    : null;
-
-  return {
-    ...user,
-    role: normalizedRole,
-    leaderStatus,
-  };
-};
-
-interface AppProviderProps {
+interface AppContextProviderProps {
   children: ReactNode;
 }
 
 /**
- * Helper function to reset all fetch flags
+ * Internal provider that combines all contexts
  */
-const resetFetchFlags = (
-  hasFetchedApplications: React.MutableRefObject<boolean>,
-  hasFetchedRecommendations: React.MutableRefObject<boolean>,
-  hasFetchedMyApplication: React.MutableRefObject<boolean>
-) => {
-  hasFetchedApplications.current = false;
-  hasFetchedRecommendations.current = false;
-  hasFetchedMyApplication.current = false;
-};
-
-export const AppProvider = ({ children }: AppProviderProps) => {
-  const [state, setState] = useState<AppState>({
-    users: [],
-    applications: [],
-    leaderRecommendations: [],
-  });
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(() => {
-    return !!localStorage.getItem('vibe-apply-refresh-token');
-  });
-  const [isLoadingApplications, setIsLoadingApplications] = useState(false);
-  const hasInitializedAuth = useRef(false);
-  const hasFetchedApplications = useRef(false);
-  const hasFetchedRecommendations = useRef(false);
-  const hasFetchedMyApplication = useRef(false);
-
-  const currentUser = useMemo(
-    () => state.users.find((user) => user.id === currentUserId) ?? null,
-    [currentUserId, state.users]
-  );
-
-  useEffect(() => {
-    const initializeAuth = async () => {
-      if (hasInitializedAuth.current) {
-        return;
-      }
-      hasInitializedAuth.current = true;
-
-      const isAuthCallback = window.location.pathname === '/auth/callback';
-
-      if (isAuthCallback) {
-        setIsInitializing(false);
-        return;
-      }
-
-      const refreshToken = localStorage.getItem('vibe-apply-refresh-token');
-      if (!refreshToken) {
-        setIsInitializing(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        await authApi.refreshAccessToken();
-        const user = await authApi.getCurrentUser();
-        const normalized = normalizeUserRecord(user);
-        if (normalized) {
-          setCurrentUserId(normalized.id);
-          setState((prev) => ({
-            ...prev,
-            users: prev.users.some((u) => u.id === normalized.id)
-              ? prev.users.map((u) => (u.id === normalized.id ? normalized : u))
-              : [...prev.users, normalized],
-          }));
-        }
-      } catch {
-        localStorage.removeItem('vibe-apply-refresh-token');
-      } finally {
-        setIsLoading(false);
-        setIsInitializing(false);
-      }
-    };
-
-    initializeAuth();
-  }, []);
-
-
-
-  useEffect(() => {
-    const fetchApplications = async () => {
-      if (
-        (currentUser?.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser)) &&
-        !hasFetchedApplications.current
-      ) {
-        hasFetchedApplications.current = true;
-        try {
-          const applications = await applicationsApi.getAll();
-          setState((prev) => ({
-            ...prev,
-            applications,
-          }));
-        } catch {
-          hasFetchedApplications.current = false;
-        }
-      }
-    };
-
-    fetchApplications();
-  }, [currentUser]);
-
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (
-        (currentUser?.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser)) &&
-        !hasFetchedRecommendations.current
-      ) {
-        hasFetchedRecommendations.current = true;
-        try {
-          const recommendations = await recommendationsApi.getAll();
-          setState((prev) => ({
-            ...prev,
-            leaderRecommendations: recommendations,
-          }));
-        } catch {
-          hasFetchedRecommendations.current = false;
-        }
-      }
-    };
-
-    fetchRecommendations();
-  }, [currentUser]);
-
-  useEffect(() => {
-    const fetchUserApplication = async () => {
-      if (
-        currentUser?.role === USER_ROLES.APPLICANT &&
-        currentUser?.id &&
-        !hasFetchedMyApplication.current
-      ) {
-        hasFetchedMyApplication.current = true;
-        try {
-          setIsLoadingApplications(true);
-          const application = await applicationsApi.getMyApplication();
-          setState((prev) => ({
-            ...prev,
-            applications: application ? [application] : [],
-          }));
-        } catch {
-          hasFetchedMyApplication.current = false;
-        } finally {
-          setIsLoadingApplications(false);
-        }
-      }
-    };
-
-    fetchUserApplication();
-  }, [currentUser?.role, currentUser?.id]);
-
-  const signUp = useCallback(
-    async ({
-      name,
-      email,
-      password,
-    }: SignUpData): Promise<UserWithoutPassword> => {
-      try {
-        setIsLoading(true);
-        const user = await authApi.signUp({ name, email, password });
-        const normalized = normalizeUserRecord(user);
-
-        if (normalized) {
-          setState((prev) => ({
-            ...prev,
-            users: prev.users.some((u) => u.id === normalized.id)
-              ? prev.users.map((u) => (u.id === normalized.id ? normalized : u))
-              : [...prev.users, normalized],
-          }));
-          setCurrentUserId(normalized.id);
-        }
-
-        resetFetchFlags(
-          hasFetchedApplications,
-          hasFetchedRecommendations,
-          hasFetchedMyApplication
-        );
-
-        return normalized || user;
-      } catch (error) {
-        if (error instanceof ApiError) {
-          throw new Error(error.message);
-        }
-        throw new Error('Failed to sign up. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const signIn = useCallback(
-    async ({ email, password }: SignInData): Promise<UserWithoutPassword> => {
-      try {
-        setIsLoading(true);
-        const user = await authApi.signIn({ email, password });
-        const normalized = normalizeUserRecord(user);
-
-        if (normalized) {
-          setState((prev) => ({
-            ...prev,
-            users: prev.users.some((u) => u.id === normalized.id)
-              ? prev.users.map((u) => (u.id === normalized.id ? normalized : u))
-              : [...prev.users, normalized],
-          }));
-          setCurrentUserId(normalized.id);
-        }
-
-        resetFetchFlags(
-          hasFetchedApplications,
-          hasFetchedRecommendations,
-          hasFetchedMyApplication
-        );
-
-        return normalized || user;
-      } catch (error) {
-        if (error instanceof ApiError) {
-          throw new Error(error.message);
-        }
-        throw new Error('Failed to sign in. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const signOut = useCallback(async () => {
-    try {
-      await authApi.signOut();
-    } catch (signOutError) {
-      void signOutError;
-    }
-    setCurrentUserId(null);
-    setState({
-      users: [],
-      applications: [],
-      leaderRecommendations: [],
-    });
-
-    hasInitializedAuth.current = false;
-    resetFetchFlags(
-      hasFetchedApplications,
-      hasFetchedRecommendations,
-      hasFetchedMyApplication
-    );
-  }, []);
-
-  const setUser = useCallback((user: User | null) => {
-    if (user) {
-      setState((prev) => ({
-        ...prev,
-        users: prev.users.some((u) => u.id === user.id)
-          ? prev.users.map((u) => (u.id === user.id ? user : u))
-          : [...prev.users, user],
-      }));
-      setCurrentUserId(user.id);
-
-      resetFetchFlags(
-        hasFetchedApplications,
-        hasFetchedRecommendations,
-        hasFetchedMyApplication
-      );
-    } else {
-      setCurrentUserId(null);
-      setState({
-        users: [],
-        applications: [],
-        leaderRecommendations: [],
-      });
-
-      hasInitializedAuth.current = false;
-      resetFetchFlags(
-        hasFetchedApplications,
-        hasFetchedRecommendations,
-        hasFetchedMyApplication
-      );
-    }
-  }, []);
-
-  const updateUserRole = useCallback(
-    async (userId: string, role: UserRole) => {
-      await usersApi.updateRole(userId, role);
-      let updatedUser: UserWithoutPassword | null = null;
-      setState((prev) => ({
-        ...prev,
-        users: prev.users.map((user) => {
-          if (user.id !== userId) {
-            return user;
-          }
-          const normalizedRole = role as UserRole;
-          const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
-            ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
-            : null;
-          updatedUser = {
-            ...user,
-            role: normalizedRole,
-            leaderStatus,
-          };
-          return updatedUser;
-        }),
-      }));
-
-      if (userId === currentUserId && updatedUser) {
-        setCurrentUserId(updatedUser.id);
-        resetFetchFlags(
-          hasFetchedApplications,
-          hasFetchedRecommendations,
-          hasFetchedMyApplication
-        );
-      }
-    },
-    [currentUserId]
-  );
-
-  const updateLeaderStatus = useCallback(
-    async (userId: string, status: LeaderStatus) => {
-      await usersApi.updateLeaderStatus(userId, status);
-      let updatedUser: UserWithoutPassword | null = null;
-      setState((prev) => ({
-        ...prev,
-        users: prev.users.map((user) => {
-          if (user.id === userId) {
-            updatedUser = {
-              ...user,
-              leaderStatus: status,
-            };
-            return updatedUser;
-          }
-          return user;
-        }),
-      }));
-
-      if (userId === currentUserId && updatedUser) {
-        setCurrentUserId(updatedUser.id);
-        hasFetchedApplications.current = false;
-        hasFetchedRecommendations.current = false;
-      }
-    },
-    [currentUserId]
-  );
-
-  const submitApplication = useCallback(
-    async (userId: string, payload: ApplicationPayload) => {
-      const { userId: payloadUserId, ...payloadWithoutUserId } = payload;
-      void payloadUserId;
-      const application = await applicationsApi.submit(payloadWithoutUserId);
-      setState((prev) => {
-        const existing = prev.applications.find((app) => app.userId === userId);
-        if (existing) {
-          return {
-            ...prev,
-            applications: prev.applications.map((app) =>
-              app.id === existing.id ? application : app
-            ),
-          };
-        }
-        return {
-          ...prev,
-          applications: [application, ...prev.applications],
-        };
-      });
-    },
-    []
-  );
-
-  const submitLeaderRecommendation = useCallback(
-    async (leaderId: string, payload: RecommendationPayload) => {
-      const { id, leaderId: payloadLeaderId, ...formData } = payload;
-      void payloadLeaderId;
-      if (id) {
-        const recommendation = await recommendationsApi.update(id, formData);
-        setState((prev) => ({
-          ...prev,
-          leaderRecommendations: prev.leaderRecommendations.map((rec) =>
-            rec.id === id ? recommendation : rec
-          ),
-        }));
-      } else {
-        const recommendation = await recommendationsApi.submit(formData);
-        setState((prev) => ({
-          ...prev,
-          leaderRecommendations: [
-            recommendation,
-            ...prev.leaderRecommendations,
-          ],
-        }));
-      }
-    },
-    []
-  );
-
-  const deleteLeaderRecommendation = useCallback(
-    async (leaderId: string, recommendationId: string) => {
-      await recommendationsApi.delete(recommendationId);
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: prev.leaderRecommendations.filter(
-          (recommendation) => recommendation.id !== recommendationId
-        ),
-      }));
-    },
-    []
-  );
-
-  const updateApplicationStatus = useCallback(
-    async (applicationId: string, status: ApplicationStatus) => {
-      await applicationsApi.updateStatus(applicationId, status);
-      setState((prev) => ({
-        ...prev,
-        applications: prev.applications.map((app) =>
-          app.id === applicationId
-            ? {
-                ...app,
-                status,
-                updatedAt: new Date().toISOString(),
-              }
-            : app
-        ),
-      }));
-    },
-    []
-  );
-
-  const updateLeaderRecommendationStatus = useCallback(
-    async (recommendationId: string, status: RecommendationStatus) => {
-      await recommendationsApi.updateStatus(recommendationId, status);
-      setState((prev) => ({
-        ...prev,
-        leaderRecommendations: prev.leaderRecommendations.map(
-          (recommendation) =>
-            recommendation.id === recommendationId
-              ? {
-                  ...recommendation,
-                  status,
-                  updatedAt: new Date().toISOString(),
-                }
-              : recommendation
-        ),
-      }));
-    },
-    []
-  );
-
-  const refetchApplications = useCallback(async () => {
-    if (!currentUser) {
-      return;
-    }
-
-    try {
-      if (
-        currentUser.role === USER_ROLES.ADMIN ||
-        isApprovedLeader(currentUser)
-      ) {
-        const applications = await applicationsApi.getAll();
-        setState((prev) => ({
-          ...prev,
-          applications,
-        }));
-      } else if (currentUser.role === USER_ROLES.APPLICANT) {
-        const application = await applicationsApi.getMyApplication();
-        setState((prev) => ({
-          ...prev,
-          applications: application ? [application] : [],
-        }));
-      }
-    } catch (refetchError) {
-      void refetchError;
-    }
-  }, [currentUser]);
-
-  const refetchRecommendations = useCallback(async () => {
-    if (!currentUser) {
-      return;
-    }
-
-    try {
-      if (
-        currentUser.role === USER_ROLES.ADMIN ||
-        isApprovedLeader(currentUser)
-      ) {
-        const recommendations = await recommendationsApi.getAll();
-        setState((prev) => ({
-          ...prev,
-          leaderRecommendations: recommendations,
-        }));
-      }
-    } catch (refetchRecsError) {
-      void refetchRecsError;
-    }
-  }, [currentUser]);
-
-  const refetchUsers = useCallback(async () => {
-    if (currentUser?.role !== USER_ROLES.ADMIN) {
-      return;
-    }
-
-    try {
-      const users = await usersApi.getAll();
-      setState((prev) => ({
-        ...prev,
-        users: users.map((u) => normalizeUserRecord(u)!),
-      }));
-    } catch (error) {
-      void error;
-    }
-  }, [currentUser?.role]);
+const AppContextProvider = ({ children }: AppContextProviderProps) => {
+  const auth = useAuth();
+  const applications = useApplications();
+  const recommendations = useRecommendations();
+  const users = useUsers();
 
   const value = useMemo(
     () => ({
-      users: state.users,
-      applications: state.applications,
-      leaderRecommendations: state.leaderRecommendations,
-      currentUser,
-      isLoading,
-      isInitializing,
-      isLoadingApplications,
-      signUp,
-      signIn,
-      signOut,
-      setUser,
-      updateUserRole,
-      updateLeaderStatus,
-      submitApplication,
-      updateApplicationStatus,
-      submitLeaderRecommendation,
-      updateLeaderRecommendationStatus,
-      deleteLeaderRecommendation,
-      refetchApplications,
-      refetchRecommendations,
-      refetchUsers,
+      // Auth
+      currentUser: auth.currentUser,
+      isLoading: auth.isLoading,
+      isInitializing: auth.isInitializing,
+      signUp: auth.signUp,
+      signIn: auth.signIn,
+      signOut: auth.signOut,
+      setUser: auth.setUser,
+      // Applications
+      applications: applications.applications,
+      isLoadingApplications: applications.isLoadingApplications,
+      submitApplication: applications.submitApplication,
+      updateApplicationStatus: applications.updateApplicationStatus,
+      refetchApplications: applications.refetchApplications,
+      // Recommendations
+      leaderRecommendations: recommendations.leaderRecommendations,
+      submitLeaderRecommendation: recommendations.submitLeaderRecommendation,
+      updateLeaderRecommendationStatus: recommendations.updateLeaderRecommendationStatus,
+      deleteLeaderRecommendation: recommendations.deleteLeaderRecommendation,
+      refetchRecommendations: recommendations.refetchRecommendations,
+      // Users
+      users: users.users,
+      updateUserRole: users.updateUserRole,
+      updateLeaderStatus: users.updateLeaderStatus,
+      refetchUsers: users.refetchUsers,
     }),
-    [
-      state,
-      currentUser,
-      isLoading,
-      isInitializing,
-      isLoadingApplications,
-      signIn,
-      signUp,
-      signOut,
-      setUser,
-      updateUserRole,
-      updateLeaderStatus,
-      submitApplication,
-      updateApplicationStatus,
-      submitLeaderRecommendation,
-      updateLeaderRecommendationStatus,
-      deleteLeaderRecommendation,
-      refetchApplications,
-      refetchRecommendations,
-      refetchUsers,
-    ]
+    [auth, applications, recommendations, users]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
+/**
+ * Legacy provider for backward compatibility
+ * Wraps app with all split contexts and provides combined interface
+ */
+export const AppProvider = ({ children }: { children: ReactNode }) => {
+  return (
+    <AppProviders>
+      <AppContextProvider>{children}</AppContextProvider>
+    </AppProviders>
+  );
+};
+
+/**
+ * Legacy hook for backward compatibility
+ * New code should use individual hooks instead
+ */
 export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) {

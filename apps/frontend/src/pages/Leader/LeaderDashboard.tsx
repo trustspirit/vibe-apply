@@ -17,9 +17,8 @@ import type { Application } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui';
 import { ROUTES } from '@/utils/constants';
+import { CHART_COLORS } from '@/utils/chartConstants';
 import './LeaderDashboard.scss';
-
-const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];
 
 interface LocationData {
   name: string;
@@ -318,7 +317,7 @@ const LeaderDashboard = () => {
                 {pieData.map((entry, index) => (
                   <Cell
                     key={entry.name}
-                    fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    fill={CHART_COLORS.PRIMARY[index % CHART_COLORS.PRIMARY.length]}
                   />
                 ))}
               </Pie>

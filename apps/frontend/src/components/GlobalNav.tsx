@@ -3,13 +3,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Avatar } from '@/components/ui';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from '@/utils/constants';
+import { ROUTES } from '@/utils/constants';
+import { getRoleConfig } from '@/utils/roleConfig';
 import styles from './GlobalNav.module.scss';
-
-interface NavItem {
-  to: string;
-  label: string;
-}
 
 const GlobalNav = () => {
   const { currentUser, signOut } = useApp();
@@ -19,70 +15,11 @@ const GlobalNav = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
-  const navItems: NavItem[] = (() => {
-    if (currentUser.role === USER_ROLES.ADMIN) {
-      return [
-        { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
-        { to: ROUTES.ADMIN_REVIEW, label: 'Review Applications' },
-        { to: ROUTES.ADMIN_ROLES, label: 'Manage Roles' },
-      ];
-    }
-    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
-      return [
-        { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
-        { to: ROUTES.ADMIN_REVIEW, label: 'Review Applications' },
-      ];
-    }
-    if (currentUser.role === USER_ROLES.BISHOP || currentUser.role === USER_ROLES.STAKE_PRESIDENT) {
-      if (currentUser.leaderStatus === LEADER_STATUS.APPROVED) {
-        return [
-          { to: ROUTES.LEADER_DASHBOARD, label: 'Leader Dashboard' },
-          { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
-        ];
-      }
-      return [
-        { to: ROUTES.LEADER_PENDING, label: 'Leader Access' },
-        { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
-      ];
-    }
-    if (currentUser.role === USER_ROLES.APPLICANT) {
-      return [{ to: ROUTES.APPLICATION, label: 'Application' }];
-    }
-    return [];
-  })();
+  const { navItems, greeting: roleGreeting, label: roleLabel } = getRoleConfig(
+    currentUser.role,
+    currentUser.leaderStatus
+  );
   const hasNav = navItems.length > 0;
-
-  const roleGreeting = (() => {
-    if (currentUser.role === USER_ROLES.ADMIN) {
-      return 'Admin';
-    }
-    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
-      return 'Session Leader';
-    }
-    if (currentUser.role === USER_ROLES.BISHOP) {
-      return 'Bishop';
-    }
-    if (currentUser.role === USER_ROLES.STAKE_PRESIDENT) {
-      return 'Stake President';
-    }
-    return 'Applicant';
-  })();
-
-  const roleLabel = (() => {
-    if (currentUser.role === USER_ROLES.ADMIN) {
-      return 'Admin';
-    }
-    if (currentUser.role === USER_ROLES.SESSION_LEADER) {
-      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Session Leader' : 'Session Leader (Pending)';
-    }
-    if (currentUser.role === USER_ROLES.BISHOP) {
-      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Bishop' : 'Bishop (Pending)';
-    }
-    if (currentUser.role === USER_ROLES.STAKE_PRESIDENT) {
-      return currentUser.leaderStatus === LEADER_STATUS.APPROVED ? 'Stake President' : 'Stake President (Pending)';
-    }
-    return 'Applicant';
-  })();
 
   const handleSignOut = () => {
     signOut();

@@ -5,43 +5,15 @@ import type { Application, LeaderRecommendation, ApplicationStatus, Recommendati
 import { useApp } from '@/context/AppContext';
 import { Button, ComboBox, StatusChip, Tabs } from '@/components/ui';
 import { ReviewItemTags } from '@/components';
+import { resetTimeToMidnight } from '@/utils/validationConstants';
+import { normalizeRecommendationStatus, remapStatusForRecommendation } from '@/utils/statusHelpers';
+import { exportApprovedApplicationsToCSV } from '@/utils/exportData';
+import type { TabItem, StatusOption, ReviewItem } from '@/types';
 import './AdminReview.scss';
 
 interface LocationState {
   initialTab?: string;
   focus?: string;
-}
-
-interface TabItem {
-  id: string;
-  label: string;
-}
-
-interface StatusOption {
-  value: string;
-  label: string;
-}
-
-interface ReviewItem {
-  key: string;
-  type: 'application' | 'recommendation';
-  entityId: string;
-  status: string;
-  rawStatus: ApplicationStatus | RecommendationStatus;
-  name: string;
-  email: string;
-  phone: string;
-  age: number;
-  gender: string;
-  stake: string;
-  ward: string;
-  moreInfo: string;
-  createdAt: string;
-  updatedAt: string;
-  hasRecommendation?: boolean;
-  recommendationId?: string;
-  hasApplication?: boolean;
-  applicationId?: string;
 }
 
 const TABS: TabItem[] = [
@@ -56,20 +28,6 @@ const STATUS_OPTIONS: StatusOption[] = [
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
 ];
-
-const normalizeRecommendationStatus = (status: RecommendationStatus): string => {
-  if (status === 'submitted') {
-    return 'awaiting';
-  }
-  return status;
-};
-
-const remapStatusForRecommendation = (status: string): RecommendationStatus => {
-  if (status === 'awaiting') {
-    return 'submitted' as RecommendationStatus;
-  }
-  return status as RecommendationStatus;
-};
 
 const AdminReview = () => {
   const {
@@ -100,9 +58,7 @@ const AdminReview = () => {
     () => (location.state as LocationState)?.focus === 'today'
   );
   const todayTimestamp = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today.getTime();
+    return resetTimeToMidnight(new Date()).getTime();
   }, []);
 
   useEffect(() => {
@@ -248,8 +204,7 @@ const AdminReview = () => {
         : reviewItems.filter((item) => item.status === activeTab);
     if (showTodayOnly) {
       items = items.filter((item) => {
-        const created = new Date(item.createdAt);
-        created.setHours(0, 0, 0, 0);
+        const created = resetTimeToMidnight(new Date(item.createdAt));
         return created.getTime() === todayTimestamp;
       });
     }
@@ -330,59 +285,7 @@ const AdminReview = () => {
   };
 
   const handleExportApproved = () => {
-    if (!approvedApplications.length) {
-      return;
-    }
-
-    const headers = [
-      'Name',
-      'Email',
-      'Phone',
-      'Age',
-      'Gender',
-      'Stake',
-      'Ward',
-      'Status',
-      'Submitted At',
-      'Last Updated',
-      'More Info',
-    ];
-
-    const rows = approvedApplications.map((app) => [
-      app.name,
-      app.email,
-      app.phone,
-      app.age ?? '',
-      app.gender ?? '',
-      app.stake,
-      app.ward,
-      app.status,
-      new Date(app.createdAt).toLocaleString(),
-      new Date(app.updatedAt).toLocaleString(),
-      app.moreInfo?.replace(/\r?\n/g, ' ') ?? '',
-    ]);
-
-    const escapeCell = (value: string | number) => {
-      const cell = String(value ?? '');
-      if (cell.includes('"') || cell.includes(',') || cell.includes('\n')) {
-        return `"${cell.replace(/"/g, '""')}"`;
-      }
-      return cell;
-    };
-
-    const csvContent = [headers, ...rows]
-      .map((row) => row.map(escapeCell).join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `approved-applications-${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    exportApprovedApplicationsToCSV(approvedApplications);
   };
 
   return (

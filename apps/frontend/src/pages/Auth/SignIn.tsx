@@ -1,10 +1,11 @@
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Alert, Button, GoogleButton } from '@/components/ui';
 import { AuthLayout } from '@/components';
 import { getDefaultPathForUser } from '@/utils/navigation';
 import { ROUTES } from '@/utils/constants';
+import { useForm } from '@/hooks';
 import styles from '@/components/AuthLayout.module.scss';
 
 interface SignInForm {
@@ -16,26 +17,23 @@ const SignIn = () => {
   const { signIn, isInitializing } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
-  const [form, setForm] = useState<SignInForm>({ email: '', password: '' });
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { values, handleChange, isSubmitting, setIsSubmitting } = useForm<SignInForm>({
+    initialValues: { email: '', password: '' },
+  });
 
   if (isInitializing) {
     return null;
   }
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
-      const user = await signIn({ ...form });
+      const user = await signIn({ ...values });
       const redirectTo =
         location.state?.from?.pathname ?? getDefaultPathForUser(user);
       navigate(redirectTo, { replace: true });
@@ -64,7 +62,7 @@ const SignIn = () => {
           <input
             type='email'
             name='email'
-            value={form.email}
+            value={values.email}
             onChange={handleChange}
             className={styles.input}
             required
@@ -75,7 +73,7 @@ const SignIn = () => {
           <input
             type='password'
             name='password'
-            value={form.password}
+            value={values.password}
             onChange={handleChange}
             className={styles.input}
             required
