@@ -19,7 +19,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
