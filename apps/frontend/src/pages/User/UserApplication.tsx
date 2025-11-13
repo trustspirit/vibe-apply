@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useApp } from '../../context/AppContext';
 import { applicationsApi } from '../../services/api';
-import { Button, ComboBox, StatusChip, TextField } from '../../components/ui';
+import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StatusChip, TextField } from '../../components/ui';
 import { validateEmail, validateAge, validateRequired, validateGender, validatePhone, getStatusDisplay } from '../../utils/validation';
-import './UserApplication.scss';
+import styles from './UserApplication.module.scss';
 
 interface ApplicationForm {
   name: string;
@@ -265,12 +265,12 @@ const UserApplication = () => {
   };
 
   return (
-    <section className='application'>
+    <section className={styles.page}>
       {(isInitializing || isLoadingApplications || isCheckingRecommendation) ? null : (
         <>
-          <header className='application__header'>
-            <h1 className='application__title'>Application</h1>
-            <p className='application__subtitle'>
+          <header className={styles.header}>
+            <h1 className={styles.title}>Application</h1>
+            <p className={styles.subtitle}>
               {hasRecommendation
                 ? 'You have already been recommended by your leader.'
                 : existingApplication
@@ -284,201 +284,209 @@ const UserApplication = () => {
           </header>
 
       {hasRecommendation ? (
-        <div className='application__summary'>
-          <p className='application__feedback'>
-            You have already been recommended by your leader. Please contact your bishop or stake president if you have questions.
-          </p>
-        </div>
+        <Card>
+          <CardContent>
+            <Alert variant='info'>
+              You have already been recommended by your leader. Please contact your bishop or stake president if you have questions.
+            </Alert>
+          </CardContent>
+        </Card>
       ) : (
         <>
-      {formError && (
-        <p className='application__feedback application__feedback--error'>
-          {formError}
-        </p>
-      )}
-      {feedback && <p className='application__feedback'>{feedback}</p>}
+      {formError && <Alert variant='error'>{formError}</Alert>}
+      {feedback && <Alert variant='success'>{feedback}</Alert>}
 
       {existingApplication && !isEditing && (
-        <div className='application__summary'>
-          <h2 className='application__summary-title'>Submission Overview</h2>
-          {existingApplication.status === 'draft' && (
-            <p className='application__draft-note'>
-              This application is saved as a draft. Submit it when the required
-              fields are complete.
-            </p>
-          )}
-          <dl>
-            {existingApplication.status && (
-              <div>
-                <dt>Status</dt>
-                <dd>
-                  {(() => {
-                    const display = getStatusDisplay(existingApplication.status);
-                    return (
-                      <StatusChip
-                        status={existingApplication.status}
-                        tone={display.tone}
-                        label={display.label}
-                      />
-                    );
-                  })()}
+        <Card>
+          <CardHeader>
+            <CardTitle>Submission Overview</CardTitle>
+            {existingApplication.status === 'draft' && (
+              <Alert variant='warning'>
+                This application is saved as a draft. Submit it when the required
+                fields are complete.
+              </Alert>
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className={styles.summaryGrid}>
+              {existingApplication.status && (
+                <div className={styles.summaryItem}>
+                  <dt className={styles.summaryLabel}>Status</dt>
+                  <dd className={styles.summaryValue}>
+                    {(() => {
+                      const display = getStatusDisplay(existingApplication.status);
+                      return (
+                        <StatusChip
+                          status={existingApplication.status}
+                          tone={display.tone}
+                          label={display.label}
+                        />
+                      );
+                    })()}
+                  </dd>
+                </div>
+              )}
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Name</dt>
+                <dd className={styles.summaryValue}>{existingApplication.name}</dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Email</dt>
+                <dd className={styles.summaryValue}>{existingApplication.email}</dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Phone</dt>
+                <dd className={styles.summaryValue}>{existingApplication.phone}</dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Age</dt>
+                <dd className={styles.summaryValue}>{existingApplication.age ?? 'N/A'}</dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Stake</dt>
+                <dd className={styles.summaryValue}>{existingApplication.stake}</dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Ward</dt>
+                <dd className={styles.summaryValue}>{existingApplication.ward}</dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>Additional Information</dt>
+                <dd className={styles.summaryValue}>
+                  {existingApplication.moreInfo ||
+                    'No additional details provided.'}
                 </dd>
               </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            {isEditable ? (
+              <Button
+                type='button'
+                variant='primary'
+                onClick={() => setIsEditing(true)}
+              >
+                Edit Submission
+              </Button>
+            ) : (
+              <p className={styles.lockedMessage}>
+                Edits are unavailable because your submission is being finalized.
+              </p>
             )}
-            <div>
-              <dt>Name</dt>
-              <dd>{existingApplication.name}</dd>
-            </div>
-            <div>
-              <dt>Email</dt>
-              <dd>{existingApplication.email}</dd>
-            </div>
-            <div>
-              <dt>Phone</dt>
-              <dd>{existingApplication.phone}</dd>
-            </div>
-            <div>
-              <dt>Age</dt>
-              <dd>{existingApplication.age ?? 'N/A'}</dd>
-            </div>
-            <div>
-              <dt>Stake</dt>
-              <dd>{existingApplication.stake}</dd>
-            </div>
-            <div>
-              <dt>Ward</dt>
-              <dd>{existingApplication.ward}</dd>
-            </div>
-            <div>
-              <dt>Additional Information</dt>
-              <dd>
-                {existingApplication.moreInfo ||
-                  'No additional details provided.'}
-              </dd>
-            </div>
-          </dl>
-          {isEditable ? (
-            <Button
-              type='button'
-              variant='primary'
-              onClick={() => setIsEditing(true)}
-            >
-              Edit Submission
-            </Button>
-          ) : (
-            <p className='application__locked'>
-              Edits are unavailable because your submission is being finalized.
-            </p>
-          )}
-        </div>
+          </CardFooter>
+        </Card>
       )}
 
       {isEditing && isEditable && (
-        <form className='application__form' onSubmit={handleSubmitApplication}>
-          <div className='form-grid'>
-            <TextField
-              name='name'
-              label='Name'
-              value={form.name}
-              onChange={handleChange}
-              required
-              error={errors.name}
-            />
-            <TextField
-              name='age'
-              label='Age'
-              type='number'
-              value={form.age}
-              onChange={handleChange}
-              required
-              error={errors.age}
-              min={16}
-              max={120}
-            />
-            <TextField
-              name='email'
-              label='Email'
-              type='email'
-              value={form.email}
-              onChange={handleChange}
-              required
-              error={errors.email}
-            />
-            <TextField
-              name='phone'
-              label='Phone'
-              type='tel'
-              value={form.phone}
-              onChange={handleChange}
-              required
-              error={errors.phone}
-            />
-            <TextField
-              name='stake'
-              label='Stake'
-              value={form.stake}
-              onChange={handleChange}
-              required
-              error={errors.stake}
-              disabled
-            />
-            <TextField
-              name='ward'
-              label='Ward'
-              value={form.ward}
-              onChange={handleChange}
-              required
-              error={errors.ward}
-              disabled
-            />
-            <ComboBox
-              name='gender'
-              label='Gender (optional)'
-              value={form.gender}
-              onChange={handleChange}
-              showRequiredIndicator={false}
-              error={errors.gender}
-              variant='default'
-              options={[
-                { value: '', label: 'Select gender', disabled: true },
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' },
-              ]}
-            />
-          </div>
-          <TextField
-            name='moreInfo'
-            label='Additional Information'
-            value={form.moreInfo}
-            onChange={handleChange}
-            placeholder='Share any relevant experience or context.'
-            multiline
-            rows={4}
-            wrapperClassName='form-full'
-            showRequiredIndicator={false}
-          />
-          <div className='application__form-actions'>
-            <Button type='submit' variant='primary'>
-              Submit Application
-            </Button>
-            <Button type='button' onClick={handleSaveDraft}>
-              Save Draft
-            </Button>
-            {existingApplication && (
-              <Button
-                type='button'
-                variant='danger'
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </Button>
-            )}
-          </div>
-        </form>
+        <Card>
+          <CardContent>
+            <form onSubmit={handleSubmitApplication}>
+              <div className={styles.formGrid}>
+                <TextField
+                  name='name'
+                  label='Name'
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  error={errors.name}
+                />
+                <TextField
+                  name='age'
+                  label='Age'
+                  type='number'
+                  value={form.age}
+                  onChange={handleChange}
+                  required
+                  error={errors.age}
+                  min={16}
+                  max={120}
+                />
+                <TextField
+                  name='email'
+                  label='Email'
+                  type='email'
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  error={errors.email}
+                />
+                <TextField
+                  name='phone'
+                  label='Phone'
+                  type='tel'
+                  value={form.phone}
+                  onChange={handleChange}
+                  required
+                  error={errors.phone}
+                />
+                <TextField
+                  name='stake'
+                  label='Stake'
+                  value={form.stake}
+                  onChange={handleChange}
+                  required
+                  error={errors.stake}
+                  disabled
+                />
+                <TextField
+                  name='ward'
+                  label='Ward'
+                  value={form.ward}
+                  onChange={handleChange}
+                  required
+                  error={errors.ward}
+                  disabled
+                />
+                <ComboBox
+                  name='gender'
+                  label='Gender (optional)'
+                  value={form.gender}
+                  onChange={handleChange}
+                  showRequiredIndicator={false}
+                  error={errors.gender}
+                  variant='default'
+                  options={[
+                    { value: '', label: 'Select gender', disabled: true },
+                    { value: 'male', label: 'Male' },
+                    { value: 'female', label: 'Female' },
+                  ]}
+                />
+              </div>
+              <TextField
+                name='moreInfo'
+                label='Additional Information'
+                value={form.moreInfo}
+                onChange={handleChange}
+                placeholder='Share any relevant experience or context.'
+                multiline
+                rows={4}
+                wrapperClassName={styles.formFull}
+                showRequiredIndicator={false}
+              />
+              <div className={styles.actions}>
+                <Button type='submit' variant='primary'>
+                  Submit Application
+                </Button>
+                <Button type='button' onClick={handleSaveDraft}>
+                  Save Draft
+                </Button>
+                {existingApplication && (
+                  <Button
+                    type='button'
+                    variant='danger'
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {!existingApplication && !isEditing && (
-        <div className='application__start'>
+        <div className={styles.startButton}>
           <Button
             type='button'
             variant='primary'

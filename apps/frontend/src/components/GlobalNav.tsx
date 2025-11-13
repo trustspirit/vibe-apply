@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import clsx from 'clsx';
 import { useApp } from '../context/AppContext';
 import { Avatar } from './ui';
 import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants';
-import './GlobalNav.scss';
+import styles from './GlobalNav.module.scss';
 
 interface NavItem {
   to: string;
@@ -141,47 +142,47 @@ const GlobalNav = () => {
   }
 
   return (
-    <header className="gnb" ref={gnbRef}>
-      <div className="gnb__inner">
+    <header className={styles.nav} ref={gnbRef}>
+      <div className={styles.container}>
         <div
-          className={hasNav ? 'gnb__placeholder gnb__placeholder--active' : 'gnb__placeholder'}
+          className={hasNav ? clsx(styles.placeholder, styles.placeholderActive) : styles.placeholder}
           aria-hidden
         />
         {hasNav ? (
-          <nav className="gnb__nav" aria-label="Main navigation">
+          <nav className={styles.links} aria-label='Main navigation'>
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => (isActive ? 'gnb__link gnb__link--active' : 'gnb__link')}
+                className={({ isActive }) => clsx(styles.link, isActive && styles.linkActive)}
               >
                 {item.label}
               </NavLink>
             ))}
           </nav>
         ) : null}
-        <div className="gnb__profile">
-          <div className="gnb__profile-info">
-            <span className="gnb__greeting">Hi, {roleGreeting}</span>
-            <span className="gnb__role">{roleLabel}</span>
+        <div className={styles.profile}>
+          <div className={styles.profileInfo}>
+            <span className={styles.greeting}>Hi, {roleGreeting}</span>
+            <span className={styles.role}>{roleLabel}</span>
           </div>
-          <div className="gnb__avatar-wrapper" ref={avatarRef}>
+          <div className={styles.avatarWrapper} ref={avatarRef}>
             <Avatar
               name={currentUser.name}
               picture={currentUser.picture}
-              size="md"
+              size='md'
               onClick={toggleMenu}
             />
             {showMenu && (
-              <div className="gnb__menu" ref={menuRef}>
+              <div className={styles.menu} ref={menuRef}>
                 <button
-                  className="gnb__menu-item"
+                  className={styles.menuItem}
                   onClick={() => handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))}
                 >
                   Account Settings
                 </button>
                 <button
-                  className="gnb__menu-item"
+                  className={styles.menuItem}
                   onClick={() => handleMenuAction(handleSignOut)}
                 >
                   Logout

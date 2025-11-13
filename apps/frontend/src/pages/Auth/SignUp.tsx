@@ -1,10 +1,10 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { Button } from '../../components/ui';
+import { Alert, Button } from '../../components/ui';
+import AuthLayout from '../../components/AuthLayout';
 import { ROUTES } from '../../utils/constants';
-
-import './SignUp.scss';
+import styles from '../../components/AuthLayout.module.scss';
 
 interface SignUpForm {
   name: string;
@@ -55,74 +55,72 @@ const SignUp = () => {
   };
 
   return (
-    <div className='auth auth--centered'>
-      <div className='auth__panel'>
-        <h1 className='auth__title'>Create Account</h1>
-        <p className='auth__subtitle'>
-          Sign up to start managing applications.
-        </p>
-        <form className='auth__form' onSubmit={handleSubmit}>
-          <label className='auth__label'>
-            Name
-            <input
-              type='text'
-              name='name'
-              value={form.name}
-              onChange={handleChange}
-              className='auth__input'
-              required
-            />
-          </label>
-          <label className='auth__label'>
-            Email
-            <input
-              type='email'
-              name='email'
-              value={form.email}
-              onChange={handleChange}
-              className='auth__input'
-              required
-            />
-          </label>
-          <label className='auth__label'>
-            Password
-            <input
-              type='password'
-              name='password'
-              value={form.password}
-              onChange={handleChange}
-              className='auth__input'
-              required
-              minLength={6}
-            />
-          </label>
-          <label className='auth__label'>
-            Confirm Password
-            <input
-              type='password'
-              name='confirmPassword'
-              value={form.confirmPassword}
-              onChange={handleChange}
-              className='auth__input'
-              required
-              minLength={6}
-            />
-          </label>
-          {error && <p className='auth__error'>{error}</p>}
-          <Button
-            type='submit'
-            variant='primary'
-            className='auth__submit'
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Creating Account...' : 'Sign Up'}
-          </Button>
-        </form>
-        <p className='auth__footer'>
-          Already have an account? <Link to={ROUTES.SIGN_IN}>Sign in</Link>
-        </p>
-      </div>
-    </div>
+    <AuthLayout>
+      <h1 className={styles.title}>Create Account</h1>
+      <p className={styles.subtitle}>
+        Sign up to start managing applications.
+      </p>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <label className={styles.label}>
+          Name
+          <input
+            type='text'
+            name='name'
+            value={form.name}
+            onChange={handleChange}
+            className={styles.input}
+            required
+          />
+        </label>
+        <label className={styles.label}>
+          Email
+          <input
+            type='email'
+            name='email'
+            value={form.email}
+            onChange={handleChange}
+            className={styles.input}
+            required
+          />
+        </label>
+        <label className={styles.label}>
+          Password
+          <input
+            type='password'
+            name='password'
+            value={form.password}
+            onChange={handleChange}
+            className={styles.input}
+            required
+            minLength={6}
+          />
+        </label>
+        <label className={styles.label}>
+          Confirm Password
+          <input
+            type='password'
+            name='confirmPassword'
+            value={form.confirmPassword}
+            onChange={handleChange}
+            className={styles.input}
+            required
+            minLength={6}
+          />
+        </label>
+        {error && <Alert variant='error'>{error}</Alert>}
+        <Button
+          type='submit'
+          variant='primary'
+          className={styles.submit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+        </Button>
+      </form>
+      <p className={styles.footer}>
+        Already have an account? <Link to={ROUTES.SIGN_IN}>Sign in</Link>
+      </p>
+    </AuthLayout>
   );
 };
 

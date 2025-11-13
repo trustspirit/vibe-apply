@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom';
 import GlobalNav from '../components/GlobalNav';
-import './AppLayout.scss';
+import styles from './AppLayout.module.scss';
 
 const AppLayout = () => {
   return (
-    <div className='app-shell'>
+    <div className={styles.shell}>
       <GlobalNav />
-      <main className='app-shell__content'>
+      <main className={styles.content}>
         <Outlet />
       </main>
     </div>

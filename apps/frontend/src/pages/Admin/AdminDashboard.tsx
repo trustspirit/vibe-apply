@@ -16,9 +16,10 @@ import {
   YAxis,
 } from 'recharts';
 import { useApp } from '../../context/AppContext';
+import { Card, CardContent, CardHeader, CardTitle, SummaryCard } from '../../components/ui';
 import { ROUTES } from '../../utils/constants';
 import type { Application } from '@vibe-apply/shared';
-import './AdminDashboard.scss';
+import styles from './AdminDashboard.module.scss';
 
 const GENDER_COLORS: Record<string, string> = {
   male: '#1d4ed8',
@@ -182,159 +183,153 @@ const AdminDashboard = () => {
   };
 
   return (
-    <section className='dashboard'>
-      <h1 className='dashboard__title'>Dashboard</h1>
-      <p className='dashboard__subtitle'>Overview of application activity</p>
+    <section className={styles.page}>
+      <h1 className={styles.title}>Dashboard</h1>
+      <p className={styles.subtitle}>Overview of application activity</p>
 
-      <div className='dashboard__summary'>
-        <div className='summary-card summary-card--primary'>
-          <div className='summary-card__icon' aria-hidden>
-            <span>📥</span>
-          </div>
-          <div className='summary-card__content'>
-            <span className='summary-card__label'>Total Submissions</span>
-            <span className='summary-card__value'>{totals.totalSubmissions}</span>
-          </div>
-          <span className='summary-card__spark'>{totals.totalApplications} apps, {totals.totalRecommendations} recs</span>
-        </div>
-        <button
-          type='button'
-          className='summary-card summary-card--warning summary-card--clickable'
+      <div className={styles.summaryGrid}>
+        <SummaryCard
+          icon={<span>📥</span>}
+          label='Total Submissions'
+          value={totals.totalSubmissions}
+          description={`${totals.totalApplications} apps, ${totals.totalRecommendations} recs`}
+          variant='primary'
+        />
+        <SummaryCard
+          icon={<span>⏳</span>}
+          label='Awaiting'
+          value={totals.awaitingCount}
+          description={`${totals.awaitingApplications} apps, ${totals.awaitingRecommendations} recs`}
+          variant='warning'
+          clickable
           onClick={goToAwaiting}
           aria-label='View awaiting review applications'
-        >
-          <div className='summary-card__icon' aria-hidden>
-            <span>⏳</span>
-          </div>
-          <div className='summary-card__content'>
-            <span className='summary-card__label'>Awaiting</span>
-            <span className='summary-card__value'>{totals.awaitingCount}</span>
-          </div>
-          <span className='summary-card__spark'>{totals.awaitingApplications} apps, {totals.awaitingRecommendations} recs</span>
-        </button>
-        <button
-          type='button'
-          className='summary-card summary-card--success summary-card--clickable'
+        />
+        <SummaryCard
+          icon={<span>🏅</span>}
+          label='Approved'
+          value={totals.approvedCount}
+          description='Approved applicants'
+          variant='success'
+          clickable
           onClick={goToApproved}
           aria-label='View approved applications'
-        >
-          <div className='summary-card__icon' aria-hidden>
-            <span>🏅</span>
-          </div>
-          <div className='summary-card__content'>
-            <span className='summary-card__label'>Approved</span>
-            <span className='summary-card__value'>{totals.approvedCount}</span>
-          </div>
-          <span className='summary-card__spark'>Approved applicants</span>
-        </button>
-        <button
-          type='button'
-          className='summary-card summary-card--accent summary-card--clickable'
+        />
+        <SummaryCard
+          icon={<span>✨</span>}
+          label='New Today'
+          value={totals.todaysCount}
+          description='Since midnight'
+          variant='accent'
+          clickable
           onClick={goToNewToday}
           aria-label='View applications submitted today'
-        >
-          <div className='summary-card__icon' aria-hidden>
-            <span>✨</span>
-          </div>
-          <div className='summary-card__content'>
-            <span className='summary-card__label'>New Today</span>
-            <span className='summary-card__value'>{totals.todaysCount}</span>
-          </div>
-          <span className='summary-card__spark'>Since midnight</span>
-        </button>
+        />
       </div>
 
-      <div className='dashboard__grid'>
-        <div className='panel'>
-          <h2 className='panel__title'>Past 7 Days</h2>
-          <div className='panel__chart'>
-            <ResponsiveContainer width='100%' height={240}>
-              <LineChart data={weeklyTrend}>
+      <div className={styles.chartsGrid}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Past 7 Days</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={styles.chartContainer}>
+              <ResponsiveContainer width='100%' height={240}>
+                <LineChart data={weeklyTrend}>
+                  <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
+                  <XAxis dataKey='day' stroke='#4b5563' />
+                  <YAxis allowDecimals={false} stroke='#4b5563' />
+                  <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                  <Legend />
+                  <Line
+                    type='monotone'
+                    dataKey='applications'
+                    stroke='#2563eb'
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    name='Applications'
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='recommendations'
+                    stroke='#10b981'
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    name='Recommendations'
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Gender Split</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={styles.chartContainer}>
+              <ResponsiveContainer width='100%' height={240}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    dataKey='value'
+                    nameKey='name'
+                    innerRadius={50}
+                    outerRadius={90}
+                    paddingAngle={4}
+                  >
+                    {pieData.map((entry) => (
+                      <Cell
+                        key={entry.name}
+                        fill={GENDER_COLORS[entry.name] ?? '#9ca3af'}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    labelFormatter={(label, payload) => {
+                      if (payload && payload[0] && payload[0].payload) {
+                        return payload[0].payload.fullLabel || label;
+                      }
+                      return label;
+                    }}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card wide>
+        <CardHeader>
+          <CardTitle>Stake &amp; Ward Distribution</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className={styles.chartContainer}>
+            <ResponsiveContainer width='100%' height={320}>
+              <BarChart data={stakeWardCounts}>
                 <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
-                <XAxis dataKey='day' stroke='#4b5563' />
+                <XAxis 
+                  dataKey='label' 
+                  stroke='#4b5563' 
+                  angle={-45}
+                  textAnchor='end'
+                  height={80}
+                  fontSize={12}
+                  interval={0}
+                />
                 <YAxis allowDecimals={false} stroke='#4b5563' />
-                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                <Tooltip />
                 <Legend />
-                <Line
-                  type='monotone'
-                  dataKey='applications'
-                  stroke='#2563eb'
-                  strokeWidth={3}
-                  dot={{ r: 4 }}
-                  name='Applications'
-                />
-                <Line
-                  type='monotone'
-                  dataKey='recommendations'
-                  stroke='#10b981'
-                  strokeWidth={3}
-                  dot={{ r: 4 }}
-                  name='Recommendations'
-                />
-              </LineChart>
+                <Bar dataKey='applications' fill='#2563eb' name='Applications' />
+                <Bar dataKey='recommendations' fill='#10b981' name='Recommendations' />
+              </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        <div className='panel'>
-          <h2 className='panel__title'>Gender Split</h2>
-          <div className='panel__chart'>
-            <ResponsiveContainer width='100%' height={240}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  dataKey='value'
-                  nameKey='name'
-                  innerRadius={50}
-                  outerRadius={90}
-                  paddingAngle={4}
-                >
-                  {pieData.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={GENDER_COLORS[entry.name] ?? '#9ca3af'}
-                    />
-                  ))}
-                </Pie>
-              <Tooltip 
-                labelFormatter={(label, payload) => {
-                  if (payload && payload[0] && payload[0].payload) {
-                    return payload[0].payload.fullLabel || label;
-                  }
-                  return label;
-                }}
-              />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      <div className='panel panel--wide'>
-        <h2 className='panel__title'>Stake &amp; Ward Distribution</h2>
-        <div className='panel__chart'>
-          <ResponsiveContainer width='100%' height={320}>
-            <BarChart data={stakeWardCounts}>
-              <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
-              <XAxis 
-                dataKey='label' 
-                stroke='#4b5563' 
-                angle={-45}
-                textAnchor='end'
-                height={80}
-                fontSize={12}
-                interval={0}
-              />
-              <YAxis allowDecimals={false} stroke='#4b5563' />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey='applications' fill='#2563eb' name='Applications' />
-              <Bar dataKey='recommendations' fill='#10b981' name='Recommendations' />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </section>
   );
 };
