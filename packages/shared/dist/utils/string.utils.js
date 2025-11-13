@@ -1,9 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.normalizeString = normalizeString;
+exports.normalizeEmail = normalizeEmail;
+exports.normalizeWardStakeName = normalizeWardStakeName;
 /**
  * Normalize a string by trimming whitespace and converting to lowercase
  * @param value - The string to normalize
  * @returns The normalized string
  */
-export function normalizeString(value) {
+function normalizeString(value) {
     if (!value)
         return '';
     return value.trim().toLowerCase();
@@ -13,7 +18,7 @@ export function normalizeString(value) {
  * @param email - The email to normalize
  * @returns The normalized email
  */
-export function normalizeEmail(email) {
+function normalizeEmail(email) {
     return normalizeString(email);
 }
 /**
@@ -21,6 +26,6 @@ export function normalizeEmail(email) {
  * @param name - The ward/stake name to normalize
  * @returns The normalized name
  */
-export function normalizeWardStakeName(name) {
+function normalizeWardStakeName(name) {
     return normalizeString(name);
 }

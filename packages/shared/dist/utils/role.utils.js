@@ -1,46 +1,54 @@
-import { UserRole, LeaderStatus } from '../types';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LEADER_ROLES = void 0;
+exports.isLeaderRole = isLeaderRole;
+exports.isApprovedLeader = isApprovedLeader;
+exports.isAdmin = isAdmin;
+exports.canReviewApplications = canReviewApplications;
+exports.normalizeUserRole = normalizeUserRole;
+const types_1 = require("../types");
 /**
  * Leader roles that have permission to review applications
  */
-export const LEADER_ROLES = [
-    UserRole.SESSION_LEADER,
-    UserRole.BISHOP,
-    UserRole.STAKE_PRESIDENT,
+exports.LEADER_ROLES = [
+    types_1.UserRole.SESSION_LEADER,
+    types_1.UserRole.BISHOP,
+    types_1.UserRole.STAKE_PRESIDENT,
 ];
 /**
  * Check if a role is a leader role
  * @param role - The user role to check
  * @returns true if the role is a leader role
  */
-export function isLeaderRole(role) {
+function isLeaderRole(role) {
     if (!role)
         return false;
-    return LEADER_ROLES.includes(role);
+    return exports.LEADER_ROLES.includes(role);
 }
 /**
  * Check if a user is an approved leader
  * @param user - The user to check
  * @returns true if the user is a leader with approved status
  */
-export function isApprovedLeader(user) {
+function isApprovedLeader(user) {
     if (!user || !user.role)
         return false;
-    return isLeaderRole(user.role) && user.leaderStatus === LeaderStatus.APPROVED;
+    return isLeaderRole(user.role) && user.leaderStatus === types_1.LeaderStatus.APPROVED;
 }
 /**
  * Check if a user is an admin
  * @param role - The user role to check
  * @returns true if the role is admin
  */
-export function isAdmin(role) {
-    return role === UserRole.ADMIN;
+function isAdmin(role) {
+    return role === types_1.UserRole.ADMIN;
 }
 /**
  * Check if a user has permission to review applications
  * @param user - The user to check
  * @returns true if the user can review applications (admin or approved leader)
  */
-export function canReviewApplications(user) {
+function canReviewApplications(user) {
     if (!user || !user.role)
         return false;
     return isAdmin(user.role) || isApprovedLeader(user);
@@ -50,12 +58,12 @@ export function canReviewApplications(user) {
  * @param role - The role to normalize
  * @returns A valid UserRole or APPLICANT as default
  */
-export function normalizeUserRole(role) {
+function normalizeUserRole(role) {
     if (!role)
-        return UserRole.APPLICANT;
-    const validRoles = Object.values(UserRole);
+        return types_1.UserRole.APPLICANT;
+    const validRoles = Object.values(types_1.UserRole);
     if (validRoles.includes(role)) {
         return role;
     }
-    return UserRole.APPLICANT;
+    return types_1.UserRole.APPLICANT;
 }
