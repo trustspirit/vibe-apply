@@ -2,7 +2,7 @@ import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Alert, Button, GoogleButton } from '@/components/ui';
-import AuthLayout from '@/components/AuthLayout';
+import { AuthLayout } from '@/components';
 import { getDefaultPathForUser } from '@/utils/navigation';
 import { ROUTES } from '@/utils/constants';
 import styles from '@/components/AuthLayout.module.scss';

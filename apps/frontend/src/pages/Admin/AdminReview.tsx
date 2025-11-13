@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import type { Application, LeaderRecommendation, ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { Button, ComboBox, StatusChip, Tabs } from '@/components/ui';
-import { ReviewItemTags } from '@/components/ReviewItemTags';
+import { ReviewItemTags } from '@/components';
 import './AdminReview.scss';
 
 interface LocationState {

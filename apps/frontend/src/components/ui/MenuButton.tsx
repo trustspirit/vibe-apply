@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
-import Button from './Button.jsx';
+import { Button } from './';
 import './MenuButton.scss';
 
 const DEFAULT_ALIGNMENT = 'end';

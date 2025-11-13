@@ -6,7 +6,7 @@ import {
   RequireUser,
   RequireLeader,
   RequireIncompleteProfile,
-} from '@/components/RouteGuards';
+} from '@/components';
 import AppLayout from '@/layouts/AppLayout';
 import { useApp } from '@/context/AppContext';
 import AdminDashboard from '@/pages/Admin/AdminDashboard';

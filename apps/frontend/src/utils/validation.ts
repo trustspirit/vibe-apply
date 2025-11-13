@@ -1,4 +1,4 @@
-export const validateEmail = (email) => {
+export const validateEmail = (email: string): string => {
   const trimmed = email.trim();
   if (!trimmed) {
     return 'Email is required.';
@@ -9,8 +9,8 @@ export const validateEmail = (email) => {
   return '';
 };
 
-export const validateAge = (age) => {
-  const normalizedAge = Number.parseInt(age, 10);
+export const validateAge = (age: string | number): string => {
+  const normalizedAge = Number.parseInt(String(age), 10);
   if (Number.isNaN(normalizedAge)) {
     return 'Enter a valid age.';
   }
@@ -20,28 +20,35 @@ export const validateAge = (age) => {
   return '';
 };
 
-export const validateRequired = (value, fieldName) => {
+export const validateRequired = (value: string, fieldName: string): string => {
   if (!value.trim()) {
     return `${fieldName} is required.`;
   }
   return '';
 };
 
-export const validateGender = (gender) => {
+export const validateGender = (gender: string): string => {
   if (gender !== 'male' && gender !== 'female') {
     return 'Select male or female.';
   }
   return '';
 };
 
-export const validatePhone = (phone) => {
+export const validatePhone = (phone: string): string => {
   if (!phone.trim()) {
     return 'Phone number is required.';
   }
   return '';
 };
 
-export const STATUS_DISPLAY = {
+type StatusTone = 'draft' | 'awaiting' | 'reviewed' | 'rejected';
+
+interface StatusDisplayItem {
+  label: string;
+  tone: StatusTone;
+}
+
+export const STATUS_DISPLAY: Record<string, StatusDisplayItem> = {
   draft: { label: 'Draft', tone: 'draft' },
   awaiting: { label: 'Submitted', tone: 'awaiting' },
   approved: { label: 'Reviewed', tone: 'reviewed' },
@@ -49,6 +56,6 @@ export const STATUS_DISPLAY = {
   pending: { label: 'Pending', tone: 'awaiting' },
 };
 
-export const getStatusDisplay = (status) => {
+export const getStatusDisplay = (status: string): StatusDisplayItem => {
   return STATUS_DISPLAY[status] || { label: status, tone: 'draft' };
 };
