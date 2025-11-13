@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useApp } from '../../context/AppContext';
-import { Button, TextField } from '../../components/ui';
-import { authApi } from '../../services/api';
-import { USER_ROLES, LEADER_STATUS } from '../../utils/constants';
 import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
+import { useApp } from '@/context/AppContext';
+import { Button, TextField } from '@/components/ui';
+import { authApi } from '@/services/api';
+import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import './AccountSettings.scss';
 
 interface AccountForm {

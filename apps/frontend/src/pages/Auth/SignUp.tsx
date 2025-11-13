@@ -1,10 +1,10 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
-import { Alert, Button } from '../../components/ui';
-import AuthLayout from '../../components/AuthLayout';
-import { ROUTES } from '../../utils/constants';
-import styles from '../../components/AuthLayout.module.scss';
+import { useApp } from '@/context/AppContext';
+import { Alert, Button } from '@/components/ui';
+import AuthLayout from '@/components/AuthLayout';
+import { ROUTES } from '@/utils/constants';
+import styles from '@/components/AuthLayout.module.scss';
 
 interface SignUpForm {
   name: string;

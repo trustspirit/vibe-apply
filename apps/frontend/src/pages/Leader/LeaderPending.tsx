@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
-import { Button } from '../../components/ui';
-import { useApp } from '../../context/AppContext';
-import { ROUTES, USER_ROLES } from '../../utils/constants';
+import { Button } from '@/components/ui';
+import { useApp } from '@/context/AppContext';
+import { ROUTES, USER_ROLES } from '@/utils/constants';
 import './LeaderPending.scss';
 
 const LeaderPending = () => {

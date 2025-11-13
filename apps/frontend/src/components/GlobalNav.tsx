@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
-import { useApp } from '../context/AppContext';
-import { Avatar } from './ui';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants';
+import { useApp } from '@/context/AppContext';
+import { Avatar } from '@/components/ui';
+import { USER_ROLES, LEADER_STATUS, ROUTES } from '@/utils/constants';
 import styles from './GlobalNav.module.scss';
 
 interface NavItem {

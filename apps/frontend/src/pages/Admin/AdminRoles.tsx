@@ -1,8 +1,8 @@
 import { type ChangeEvent, useEffect, useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
-import { ComboBox, StatusChip, ToggleButton } from '../../components/ui';
-import { USER_ROLES, LEADER_STATUS } from '../../utils/constants';
 import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
+import { useApp } from '@/context/AppContext';
+import { ComboBox, StatusChip, ToggleButton } from '@/components/ui';
+import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import './AdminRoles.scss';
 
 const ROLE_OPTIONS = [

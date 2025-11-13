@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useApp } from '../../context/AppContext';
-import { applicationsApi } from '../../services/api';
-import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StatusChip, TextField } from '../../components/ui';
-import { validateEmail, validateAge, validateRequired, validateGender, validatePhone, getStatusDisplay } from '../../utils/validation';
+import { useApp } from '@/context/AppContext';
+import { applicationsApi } from '@/services/api';
+import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StatusChip, TextField } from '@/components/ui';
+import { validateEmail, validateAge, validateRequired, validateGender, validatePhone, getStatusDisplay } from '@/utils/validation';
 import styles from './UserApplication.module.scss';
 
 interface ApplicationForm {

@@ -14,8 +14,8 @@ import {
   applicationsApi,
   recommendationsApi,
   ApiError,
-} from '../services/api';
-import { USER_ROLES, LEADER_STATUS } from '../utils/constants';
+} from '@/services/api';
+import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import type {
   User,
   Application,

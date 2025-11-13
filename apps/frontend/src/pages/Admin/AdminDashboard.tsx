@@ -15,9 +15,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useApp } from '../../context/AppContext';
-import { Card, CardContent, CardHeader, CardTitle, SummaryCard } from '../../components/ui';
-import { ROUTES } from '../../utils/constants';
+import { useApp } from '@/context/AppContext';
+import { Card, CardContent, CardHeader, CardTitle, SummaryCard } from '@/components/ui';
+import { ROUTES } from '@/utils/constants';
 import type { Application } from '@vibe-apply/shared';
 import styles from './AdminDashboard.module.scss';
 

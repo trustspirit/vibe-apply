@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import GlobalNav from '../components/GlobalNav';
+import GlobalNav from '@/components/GlobalNav';
 import styles from './AppLayout.module.scss';
 
 const AppLayout = () => {

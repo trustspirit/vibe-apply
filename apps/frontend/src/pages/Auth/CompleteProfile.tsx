@@ -1,11 +1,11 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
-import { Button, ComboBox } from '../../components/ui';
-import { getDefaultPathForUser } from '../../utils/navigation';
-import { authApi } from '../../services/api';
-import { USER_ROLES, ROUTES } from '../../utils/constants';
 import type { UserRole } from '@vibe-apply/shared';
+import { useApp } from '@/context/AppContext';
+import { Button, ComboBox } from '@/components/ui';
+import { getDefaultPathForUser } from '@/utils/navigation';
+import { authApi } from '@/services/api';
+import { USER_ROLES, ROUTES } from '@/utils/constants';
 import './SignUp.scss';
 
 interface ProfileForm {

@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
-import { useApp } from '../../context/AppContext';
 import type { Application, LeaderRecommendation, RecommendationStatus } from '@vibe-apply/shared';
+import { useApp } from '@/context/AppContext';
 import {
   Button,
   ComboBox,
   StatusChip,
   Tabs,
   TextField,
-} from '../../components/ui';
+} from '@/components/ui';
 import './LeaderRecommendations.scss';
 
 interface RecommendationForm {

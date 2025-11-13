@@ -6,23 +6,23 @@ import {
   RequireUser,
   RequireLeader,
   RequireIncompleteProfile,
-} from './components/RouteGuards.jsx';
-import AppLayout from './layouts/AppLayout.jsx';
-import { useApp } from './context/AppContext.jsx';
-import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
-import AdminReview from './pages/Admin/AdminReview.jsx';
-import AdminRoles from './pages/Admin/AdminRoles.jsx';
-import SignIn from './pages/Auth/SignIn.jsx';
-import SignUp from './pages/Auth/SignUp.jsx';
-import AuthCallback from './pages/Auth/AuthCallback.jsx';
-import CompleteProfile from './pages/Auth/CompleteProfile.jsx';
-import UserApplication from './pages/User/UserApplication.jsx';
-import AccountSettings from './pages/User/AccountSettings.jsx';
-import LeaderDashboard from './pages/Leader/LeaderDashboard.jsx';
-import LeaderPending from './pages/Leader/LeaderPending.jsx';
-import LeaderRecommendations from './pages/Leader/LeaderRecommendations.jsx';
-import { getDefaultPathForUser } from './utils/navigation';
-import { ROUTES } from './utils/constants';
+} from '@/components/RouteGuards';
+import AppLayout from '@/layouts/AppLayout';
+import { useApp } from '@/context/AppContext';
+import AdminDashboard from '@/pages/Admin/AdminDashboard';
+import AdminReview from '@/pages/Admin/AdminReview';
+import AdminRoles from '@/pages/Admin/AdminRoles';
+import SignIn from '@/pages/Auth/SignIn';
+import SignUp from '@/pages/Auth/SignUp';
+import AuthCallback from '@/pages/Auth/AuthCallback';
+import CompleteProfile from '@/pages/Auth/CompleteProfile';
+import UserApplication from '@/pages/User/UserApplication';
+import AccountSettings from '@/pages/User/AccountSettings';
+import LeaderDashboard from '@/pages/Leader/LeaderDashboard';
+import LeaderPending from '@/pages/Leader/LeaderPending';
+import LeaderRecommendations from '@/pages/Leader/LeaderRecommendations';
+import { getDefaultPathForUser } from '@/utils/navigation';
+import { ROUTES } from '@/utils/constants';
 
 const App = () => {
   const { currentUser, isInitializing } = useApp();

@@ -13,10 +13,10 @@ import {
   YAxis,
   Cell,
 } from 'recharts';
-import { useApp } from '../../context/AppContext';
-import { Button } from '../../components/ui';
-import { ROUTES } from '../../utils/constants';
 import type { Application } from '@vibe-apply/shared';
+import { useApp } from '@/context/AppContext';
+import { Button } from '@/components/ui';
+import { ROUTES } from '@/utils/constants';
 import './LeaderDashboard.scss';
 
 const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];

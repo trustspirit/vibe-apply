@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
-import { authApi, tokenStorage } from '../../services/api';
-import { USER_ROLES, ROUTES } from '../../utils/constants';
+import { useApp } from '@/context/AppContext';
+import { authApi, tokenStorage } from '@/services/api';
+import { USER_ROLES, ROUTES } from '@/utils/constants';
 
 const AuthCallback = () => {
   const navigate = useNavigate();

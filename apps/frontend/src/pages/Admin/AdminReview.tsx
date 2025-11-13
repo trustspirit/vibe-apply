@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
-import { Button, ComboBox, StatusChip, Tabs } from '../../components/ui';
-import { ReviewItemTags } from '../../components/ReviewItemTags';
 import type { Application, LeaderRecommendation, ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
+import { useApp } from '@/context/AppContext';
+import { Button, ComboBox, StatusChip, Tabs } from '@/components/ui';
+import { ReviewItemTags } from '@/components/ReviewItemTags';
 import './AdminReview.scss';
 
 interface LocationState {
