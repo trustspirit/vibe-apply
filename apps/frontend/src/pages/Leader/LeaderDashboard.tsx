@@ -18,7 +18,7 @@ import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui';
 import { ROUTES } from '@/utils/constants';
 import { CHART_COLORS } from '@/utils/chartConstants';
-import './LeaderDashboard.scss';
+import styles from './LeaderDashboard.module.scss';
 
 interface LocationData {
   name: string;
@@ -192,11 +192,11 @@ const LeaderDashboard = () => {
   };
 
   return (
-    <section className='leader-dashboard'>
-      <header className='leader-dashboard__header'>
-        <div className='leader-dashboard__intro'>
-          <h1 className='leader-dashboard__title'>Leader Dashboard</h1>
-          <p className='leader-dashboard__subtitle'>
+    <section className={styles.leaderDashboard}>
+      <header className={styles.header}>
+        <div className={styles.intro}>
+          <h1 className={styles.title}>Leader Dashboard</h1>
+          <p className={styles.subtitle}>
             Monitor your recommendations and see where your applicants are
             coming from.
           </p>
@@ -210,68 +210,68 @@ const LeaderDashboard = () => {
         </Button>
       </header>
 
-      <div className='leader-dashboard__stats'>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+      <div className={styles.stats}>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             Draft Recommendations
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.draft}
           </span>
         </div>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             Awaiting Review
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.submitted}
           </span>
         </div>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             Approved
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.approved}
           </span>
         </div>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             Rejected
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.rejected}
           </span>
         </div>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             Applications in Stake
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.applications}
           </span>
         </div>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             New Recommendations Today
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.newRecommendationsToday}
           </span>
         </div>
-        <div className='leader-dashboard__stat-card'>
-          <span className='leader-dashboard__stat-label'>
+        <div className={styles.statCard}>
+          <span className={styles.statLabel}>
             New Applications Today
           </span>
-          <span className='leader-dashboard__stat-value'>
+          <span className={styles.statValue}>
             {statusCounts.newApplicationsToday}
           </span>
         </div>
       </div>
 
-      <div className='leader-dashboard__charts'>
-        <div className='leader-dashboard__chart'>
-          <h2 className='leader-dashboard__chart-title'>
+      <div className={styles.charts}>
+        <div className={styles.chart}>
+          <h2 className={styles.chartTitle}>
             Stake &amp; Ward Distribution
           </h2>
           {locationCounts.length ? (
@@ -295,13 +295,13 @@ const LeaderDashboard = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className='leader-dashboard__empty'>
+            <p className={styles.empty}>
               No data yet to show location distribution.
             </p>
           )}
         </div>
-        <div className='leader-dashboard__chart'>
-          <h2 className='leader-dashboard__chart-title'>Gender Breakdown</h2>
+        <div className={styles.chart}>
+          <h2 className={styles.chartTitle}>Gender Breakdown</h2>
           <ResponsiveContainer width='100%' height={260}>
             <PieChart>
               <Pie

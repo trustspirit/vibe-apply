@@ -1,11 +1,11 @@
-.leader-pending {
+.leaderPending {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 5rem);
 }
 
-.leader-pending__card {
+.card {
   max-width: 520px;
   background: var(--color-surface);
   border-radius: 1rem;
@@ -16,25 +16,25 @@
   text-align: center;
 }
 
-.leader-pending__title {
+.title {
   font-size: 1.75rem;
 }
 
-.leader-pending__message {
+.message {
   color: var(--color-text);
 }
 
-.leader-pending__hint {
+.hint {
   color: var(--color-muted);
   font-size: 0.95rem;
 }
 
-.leader-pending__card .btn {
+.card .btn {
   justify-self: center;
 }
 
 @media (max-width: 480px) {
-  .leader-pending__card {
+  .card {
     padding: 1.5rem;
   }
 }

@@ -14,7 +14,7 @@ import {
 import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
 import { GENDER_OPTIONS, CONFIRMATION_MESSAGES, type GenderOption } from '@/utils/formConstants';
 import type { ValidationErrors, TabItem } from '@/types';
-import './LeaderRecommendations.scss';
+import styles from './LeaderRecommendations.module.scss';
 
 interface RecommendationForm {
   id: string | null;
@@ -582,17 +582,17 @@ const LeaderRecommendations = () => {
       }}
     >
       {editingOriginStatus === 'submitted' && (
-        <p className='leader-recommendations__alert'>
+        <p className={styles.alert}>
           This recommendation is currently submitted. Save as draft or resubmit
           after making updates.
         </p>
       )}
       {formError && (
-        <p className='leader-recommendations__alert leader-recommendations__alert--error'>
+        <p className={`${styles.alert} ${styles.alertError}`}>
           {formError}
         </p>
       )}
-      <div className='leader-recommendations__grid'>
+      <div className={styles.grid}>
         <TextField
           name='name'
           label='Applicant Name'
@@ -679,14 +679,14 @@ const LeaderRecommendations = () => {
         <Button
           type='submit'
           variant='primary'
-          className='leader-recommendations__btn'
+          className={styles.btn}
         >
           Submit Recommendation
         </Button>
         <Button
           type='button'
           onClick={() => handleSubmitDraft('draft' as RecommendationStatus)}
-          className='leader-recommendations__btn'
+          className={styles.btn}
         >
           Save Draft
         </Button>
@@ -694,7 +694,7 @@ const LeaderRecommendations = () => {
           type='button'
           variant='danger'
           onClick={handleCancelEdit}
-          className='leader-recommendations__btn'
+          className={styles.btn}
         >
           Cancel
         </Button>
@@ -705,7 +705,7 @@ const LeaderRecommendations = () => {
   const renderDesktopDetails = () => {
     if (isEditing) {
       return (
-        <div className='review__details-card leader-recommendations__form-card'>
+        <div className={`${styles.detailsCard} ${styles.formCard}`}>
           {renderForm()}
         </div>
       );
@@ -754,12 +754,12 @@ const LeaderRecommendations = () => {
               </div>
             </dl>
             {selectedItem.status !== 'approved' && (
-              <div className='leader-recommendations__detail-actions'>
+              <div className={styles.detailActions}>
                 <Button
                   type='button'
                   variant='primary'
                   onClick={() => handleRecommendApplicant(selectedItem as Application)}
-                  className='leader-recommendations__btn'
+                  className={styles.btn}
                 >
                   Recommend
                 </Button>
@@ -825,13 +825,13 @@ const LeaderRecommendations = () => {
               {selectedItem.moreInfo || 'No additional information provided.'}
             </p>
           </div>
-          <div className='leader-recommendations__detail-actions'>
+          <div className={styles.detailActions}>
             {canModify && (
               <>
                 <Button
                   type='button'
                   onClick={() => handleModify(selectedItem.id)}
-                  className='leader-recommendations__btn'
+                  className={styles.btn}
                 >
                   Modify
                 </Button>
@@ -840,7 +840,7 @@ const LeaderRecommendations = () => {
                     type='button'
                     variant='primary'
                     onClick={() => handleQuickSubmit(selectedItem.id)}
-                    className='leader-recommendations__btn'
+                    className={styles.btn}
                   >
                     Submit
                   </Button>
@@ -848,7 +848,7 @@ const LeaderRecommendations = () => {
                   <Button
                     type='button'
                     onClick={() => handleCancelSubmission(selectedItem.id)}
-                    className='leader-recommendations__btn'
+                    className={styles.btn}
                   >
                     Cancel Submission
                   </Button>
@@ -857,14 +857,14 @@ const LeaderRecommendations = () => {
                   type='button'
                   variant='danger'
                   onClick={() => handleDelete(selectedItem.id)}
-                  className='leader-recommendations__btn'
+                  className={styles.btn}
                 >
                   Delete
                 </Button>
               </>
             )}
             {!canModify && (
-              <p className='leader-recommendations__locked-message'>
+              <p className={styles.lockedMessage}>
                 This recommendation has been reviewed and is now locked. You can
                 no longer modify or delete it.
               </p>
@@ -886,7 +886,7 @@ const LeaderRecommendations = () => {
       return (
         <article
           key={item.id}
-          className='review-card leader-recommendations__mobile-card'
+          className={`${styles.reviewCard} ${styles.mobileCard}`}
         >
           <div className='review-card__header'>
             <div>
@@ -924,12 +924,12 @@ const LeaderRecommendations = () => {
             </div>
           </dl>
           {item.status !== 'approved' && (
-            <div className='leader-recommendations__card-actions'>
+            <div className={styles.cardActions}>
                 <Button
                   type='button'
                   variant='primary'
                   onClick={() => handleRecommendApplicant(item as Application)}
-                  className='leader-recommendations__btn'
+                  className={styles.btn}
                 >
                   Recommend
                 </Button>
@@ -999,13 +999,13 @@ const LeaderRecommendations = () => {
           <h3>Additional Information</h3>
           <p>{item.moreInfo || 'No additional information provided.'}</p>
         </div>
-        <div className='leader-recommendations__card-actions'>
+        <div className={styles.cardActions}>
           {'canEdit' in item && item.canEdit && 'canDelete' in item && item.canDelete ? (
             <>
               <Button
                 type='button'
                 onClick={() => handleModify(item.id)}
-                className='leader-recommendations__btn'
+                className={styles.btn}
               >
                 Modify
               </Button>
@@ -1014,7 +1014,7 @@ const LeaderRecommendations = () => {
                   type='button'
                   variant='primary'
                   onClick={() => handleQuickSubmit(item.id)}
-                  className='leader-recommendations__btn'
+                  className={styles.btn}
                 >
                   Submit
                 </Button>
@@ -1022,7 +1022,7 @@ const LeaderRecommendations = () => {
                 <Button
                   type='button'
                   onClick={() => handleCancelSubmission(item.id)}
-                  className='leader-recommendations__btn'
+                  className={styles.btn}
                 >
                   Cancel Submission
                 </Button>
@@ -1031,20 +1031,20 @@ const LeaderRecommendations = () => {
                 type='button'
                 variant='danger'
                 onClick={() => handleDelete(item.id)}
-                className='leader-recommendations__btn'
+                className={styles.btn}
               >
                 Delete
               </Button>
             </>
           ) : (
-            <p className='leader-recommendations__locked-message'>
+            <p className={styles.lockedMessage}>
               This recommendation has been reviewed and is now locked. You can
               no longer modify or delete it.
             </p>
           )}
         </div>
         {isEditingThis && (
-          <p className='leader-recommendations__editing-banner'>
+          <p className={styles.mobileEditingNote}>
             Editing this recommendation above. Submit or save your changes when
             ready.
           </p>
@@ -1054,7 +1054,7 @@ const LeaderRecommendations = () => {
   };
 
   return (
-    <section className='review leader-recommendations'>
+    <section className={`${styles.review} ${styles.leaderRecommendations}`}>
       <div className='review__header'>
         <div className='review__header-copy'>
           <h1 className='review__title'>Recommendations</h1>
@@ -1068,7 +1068,7 @@ const LeaderRecommendations = () => {
         </Button>
       </div>
 
-      {feedback && <p className='leader-recommendations__banner'>{feedback}</p>}
+      {feedback && <p className={styles.banner}>{feedback}</p>}
 
       <Tabs
         items={TAB_DEFS}
@@ -1112,7 +1112,7 @@ const LeaderRecommendations = () => {
         </aside>
 
         <div
-          className='review__details leader-recommendations__details'
+          className={`${styles.details} ${styles.details}`}
           aria-live='polite'
         >
           {renderDesktopDetails()}
@@ -1121,7 +1121,7 @@ const LeaderRecommendations = () => {
 
       <div className='review__mobile' aria-live='polite'>
         {isEditing && (
-          <article className='review-card leader-recommendations__mobile-form'>
+          <article className={`${styles.reviewCard} ${styles.mobileForm}`}>
             {renderForm('mobile')}
           </article>
         )}

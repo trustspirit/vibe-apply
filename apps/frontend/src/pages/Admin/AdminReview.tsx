@@ -9,7 +9,7 @@ import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { normalizeRecommendationStatus, remapStatusForRecommendation } from '@/utils/statusHelpers';
 import { exportApprovedApplicationsToCSV } from '@/utils/exportData';
 import type { TabItem, StatusOption, ReviewItem } from '@/types';
-import './AdminReview.scss';
+import styles from './AdminReview.module.scss';
 
 interface LocationState {
   initialTab?: string;
@@ -289,11 +289,11 @@ const AdminReview = () => {
   };
 
   return (
-    <section className='review'>
-      <div className='review__header'>
-        <div className='review__header-copy'>
-          <h1 className='review__title'>Review Applications</h1>
-          <p className='review__subtitle'>
+    <section className={styles.review}>
+      <div className={styles.header}>
+        <div className={styles.headerCopy}>
+          <h1>Review Applications</h1>
+          <p className={styles.subtitle}>
             Manage incoming applications and update their statuses.
           </p>
         </div>
@@ -301,7 +301,7 @@ const AdminReview = () => {
           <Button
             type='button'
             variant='primary'
-            className='review__export'
+            className={styles.export}
             onClick={handleExportApproved}
             disabled={!approvedApplications.length}
           >
@@ -314,11 +314,11 @@ const AdminReview = () => {
         items={TABS}
         activeId={activeTab}
         onChange={handleTabClick}
-        className='review__tabs'
-        tabClassName='review__tab'
-        activeTabClassName='review__tab--active'
-        labelClassName='review__tab-label'
-        badgeClassName='review__tab-pill'
+        className={styles.tabs}
+        tabClassName={styles.tab}
+        activeTabClassName={styles.tabActive}
+        labelClassName={styles.tabLabel}
+        badgeClassName={styles.tabPill}
         ariaLabel='Application status filters'
         getBadge={(tab) =>
           tab.id === 'all'
@@ -328,7 +328,7 @@ const AdminReview = () => {
       />
 
       {showTodayOnly && (
-        <div className='review__filter-chip'>
+        <div className={styles.filterChip}>
           Showing submissions from today
           <button type='button' onClick={() => setShowTodayOnly(false)}>
             Clear
@@ -336,8 +336,8 @@ const AdminReview = () => {
         </div>
       )}
 
-      <div className='review__body'>
-        <aside className='review__list' aria-label='Application list'>
+      <div className={styles.body}>
+        <aside className={styles.list} aria-label='Application list'>
           {filteredItems.length ? (
             <ul>
               {filteredItems.map((item) => (
@@ -346,23 +346,23 @@ const AdminReview = () => {
                     type='button'
                     className={
                       item.key === selectedId
-                        ? 'review__list-item review__list-item--active'
-                        : 'review__list-item'
+                        ? `${styles.listItem} ${styles.listItemActive}`
+                        : styles.listItem
                     }
                     onClick={() => setSelectedId(item.key)}
                     aria-current={item.key === selectedId ? 'true' : 'false'}
                   >
-                    <div className='review__list-top'>
-                      <span className='review__list-name'>{item.name}</span>
+                    <div className={styles.listTop}>
+                      <span className={styles.listName}>{item.name}</span>
                       <StatusChip
                         status={item.status}
                         label={getStatusLabel(item.status)}
                       />
                     </div>
-                    <div className='review__list-bottom'>
-                      <span className='review__list-meta'>{item.stake}</span>
-                      <span className='review__list-meta'>{item.ward}</span>
-                      <span className='review__list-meta review__list-date'>
+                    <div className={styles.listBottom}>
+                      <span className={styles.listMeta}>{item.stake}</span>
+                      <span className={styles.listMeta}>{item.ward}</span>
+                      <span className={`${styles.listMeta} ${styles.listDate}`}>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
                       <ReviewItemTags
@@ -376,52 +376,52 @@ const AdminReview = () => {
               ))}
             </ul>
           ) : (
-            <p className='review__empty'>No applications found for this tab.</p>
+            <p className={styles.empty}>No applications found for this tab.</p>
           )}
         </aside>
 
-        <div className='review__details' aria-live='polite'>
+        <div className={styles.details} aria-live='polite'>
           {selectedItem ? (
-            <div className='review__details-card'>
-              <header className='review__details-header'>
-                <div className='review__details-info'>
-                  <div className='review__details-heading'>
+            <div className={styles.detailsCard}>
+              <header className={styles.detailsHeader}>
+                <div className={styles.detailsInfo}>
+                  <div className={styles.detailsHeading}>
                     <h2>{selectedItem.name}</h2>
-                    <div className='review__details-tags'>
+                    <div className={styles.detailsTags}>
                       {selectedItem.type === 'application' && (
-                        <span className='review__details-tag review__details-tag--application'>
+                        <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
                           Applied
                         </span>
                       )}
                       {selectedItem.type === 'recommendation' && (
-                        <span className='review__details-tag review__details-tag--recommendation'>
+                        <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
                           Recommended
                         </span>
                       )}
                       {selectedItem.type === 'application' && selectedItem.hasRecommendation && (
-                        <span className='review__details-tag review__details-tag--recommendation'>
+                        <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
                           Recommended
                         </span>
                       )}
                       {selectedItem.type === 'recommendation' && selectedItem.hasApplication && (
-                        <span className='review__details-tag review__details-tag--application'>
+                        <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
                           Applied
                         </span>
                       )}
                     </div>
                   </div>
                   {selectedItem.type === 'recommendation' && (
-                    <p className='review__details-origin'>
+                    <p className={styles.detailsOrigin}>
                       Leader Recommendation
                     </p>
                   )}
-                  <p className='review__details-meta'>
+                  <p className={styles.detailsMeta}>
                     Submitted{' '}
                     {new Date(selectedItem.createdAt).toLocaleString()}
                   </p>
                 </div>
 
-                <div className='review__status-control'>
+                <div className={styles.statusControl}>
                   <ComboBox
                     id={statusSelectId}
                     name='status'
@@ -430,16 +430,16 @@ const AdminReview = () => {
                     onChange={handleStatusSelect}
                     tone={currentStatus ?? 'awaiting'}
                     options={STATUS_OPTIONS}
-                    wrapperClassName='review__status-label'
-                    labelClassName='review__status-text'
+                    wrapperClassName={styles.statusLabel}
+                    labelClassName={styles.statusText}
                   />
-                  <span className='review__status-hint'>
+                  <span className={styles.statusHint}>
                     Selecting updates instantly.
                   </span>
                 </div>
               </header>
 
-              <dl className='review__grid'>
+              <dl className={styles.grid}>
                 <div>
                   <dt>Email</dt>
                   <dd>{selectedItem.email}</dd>
@@ -466,7 +466,7 @@ const AdminReview = () => {
                 </div>
               </dl>
 
-              <div className='review__notes'>
+              <div className={styles.notes}>
                 <h3>Additional Information</h3>
                 <p>
                   {selectedItem.moreInfo ||
@@ -475,21 +475,21 @@ const AdminReview = () => {
               </div>
             </div>
           ) : (
-            <div className='review__placeholder'>
+            <div className={styles.placeholder}>
               Select an application to review its details.
             </div>
           )}
         </div>
       </div>
 
-      <div className='review__mobile' aria-live='polite'>
+      <div className={styles.mobile} aria-live='polite'>
         {filteredItems.length ? (
           filteredItems.map((item) => (
-            <article key={item.key} className='review-card'>
-              <div className='review-card__header'>
+            <article key={item.key} className={styles.reviewCard}>
+              <div className={styles.reviewCardHeader}>
                 <div>
                   <h2>{item.name}</h2>
-                  <p className='review-card__meta'>
+                  <p className={styles.reviewCardMeta}>
                     Submitted {new Date(item.createdAt).toLocaleString()}
                   </p>
                 </div>
@@ -502,41 +502,41 @@ const AdminReview = () => {
                   }
                   options={STATUS_OPTIONS}
                   tone={item.status}
-                  wrapperClassName='review-card__status'
-                  labelClassName='review-card__status-label'
+                  wrapperClassName={styles.reviewCardStatus}
+                  labelClassName={styles.reviewCardStatusLabel}
                   ariaLabel={`Update status for ${item.name}`}
                 />
               </div>
 
-              <div className='review-card__tags'>
+              <div className={styles.reviewCardTags}>
                 {item.type === 'application' && (
-                  <span className='review-card__tag review-card__tag--application'>
+                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
                     Applied
                   </span>
                 )}
                 {item.type === 'recommendation' && (
-                  <span className='review-card__tag review-card__tag--recommendation'>
+                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
                     Recommended
                   </span>
                 )}
                 {item.type === 'application' && item.hasRecommendation && (
-                  <span className='review-card__tag review-card__tag--recommendation'>
+                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
                     Recommended
                   </span>
                 )}
                 {item.type === 'recommendation' && item.hasApplication && (
-                  <span className='review-card__tag review-card__tag--application'>
+                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
                     Applied
                   </span>
                 )}
                 {item.type === 'recommendation' && (
-                  <span className='review-card__source'>
+                  <span className={styles.reviewCardSource}>
                     Leader Recommendation
                   </span>
                 )}
               </div>
 
-              <dl className='review-card__grid'>
+              <dl className={styles.reviewCardGrid}>
                 <div>
                   <dt>Email</dt>
                   <dd>{item.email}</dd>
@@ -563,14 +563,14 @@ const AdminReview = () => {
                 </div>
               </dl>
 
-              <div className='review-card__notes'>
+              <div className={styles.reviewCardNotes}>
                 <h3>Additional Information</h3>
                 <p>{item.moreInfo || 'No additional information provided.'}</p>
               </div>
             </article>
           ))
         ) : (
-          <p className='review__empty'>No applications found for this tab.</p>
+          <p className={styles.empty}>No applications found for this tab.</p>
         )}
       </div>
     </section>

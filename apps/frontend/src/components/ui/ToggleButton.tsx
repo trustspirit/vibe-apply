@@ -1,6 +1,6 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
-import './ToggleButton.scss';
+import styles from './ToggleButton.module.scss';
 
 interface ToggleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'type'> {
   checked?: boolean;
@@ -30,17 +30,17 @@ const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
     return (
       <button
         type='button'
-        className={clsx('toggle-button', checked && 'toggle-button--on', disabled && 'is-disabled', className)}
+        className={clsx(styles.toggleButton, checked && styles.on, disabled && styles.isDisabled, className)}
         aria-pressed={checked}
         onClick={handleClick}
         ref={ref}
         disabled={disabled}
         {...rest}
       >
-        <span className='toggle-button__track' aria-hidden>
-          <span className='toggle-button__thumb' />
+        <span className={styles.track} aria-hidden>
+          <span className={styles.thumb} />
         </span>
-        <span className='toggle-button__status'>{checked ? labelOn : labelOff}</span>
+        <span className={styles.status}>{checked ? labelOn : labelOff}</span>
       </button>
     );
   }

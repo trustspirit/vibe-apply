@@ -1,6 +1,6 @@
 @use '../../styles/shared/auth';
 
-.auth__divider {
+.divider {
   display: flex;
   align-items: center;
   text-align: center;
@@ -21,7 +21,7 @@
   }
 }
 
-.auth__google-btn {
+.googleBtn {
   width: 100%;
   display: flex;
   align-items: center;
@@ -48,6 +48,6 @@
   }
 }
 
-.auth__google-icon {
+.googleIcon {
   flex-shrink: 0;
 }

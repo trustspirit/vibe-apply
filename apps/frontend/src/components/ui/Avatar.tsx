@@ -1,6 +1,6 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
-import './Avatar.scss';
+import styles from './Avatar.module.scss';
 
 type AvatarSize = 'sm' | 'md' | 'lg';
 
@@ -35,11 +35,11 @@ const Avatar = forwardRef<HTMLButtonElement, AvatarProps>(({ name, picture, size
     <button
       ref={ref}
       type='button'
-      className={clsx('avatar', `avatar--${size}`, { 'avatar--has-picture': picture }, className)}
+      className={clsx(styles.avatar, styles[size], { [styles.hasPicture]: picture }, className)}
       style={!picture ? { backgroundColor } : undefined}
       {...props}
     >
-      {picture ? <img src={picture} alt={name} className='avatar__image' /> : <span className='avatar__initials'>{initials}</span>}
+      {picture ? <img src={picture} alt={name} className={styles.image} /> : <span className={styles.initials}>{initials}</span>}
     </button>
   );
 });

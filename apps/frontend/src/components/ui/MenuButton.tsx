@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { Button } from './';
-import './MenuButton.scss';
+import styles from './MenuButton.module.scss';
 
 const DEFAULT_ALIGNMENT = 'end';
 
@@ -74,36 +74,36 @@ const MenuButton = ({
   }
 
   return (
-    <div className={clsx('menu-button', className)}>
+    <div className={clsx(styles.menuButton, className)}>
       <Button
         ref={buttonRef}
         type="button"
         variant={variant}
-        className={clsx('menu-button__toggle', buttonClassName)}
+        className={clsx(styles.toggle, buttonClassName)}
         onClick={handleToggle}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={ariaLabel}
         disabled={disabled}
       >
-        <span className="menu-button__label">{buttonLabel}</span>
-        {icon ? <span className="menu-button__icon" aria-hidden>{icon}</span> : <span className="menu-button__caret" aria-hidden>▾</span>}
+        <span className={styles.label}>{buttonLabel}</span>
+        {icon ? <span className={styles.icon} aria-hidden>{icon}</span> : <span className={styles.caret} aria-hidden>▾</span>}
       </Button>
       {open ? (
         <ul
           ref={menuRef}
-          className={clsx('menu-button__menu', `menu-button__menu--${align}`, menuClassName)}
+          className={clsx(styles.menu, styles[`menu${align.charAt(0).toUpperCase() + align.slice(1)}`], menuClassName)}
           role="menu"
         >
           {items.map((item) => {
             if (item.type === 'separator' || item.type === 'divider') {
-              return <li key={item.id ?? item.label} className="menu-button__separator" role="separator" />;
+              return <li key={item.id ?? item.label} className={styles.separator} role="separator" />;
             }
             return (
               <li key={item.id ?? item.label} role="none">
                 <button
                   type="button"
-                  className={clsx('menu-button__item', item.disabled && 'is-disabled')}
+                  className={clsx(styles.item, item.disabled && styles.isDisabled)}
                   role="menuitem"
                   onClick={(event) => handleSelect(item, event)}
                   disabled={item.disabled}

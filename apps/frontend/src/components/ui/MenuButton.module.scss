@@ -1,28 +1,28 @@
-.menu-button {
+.menuButton {
   position: relative;
   display: inline-flex;
 }
 
-.menu-button__toggle {
+.toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   border-radius: 999px;
 }
 
-.menu-button__label {
+.label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.menu-button__caret,
-.menu-button__icon {
+.caret,
+.icon {
   font-size: 0.75rem;
   line-height: 1;
 }
 
-.menu-button__menu {
+.menu {
   position: absolute;
   top: calc(100% + 0.35rem);
   min-width: 160px;
@@ -36,15 +36,15 @@
   z-index: 15;
 }
 
-.menu-button__menu--end {
+.menuEnd {
   right: 0;
 }
 
-.menu-button__menu--start {
+.menuStart {
   left: 0;
 }
 
-.menu-button__item {
+.item {
   width: 100%;
   padding: 0.55rem 1rem;
   background: transparent;
@@ -55,17 +55,17 @@
   transition: background 0.15s ease;
 }
 
-.menu-button__item:hover:not(:disabled) {
+.item:hover:not(:disabled) {
   background: rgba(17, 24, 39, 0.08);
 }
 
-.menu-button__item.is-disabled,
-.menu-button__item:disabled {
+.item.isDisabled,
+.item:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.menu-button__separator {
+.separator {
   height: 1px;
   margin: 0.25rem 0.75rem;
   background: var(--color-border);

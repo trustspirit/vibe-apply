@@ -6,7 +6,7 @@ import { Button, ComboBox } from '@/components/ui';
 import { getDefaultPathForUser } from '@/utils/navigation';
 import { authApi } from '@/services/api';
 import { USER_ROLES, ROUTES } from '@/utils/constants';
-import './SignUp.scss';
+import styles from '@/components/AuthLayout.module.scss';
 
 interface ProfileForm {
   stake: string;

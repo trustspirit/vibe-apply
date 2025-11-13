@@ -1,10 +1,10 @@
-.leader-recommendations {
+.leaderRecommendations {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.leader-recommendations__banner {
+.banner {
   background: rgba(37, 99, 235, 0.1);
   color: var(--color-primary);
   padding: 0.75rem 1rem;
@@ -13,33 +13,33 @@
   margin: 0;
 }
 
-.leader-recommendations__applicants-section {
+.applicantsSection {
   background: rgba(37, 99, 235, 0.03);
   padding: 1.5rem;
   border-radius: 0.9rem;
   border: 1px solid rgba(37, 99, 235, 0.12);
 }
 
-.leader-recommendations__applicants-title {
+.applicantsTitle {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
   color: var(--color-text);
 }
 
-.leader-recommendations__applicants-subtitle {
+.applicantsSubtitle {
   font-size: 0.9rem;
   color: var(--color-muted);
   margin: 0 0 1.5rem 0;
 }
 
-.leader-recommendations__applicants-grid {
+.applicantsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
-.leader-recommendations__applicant-card {
+.applicantCard {
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 0.75rem;
@@ -50,26 +50,26 @@
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.leader-recommendations__applicant-card:hover {
+.applicantCard:hover {
   border-color: rgba(37, 99, 235, 0.3);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.leader-recommendations__applicant-header {
+.applicantHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.5rem;
 }
 
-.leader-recommendations__applicant-header h3 {
+.applicantHeader h3 {
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
   color: var(--color-text);
 }
 
-.leader-recommendations__applicant-details {
+.applicantDetails {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem 1rem;
@@ -77,13 +77,13 @@
   font-size: 0.85rem;
 }
 
-.leader-recommendations__applicant-details div {
+.applicantDetails div {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
 }
 
-.leader-recommendations__applicant-details dt {
+.applicantDetails dt {
   font-weight: 500;
   color: var(--color-muted);
   font-size: 0.75rem;
@@ -91,64 +91,64 @@
   letter-spacing: 0.025em;
 }
 
-.leader-recommendations__applicant-details dd {
+.applicantDetails dd {
   margin: 0;
   color: var(--color-text);
   word-break: break-word;
 }
 
-.leader-recommendations__applicant-btn {
+.applicantBtn {
   margin-top: auto;
   width: 100%;
   padding: 0.5rem;
   font-size: 0.85rem;
 }
 
-.leader-recommendations__details {
+.details {
   display: flex;
   flex-direction: column;
   min-height: 360px;
 }
 
-.leader-recommendations__form-card {
+.formCard {
   flex: 1 1 auto;
 }
 
-.leader-recommendations__form {
+.form {
   display: grid;
   gap: 1.25rem;
 }
 
-.leader-recommendations__form--mobile {
+.formMobile {
   gap: 1rem;
 }
 
-.leader-recommendations__grid {
+.grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem 1.25rem;
 }
 
-.leader-recommendations__form-full {
+.formFull {
   display: grid;
   gap: 0.5rem;
 }
 
-.leader-recommendations__actions {
+.actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
 }
 
-.leader-recommendations__actions--mobile {
+.actionsMobile {
   flex-direction: column;
 }
 
-.leader-recommendations__actions--mobile .btn {
+.actionsMobile .btn {
   width: 100%;
 }
 
-.leader-recommendations__alert {
+.alert {
   background: rgba(37, 99, 235, 0.1);
   color: var(--color-primary);
   padding: 0.75rem 1rem;
@@ -157,55 +157,55 @@
   margin: 0;
 }
 
-.leader-recommendations__alert--error {
+.alertError {
   background: rgba(220, 38, 38, 0.12);
   border-color: rgba(220, 38, 38, 0.3);
   color: var(--color-danger);
 }
 
-.leader-recommendations__btn {
+.btn {
   padding: 0.35rem 0.9rem;
   border-radius: 0.6rem;
   font-size: 0.85rem;
   line-height: 1.2;
 }
 
-.leader-recommendations__detail-actions,
-.leader-recommendations__card-actions {
+.detailActions,
+.cardActions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
 }
 
-.leader-recommendations__detail-actions {
+.detailActions {
   margin-top: auto;
 }
 
-.leader-recommendations__card-actions .btn {
+.cardActions .btn {
   flex: 1 1 45%;
 }
 
-.leader-recommendations__mobile-form {
+.mobileForm {
   border: 1px solid rgba(37, 99, 235, 0.18);
 }
 
-.leader-recommendations__mobile-card {
+.mobileCard {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.leader-recommendations__mobile-card--editing {
+.mobileCardEditing {
   border: 1px solid rgba(37, 99, 235, 0.4);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.leader-recommendations__mobile-editing-note {
+.mobileEditingNote {
   margin: 0;
   margin-top: 0.5rem;
   font-size: 0.8rem;
   color: var(--color-muted);
 }
 
-.leader-recommendations__locked-message {
+.lockedMessage {
   margin: 0;
   padding: 0.75rem;
   font-size: 0.85rem;
@@ -216,26 +216,26 @@
 }
 
 @media (max-width: 768px) {
-  .leader-recommendations__mobile-card .review-card__header {
+  .mobileCard .reviewCardHeader {
     align-items: flex-start;
   }
 
-  .leader-recommendations__mobile-card .status-chip {
+  .mobileCard .statusChip {
     align-self: flex-start;
     flex-shrink: 0;
   }
 }
 
 @media (max-width: 1024px) {
-  .leader-recommendations__detail-actions .btn {
+  .detailActions .btn {
     width: 100%;
   }
 
-  .leader-recommendations__card-actions {
+  .cardActions {
     flex-direction: column;
   }
 
-  .leader-recommendations__card-actions .btn {
+  .cardActions .btn {
     width: 100%;
   }
 }

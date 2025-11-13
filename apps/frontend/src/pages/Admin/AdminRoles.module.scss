@@ -4,51 +4,51 @@
   gap: 1.5rem;
 }
 
-.roles__header {
+.header {
   margin-bottom: 0.5rem;
 }
 
-.roles__table-wrapper {
+.tableWrapper {
   background: var(--color-surface);
   border-radius: 1rem;
   box-shadow: var(--shadow-sm);
   overflow-x: auto;
 }
 
-.roles__table {
+.table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.roles__table th,
-.roles__table td {
+.table th,
+.table td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
 
-.roles__table tbody tr:last-child td {
+.table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.roles__combo {
+.combo {
   display: block;
 }
 
-.roles__combo select {
+.combo select {
   width: 100%;
 }
 
-.roles__status-hint {
+.statusHint {
   font-size: 0.85rem;
   color: var(--color-muted);
 }
 
-.roles__toggle {
+.toggle {
   display: inline-flex;
 }
 
-.roles__self-hint {
+.selfHint {
   display: inline-block;
   margin-left: 0.5rem;
   font-size: 0.75rem;
@@ -56,14 +56,14 @@
 }
 
 @media (max-width: 768px) {
-  .roles__table th,
-  .roles__table td {
+  .table th,
+  .table td {
     padding: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
-  .roles__table-wrapper {
+  .tableWrapper {
     border-radius: 0.75rem;
   }
 }

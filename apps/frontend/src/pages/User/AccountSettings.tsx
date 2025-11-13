@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Button, TextField } from '@/components/ui';
 import { authApi } from '@/services/api';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
-import './AccountSettings.scss';
+import styles from './AccountSettings.module.scss';
 
 interface AccountForm {
   stake: string;
@@ -81,23 +81,23 @@ const AccountSettings = () => {
   }
 
   return (
-    <div className='account-settings'>
-      <div className='account-settings__container'>
-        <div className='account-settings__header'>
-          <h1 className='account-settings__title'>Account Settings</h1>
-          <p className='account-settings__subtitle'>
+    <div className={styles.accountSettings}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Account Settings</h1>
+          <p className={styles.subtitle}>
             Manage your profile information and preferences
           </p>
         </div>
 
-        <form className='account-settings__form' onSubmit={handleSubmit}>
-          <div className='account-settings__section'>
-            <h2 className='account-settings__section-title'>Personal Information</h2>
-            <p className='account-settings__section-description'>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Personal Information</h2>
+            <p className={styles.sectionDescription}>
               Your basic account information. Contact an administrator to change your name or email.
             </p>
             
-            <div className='account-settings__fields'>
+            <div className={styles.fields}>
               <TextField
                 label='Full Name'
                 name='name'
@@ -126,13 +126,13 @@ const AccountSettings = () => {
             </div>
           </div>
 
-          <div className='account-settings__section'>
-            <h2 className='account-settings__section-title'>Church Information</h2>
-            <p className='account-settings__section-description'>
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Church Information</h2>
+            <p className={styles.sectionDescription}>
               Your current stake and ward assignment. Changes will be reflected in all applications and recommendations.
             </p>
             
-            <div className='account-settings__fields'>
+            <div className={styles.fields}>
               <TextField
                 label='Stake'
                 name='stake'
@@ -153,19 +153,19 @@ const AccountSettings = () => {
             </div>
           </div>
 
-          <div className='account-settings__section'>
-            <h2 className='account-settings__section-title'>Account Role</h2>
-            <p className='account-settings__section-description'>
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Account Role</h2>
+            <p className={styles.sectionDescription}>
               Your current role and permissions in the system.
             </p>
             
-            <div className='account-settings__role-display'>
-              <div className='account-settings__role-item'>
-                <span className='account-settings__role-label'>Current Role</span>
-                <span className='account-settings__role-value'>{getRoleLabel()}</span>
+            <div className={styles.roleDisplay}>
+              <div className={styles.roleItem}>
+                <span className={styles.roleLabel}>Current Role</span>
+                <span className={styles.roleValue}>{getRoleLabel()}</span>
               </div>
               {((currentUser.role === (USER_ROLES.BISHOP as UserRole) || currentUser.role === (USER_ROLES.STAKE_PRESIDENT as UserRole)) && currentUser.leaderStatus === (LEADER_STATUS.PENDING as LeaderStatus)) && (
-                <p className='account-settings__role-note'>
+                <p className={styles.roleNote}>
                   Your leader access is pending approval by an administrator.
                 </p>
               )}
@@ -173,17 +173,17 @@ const AccountSettings = () => {
           </div>
 
           {error && (
-            <div className='account-settings__message account-settings__message--error'>
+            <div className={`${styles.message} ${styles.messageError}`}>
               {error}
             </div>
           )}
           {success && (
-            <div className='account-settings__message account-settings__message--success'>
+            <div className={`${styles.message} ${styles.messageSuccess}`}>
               {success}
             </div>
           )}
 
-          <div className='account-settings__actions'>
+          <div className={styles.actions}>
             <Button
               type='submit'
               variant='primary'

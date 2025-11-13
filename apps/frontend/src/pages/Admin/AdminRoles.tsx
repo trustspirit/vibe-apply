@@ -3,7 +3,7 @@ import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { ComboBox, StatusChip, ToggleButton } from '@/components/ui';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
-import './AdminRoles.scss';
+import styles from './AdminRoles.module.scss';
 
 const ROLE_OPTIONS = [
   { value: USER_ROLES.ADMIN, label: 'Admin' },
@@ -50,16 +50,16 @@ const AdminRoles = () => {
   };
 
   return (
-    <section className='roles'>
-      <header className='roles__header'>
-        <h1 className='roles__title'>Manage Roles</h1>
-        <p className='roles__subtitle'>
+    <section className={styles.roles}>
+      <header className={styles.header}>
+        <h1>Manage Roles</h1>
+        <p>
           Manage user roles and permissions. Approve bishop and stake president requests when ready.
         </p>
       </header>
 
-      <div className='roles__table-wrapper'>
-        <table className='roles__table'>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th scope='col'>Name</th>
@@ -120,12 +120,12 @@ const AdminRoles = () => {
                           ? 'leader'
                           : 'applicant'
                     }
-                    wrapperClassName='roles__combo'
+                    wrapperClassName={styles.combo}
                     ariaLabel={`Select role for ${user.name}`}
                     disabled={user.id === currentUser?.id}
                   />
                   {user.id === currentUser?.id && (
-                    <span className='roles__self-hint'>
+                    <span className={styles.selfHint}>
                       Cannot change your role
                     </span>
                   )}
@@ -138,10 +138,10 @@ const AdminRoles = () => {
                       labelOn='Approved'
                       labelOff='Pending'
                       confirmOnMessage='Approve this leader account?'
-                      className='roles__toggle'
+                      className={styles.toggle}
                     />
                   ) : (
-                    <span className='roles__status-hint'>N/A</span>
+                    <span className={styles.statusHint}>N/A</span>
                   )}
                 </td>
               </tr>

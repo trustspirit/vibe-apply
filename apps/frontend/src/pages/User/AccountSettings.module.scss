@@ -1,50 +1,50 @@
-.account-settings {
+.accountSettings {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
 
-.account-settings__container {
+.container {
   background: var(--color-surface);
   border-radius: 0.75rem;
   box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
-.account-settings__header {
+.header {
   padding: 2rem 2rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
   background: linear-gradient(to bottom, rgba(29, 78, 216, 0.02), transparent);
 }
 
-.account-settings__title {
+.title {
   font-size: 1.75rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
   color: var(--color-text);
 }
 
-.account-settings__subtitle {
+.subtitle {
   color: var(--color-muted);
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.5;
 }
 
-.account-settings__form {
+.form {
   padding: 2rem;
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
 }
 
-.account-settings__section {
+.section {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.account-settings__section-title {
+.sectionTitle {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
@@ -54,14 +54,14 @@
   gap: 0.5rem;
 }
 
-.account-settings__section-description {
+.sectionDescription {
   margin: 0 0 0.75rem 0;
   color: var(--color-muted);
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
-.account-settings__fields {
+.fields {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -71,14 +71,14 @@
   border: 1px solid rgba(29, 78, 216, 0.08);
 }
 
-.account-settings__role-display {
+.roleDisplay {
   padding: 1rem;
   background: rgba(29, 78, 216, 0.02);
   border-radius: 0.5rem;
   border: 1px solid rgba(29, 78, 216, 0.08);
 }
 
-.account-settings__role-item {
+.roleItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -88,13 +88,13 @@
   border: 1px solid var(--color-border);
 }
 
-.account-settings__role-label {
+.roleLabel {
   font-size: 0.9rem;
   color: var(--color-muted);
   font-weight: 500;
 }
 
-.account-settings__role-value {
+.roleValue {
   font-size: 0.95rem;
   color: var(--color-text);
   font-weight: 600;
@@ -104,7 +104,7 @@
   color: var(--color-primary);
 }
 
-.account-settings__role-note {
+.roleNote {
   margin: 0.75rem 0 0 0;
   padding: 0.75rem;
   background: rgba(245, 158, 11, 0.08);
@@ -115,7 +115,7 @@
   border-left: 3px solid rgb(245, 158, 11);
 }
 
-.account-settings__message {
+.message {
   padding: 1rem 1.25rem;
   border-radius: 0.5rem;
   font-size: 0.95rem;
@@ -123,19 +123,19 @@
   font-weight: 500;
 }
 
-.account-settings__message--error {
+.messageError {
   background: rgba(220, 38, 38, 0.08);
   color: rgb(185, 28, 28);
   border-left: 3px solid rgb(220, 38, 38);
 }
 
-.account-settings__message--success {
+.messageSuccess {
   background: rgba(34, 197, 94, 0.08);
   color: rgb(21, 128, 61);
   border-left: 3px solid rgb(34, 197, 94);
 }
 
-.account-settings__actions {
+.actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
@@ -144,54 +144,54 @@
 }
 
 @media (max-width: 768px) {
-  .account-settings {
+  .accountSettings {
     padding: 1rem 0.75rem;
   }
 
-  .account-settings__header {
+  .header {
     padding: 1.5rem 1rem 1rem;
   }
 
-  .account-settings__title {
+  .title {
     font-size: 1.5rem;
   }
 
-  .account-settings__subtitle {
+  .subtitle {
     font-size: 0.875rem;
   }
 
-  .account-settings__form {
+  .form {
     padding: 1.5rem 1rem;
     gap: 2rem;
   }
 
-  .account-settings__section-title {
+  .sectionTitle {
     font-size: 1rem;
   }
 
-  .account-settings__section-description {
+  .sectionDescription {
     font-size: 0.85rem;
   }
 
-  .account-settings__fields {
+  .fields {
     padding: 0.75rem;
   }
 
-  .account-settings__role-item {
+  .roleItem {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
 
-  .account-settings__role-value {
+  .roleValue {
     align-self: flex-start;
   }
 
-  .account-settings__actions {
+  .actions {
     justify-content: stretch;
   }
 
-  .account-settings__actions button {
+  .actions button {
     flex: 1;
   }
 }
