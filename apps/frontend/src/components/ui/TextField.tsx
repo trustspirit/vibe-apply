@@ -51,7 +51,7 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
       describedBy.push(`${fieldId}-error`);
     }
 
-    const { className: controlClassName, ...controlProps } = rest as Record<string, unknown>;
+    const { className: controlClassName, ...controlProps } = rest;
     const Control = multiline ? 'textarea' : 'input';
 
     return (
@@ -67,11 +67,11 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
           </span>
         )}
         <Control
-          {...(controlProps as any)}
+          {...(controlProps as unknown as InputHTMLAttributes<HTMLInputElement> & TextareaHTMLAttributes<HTMLTextAreaElement>)}
           id={fieldId}
           name={name}
           type={multiline ? undefined : type}
-          ref={ref as any}
+          ref={ref as unknown as React.Ref<HTMLInputElement & HTMLTextAreaElement>}
           rows={multiline ? rows : undefined}
           className={clsx(controlClassName as string, inputClassName, error && 'input--error')}
           aria-invalid={Boolean(error)}

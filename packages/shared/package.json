@@ -3,9 +3,17 @@
   "version": "1.0.0",
   "description": "Shared types and utilities for Vibe Apply",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "dev": "tsc --watch",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
@@ -21,10 +29,12 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.4.2",
-    "typescript": "^5.7.2"
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.46.4"
   },
   "dependencies": {
-    "class-validator": "^0.14.1",
-    "class-transformer": "^0.5.1"
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1"
   }
 }

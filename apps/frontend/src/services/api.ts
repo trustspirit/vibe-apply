@@ -224,8 +224,8 @@ export const authApi = {
 
     try {
       await api.post('/auth/signout');
-    } catch (error) {
-      console.warn('Sign out request failed:', error);
+    } catch (signOutError) {
+      void signOutError;
     }
   },
 

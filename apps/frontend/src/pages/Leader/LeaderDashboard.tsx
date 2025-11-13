@@ -16,7 +16,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui';
 import { ROUTES } from '../../utils/constants';
-import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
+import type { Application } from '@vibe-apply/shared';
 import './LeaderDashboard.scss';
 
 const PIE_COLORS = ['#2563eb', '#1e3a8a', '#64748b'];
@@ -55,7 +55,6 @@ interface CombinedItem {
 const LeaderDashboard = () => {
   const navigate = useNavigate();
   const { currentUser, applications, leaderRecommendations, refetchApplications, refetchRecommendations } = useApp();
-  const leaderId = currentUser?.id ?? null;
 
   useEffect(() => {
     refetchApplications();

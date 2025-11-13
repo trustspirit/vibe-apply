@@ -245,15 +245,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             ...prev,
             applications,
           }));
-        } catch (error) {
-          console.warn('Failed to fetch applications:', error);
+        } catch {
           hasFetchedApplications.current = false;
         }
       }
     };
 
     fetchApplications();
-  }, [currentUser?.role, currentUser?.leaderStatus]);
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -268,15 +267,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             ...prev,
             leaderRecommendations: recommendations,
           }));
-        } catch (error) {
-          console.warn('Failed to fetch recommendations:', error);
+        } catch {
           hasFetchedRecommendations.current = false;
         }
       }
     };
 
     fetchRecommendations();
-  }, [currentUser?.role, currentUser?.leaderStatus, currentUser?.id]);
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchUserApplication = async () => {
@@ -293,8 +291,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             ...prev,
             applications: application ? [application] : [],
           }));
-        } catch (error) {
-          console.warn('Failed to fetch applicant application:', error);
+        } catch {
           hasFetchedMyApplication.current = false;
         } finally {
           setIsLoadingApplications(false);
@@ -384,8 +381,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const signOut = useCallback(async () => {
     try {
       await authApi.signOut();
-    } catch (error) {
-      console.warn('API signout failed:', error);
+    } catch (signOutError) {
+      void signOutError;
     }
     setCurrentUserId(null);
     setState({
@@ -498,7 +495,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   const submitApplication = useCallback(
     async (userId: string, payload: ApplicationPayload) => {
-      const { userId: _, ...payloadWithoutUserId } = payload;
+      const { userId: payloadUserId, ...payloadWithoutUserId } = payload;
+      void payloadUserId;
       const application = await applicationsApi.submit(payloadWithoutUserId);
       setState((prev) => {
         const existing = prev.applications.find((app) => app.userId === userId);
@@ -521,7 +519,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   const submitLeaderRecommendation = useCallback(
     async (leaderId: string, payload: RecommendationPayload) => {
-      const { id, leaderId: _, ...formData } = payload;
+      const { id, leaderId: payloadLeaderId, ...formData } = payload;
+      void payloadLeaderId;
       if (id) {
         const recommendation = await recommendationsApi.update(id, formData);
         setState((prev) => ({
@@ -618,8 +617,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           applications: application ? [application] : [],
         }));
       }
-    } catch (error) {
-      console.warn('Failed to refetch applications:', error);
+    } catch (refetchError) {
+      void refetchError;
     }
   }, [currentUser]);
 
@@ -639,8 +638,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           leaderRecommendations: recommendations,
         }));
       }
-    } catch (error) {
-      console.warn('Failed to refetch recommendations:', error);
+    } catch (refetchRecsError) {
+      void refetchRecsError;
     }
   }, [currentUser]);
 
@@ -656,7 +655,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         users: users.map((u) => normalizeUserRecord(u)!),
       }));
     } catch (error) {
-      console.warn('Failed to refetch users:', error);
+      void error;
     }
   }, [currentUser?.role]);
 

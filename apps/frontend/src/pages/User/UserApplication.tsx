@@ -3,6 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useApp } from '../../context/AppContext';
 import { applicationsApi } from '../../services/api';
 import { Button, ComboBox, StatusChip, TextField } from '../../components/ui';
+import { validateEmail, validateAge, validateRequired, validateGender, validatePhone, getStatusDisplay } from '../../utils/validation';
 import './UserApplication.scss';
 
 interface ApplicationForm {
@@ -29,15 +30,6 @@ const emptyForm: ApplicationForm = {
   stake: '',
   ward: '',
   moreInfo: '',
-};
-
-type ToneValue = 'draft' | 'awaiting' | 'approved' | 'rejected' | 'reviewed' | 'admin' | 'leader' | 'applicant';
-
-const STATUS_DISPLAY: Record<string, { label: string; tone: ToneValue }> = {
-  draft: { label: 'Draft', tone: 'draft' },
-  awaiting: { label: 'Submitted', tone: 'awaiting' },
-  approved: { label: 'Reviewed', tone: 'reviewed' },
-  rejected: { label: 'Reviewed', tone: 'reviewed' },
 };
 
 const UserApplication = () => {
@@ -147,36 +139,39 @@ const UserApplication = () => {
       form.gender === 'male' || form.gender === 'female' ? form.gender : '';
     const normalizedAge = Number.parseInt(form.age, 10);
 
-    if (!trimmedName) {
-      validationErrors.name = 'Name is required.';
+    const nameError = validateRequired(form.name, 'Name');
+    if (nameError) {
+      validationErrors.name = nameError;
     }
 
-    if (Number.isNaN(normalizedAge)) {
-      validationErrors.age = 'Enter a valid age.';
-    } else if (normalizedAge < 16 || normalizedAge > 120) {
-      validationErrors.age = 'Age must be between 16 and 120.';
+    const ageError = validateAge(form.age);
+    if (ageError) {
+      validationErrors.age = ageError;
     }
 
-    if (!trimmedEmail) {
-      validationErrors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      validationErrors.email = 'Enter a valid email address.';
+    const emailError = validateEmail(form.email);
+    if (emailError) {
+      validationErrors.email = emailError;
     }
 
-    if (!trimmedPhone) {
-      validationErrors.phone = 'Phone number is required.';
+    const phoneError = validatePhone(form.phone);
+    if (phoneError) {
+      validationErrors.phone = phoneError;
     }
 
-    if (!trimmedStake) {
-      validationErrors.stake = 'Stake is required.';
+    const stakeError = validateRequired(form.stake, 'Stake');
+    if (stakeError) {
+      validationErrors.stake = stakeError;
     }
 
-    if (!trimmedWard) {
-      validationErrors.ward = 'Ward is required.';
+    const wardError = validateRequired(form.ward, 'Ward');
+    if (wardError) {
+      validationErrors.ward = wardError;
     }
 
-    if (!normalizedGender) {
-      validationErrors.gender = 'Select male or female.';
+    const genderError = validateGender(form.gender);
+    if (genderError) {
+      validationErrors.gender = genderError;
     }
 
     return {
@@ -212,7 +207,7 @@ const UserApplication = () => {
     } = validateForm();
 
     if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
+      setErrors(validationErrors as ValidationErrors);
       setFormError('Please fix the highlighted fields before submitting.');
       return;
     }
@@ -318,12 +313,7 @@ const UserApplication = () => {
                 <dt>Status</dt>
                 <dd>
                   {(() => {
-                    const display = STATUS_DISPLAY[
-                      existingApplication.status
-                    ] ?? {
-                      label: existingApplication.status,
-                      tone: existingApplication.status,
-                    };
+                    const display = getStatusDisplay(existingApplication.status);
                     return (
                       <StatusChip
                         status={existingApplication.status}

@@ -1,4 +1,4 @@
-import { User, UserRole, isLeaderRole, isApprovedLeader, isAdmin } from '@vibe-apply/shared';
+import { User, isLeaderRole, isApprovedLeader, isAdmin } from '@vibe-apply/shared';
 import { USER_ROLES, ROUTES } from './constants';
 
 export const getDefaultPathForUser = (

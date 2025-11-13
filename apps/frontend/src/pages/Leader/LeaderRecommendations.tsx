@@ -522,20 +522,10 @@ const LeaderRecommendations = () => {
       return;
     }
 
-    console.log(
-      '[DEBUG] handleModify - recommendation.status:',
-      recommendation.status,
-      'type:',
-      typeof recommendation.status
-    );
-
     if (
       recommendation.status === 'approved' ||
       recommendation.status === 'rejected'
     ) {
-      console.log(
-        '[DEBUG] handleModify - BLOCKED: status is approved or rejected'
-      );
       return;
     }
 

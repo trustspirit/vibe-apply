@@ -18,14 +18,6 @@ import {
   UpdateUserProfileDto,
 } from '@vibe-apply/shared';
 
-/**
- * Authentication service handling user sign up, sign in, and OAuth flows.
- *
- * Google OAuth users can have null roles initially and complete their profile
- * selection later via the PUT /auth/profile/complete endpoint.
- * All users have ward and stake fields for church organization tracking.
- */
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -51,6 +43,31 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  private mapFirestoreDataToUser(
+    uid: string,
+    data: Record<string, any>,
+  ): User {
+    return {
+      id: uid,
+      name: data.name as string,
+      email: data.email as string,
+      password: '',
+      role: (data.role as UserRole) || null,
+      leaderStatus: (data.leaderStatus as LeaderStatus) || null,
+      createdAt: data.createdAt as string,
+      ward: (data.ward as string) || '',
+      stake: (data.stake as string) || '',
+      phone: (data.phone as string) || undefined,
+      picture: (data.picture as string) || undefined,
+    };
+  }
+
+  private omitPassword(user: User): Omit<User, 'password'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   generateAuthorizationCode(
@@ -90,6 +107,7 @@ export class AuthService {
         name,
       );
 
+      const createdAt = new Date().toISOString();
       const user: User = {
         id: userRecord.uid,
         name,
@@ -100,7 +118,7 @@ export class AuthService {
         ward: '',
         stake: '',
         phone: undefined,
-        createdAt: new Date().toISOString(),
+        createdAt,
       };
 
       await this.firebaseService
@@ -114,17 +132,15 @@ export class AuthService {
           leaderStatus: null,
           ward: '',
           stake: '',
-          createdAt: user.createdAt,
+          createdAt,
         });
 
       const tokens = this.generateTokens(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _password, ...userWithoutPassword } = user;
 
       return {
         isNewUser: true,
         ...tokens,
-        user: userWithoutPassword,
+        user: this.omitPassword(user),
       };
     } catch (error: any) {
       if ((error as { code?: string })?.code === 'auth/email-already-exists') {
@@ -157,28 +173,13 @@ export class AuthService {
         throw new UnauthorizedException('User data not found');
       }
 
-      const user: User = {
-        id: userRecord.uid,
-        name: userData.name as string,
-        email: userData.email as string,
-        password: '',
-        role: (userData.role as UserRole) || null,
-        leaderStatus: (userData.leaderStatus as LeaderStatus) || null,
-        createdAt: userData.createdAt as string,
-        ward: (userData.ward as string) || '',
-        stake: (userData.stake as string) || '',
-        phone: (userData.phone as string) || undefined,
-        picture: (userData.picture as string) || undefined,
-      };
-
+      const user = this.mapFirestoreDataToUser(userRecord.uid, userData);
       const tokens = this.generateTokens(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _password2, ...userWithoutPassword } = user;
 
       return {
         isNewUser: false,
         ...tokens,
-        user: userWithoutPassword,
+        user: this.omitPassword(user),
       };
     } catch {
       throw new UnauthorizedException('Invalid credentials');
@@ -201,19 +202,7 @@ export class AuthService {
       throw new UnauthorizedException('User data not found');
     }
 
-    return {
-      id: uid,
-      name: userData.name as string,
-      email: userData.email as string,
-      password: '',
-      role: (userData.role as UserRole) || null,
-      leaderStatus: (userData.leaderStatus as LeaderStatus) || null,
-      createdAt: userData.createdAt as string,
-      ward: (userData.ward as string) || '',
-      stake: (userData.stake as string) || '',
-      phone: (userData.phone as string) || undefined,
-      picture: (userData.picture as string) || undefined,
-    };
+    return this.mapFirestoreDataToUser(uid, userData);
   }
 
   async updateUserRole(
@@ -273,19 +262,7 @@ export class AuthService {
 
     return usersSnapshot.docs.map((doc) => {
       const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name as string,
-        email: data.email as string,
-        password: '',
-        role: (data.role as UserRole) || null,
-        leaderStatus: (data.leaderStatus as LeaderStatus) || null,
-        createdAt: data.createdAt as string,
-        ward: (data.ward as string) || '',
-        stake: (data.stake as string) || '',
-        phone: (data.phone as string) || undefined,
-        picture: (data.picture as string) || undefined,
-      };
+      return this.mapFirestoreDataToUser(doc.id, data);
     });
   }
 
@@ -297,13 +274,11 @@ export class AuthService {
       const user = await this.getUser(payload.sub);
 
       const tokens = this.generateTokens(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _password3, ...userWithoutPassword } = user;
 
       return {
         isNewUser: false,
         ...tokens,
-        user: userWithoutPassword,
+        user: this.omitPassword(user),
       };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
@@ -311,16 +286,13 @@ export class AuthService {
   }
 
   async googleLogin(googleUser: GoogleOAuthDto): Promise<TokenResponse> {
-    console.log('Google OAuth user data:', googleUser);
     try {
       const userRecord = await this.firebaseService
         .getAuth()
         .getUserByEmail(googleUser.email);
       const user = await this.getUser(userRecord.uid);
-      console.log('User from Firestore:', user);
 
       if (googleUser.picture && (!user.picture || googleUser.picture !== user.picture)) {
-        console.log('Updating picture in Firestore:', googleUser.picture);
         await this.firebaseService
           .getFirestore()
           .collection('users')
@@ -330,16 +302,13 @@ export class AuthService {
           });
         user.picture = googleUser.picture;
       }
-      console.log('Final user object:', user);
 
       const tokens = this.generateTokens(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _password4, ...userWithoutPassword } = user;
 
       return {
         isNewUser: false,
         ...tokens,
-        user: userWithoutPassword,
+        user: this.omitPassword(user),
       };
     } catch {
       const userRecord = await this.firebaseService.createUser(
@@ -348,6 +317,7 @@ export class AuthService {
         googleUser.name,
       );
 
+      const createdAt = new Date().toISOString();
       const user: User = {
         id: userRecord.uid,
         name: googleUser.name,
@@ -359,7 +329,7 @@ export class AuthService {
         stake: '',
         phone: undefined,
         picture: googleUser.picture,
-        createdAt: new Date().toISOString(),
+        createdAt,
       };
 
       await this.firebaseService
@@ -373,19 +343,17 @@ export class AuthService {
           leaderStatus: user.leaderStatus,
           ward: user.ward,
           stake: user.stake,
-          createdAt: user.createdAt,
+          createdAt,
           googleId: googleUser.googleId,
           picture: googleUser.picture,
         });
 
       const tokens = this.generateTokens(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _password5, ...userWithoutPassword } = user;
 
       return {
         isNewUser: true,
         ...tokens,
-        user: userWithoutPassword,
+        user: this.omitPassword(user),
       };
     }
   }

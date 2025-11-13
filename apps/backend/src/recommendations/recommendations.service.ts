@@ -16,6 +16,29 @@ import {
 export class RecommendationsService {
   constructor(private firebaseService: FirebaseService) {}
 
+  async getUserData(userId: string): Promise<{
+    email?: string;
+    stake?: string;
+    ward?: string;
+  }> {
+    const userDoc = await this.firebaseService
+      .getFirestore()
+      .collection('users')
+      .doc(userId)
+      .get();
+
+    const data = userDoc.data() as Record<string, unknown> | undefined;
+    if (!data) {
+      return {};
+    }
+
+    return {
+      email: data.email as string | undefined,
+      stake: data.stake as string | undefined,
+      ward: data.ward as string | undefined,
+    };
+  }
+
   async create(
     leaderId: string,
     createRecommendationDto: CreateRecommendationDto,

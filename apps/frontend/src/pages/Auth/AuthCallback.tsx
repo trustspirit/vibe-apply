@@ -48,8 +48,7 @@ const AuthCallback = () => {
           default:
             navigate(ROUTES.APPLICATION);
         }
-      } catch (error) {
-        console.error('AuthCallback error:', error);
+      } catch {
         navigate(ROUTES.SIGN_IN);
       }
     };

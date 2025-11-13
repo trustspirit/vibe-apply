@@ -45,17 +45,12 @@ export class ApplicationsController {
     UserRole.BISHOP,
   )
   async findAll(@CurrentUser() user: JwtPayload): Promise<Application[]> {
-    const userDetails = await this.applicationsService['firebaseService']
-      .getFirestore()
-      .collection('users')
-      .doc(user.sub)
-      .get();
-    const userData = userDetails.data() as Record<string, unknown> | undefined;
+    const userData = await this.applicationsService.getUserData(user.sub);
 
     return this.applicationsService.findAll(
       user.role || undefined,
-      userData?.ward as string | undefined,
-      userData?.stake as string | undefined,
+      userData.ward,
+      userData.stake,
     );
   }
 
@@ -64,22 +59,17 @@ export class ApplicationsController {
   async checkRecommendation(
     @CurrentUser() user: JwtPayload,
   ): Promise<{ hasRecommendation: boolean }> {
-    const userDetails = await this.applicationsService['firebaseService']
-      .getFirestore()
-      .collection('users')
-      .doc(user.sub)
-      .get();
-    const userData = userDetails.data() as Record<string, unknown> | undefined;
+    const userData = await this.applicationsService.getUserData(user.sub);
 
-    if (!userData?.email || !userData?.stake || !userData?.ward) {
+    if (!userData.email || !userData.stake || !userData.ward) {
       return { hasRecommendation: false };
     }
 
     const hasRecommendation =
       await this.applicationsService.checkExistingRecommendation(
-        userData.email as string,
-        userData.stake as string,
-        userData.ward as string,
+        userData.email,
+        userData.stake,
+        userData.ward,
       );
 
     return { hasRecommendation };

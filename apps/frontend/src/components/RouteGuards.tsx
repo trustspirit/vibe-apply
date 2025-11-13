@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { getDefaultPathForUser } from '../utils/navigation';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from '../utils/constants';
+import { USER_ROLES, ROUTES } from '../utils/constants';
 import { ReactNode } from 'react';
 import { isLeaderRole, isApprovedLeader, isAdmin } from '@vibe-apply/shared';
 
