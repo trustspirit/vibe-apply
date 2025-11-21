@@ -178,14 +178,12 @@ const AdminDashboard = () => {
 
       <div className={styles.summaryGrid}>
         <SummaryCard
-          icon={<span>📥</span>}
           label='Total Submissions'
           value={totals.totalSubmissions}
           description={`${totals.totalApplications} apps, ${totals.totalRecommendations} recs`}
           variant='primary'
         />
         <SummaryCard
-          icon={<span>⏳</span>}
           label='Awaiting'
           value={totals.awaitingCount}
           description={`${totals.awaitingApplications} apps, ${totals.awaitingRecommendations} recs`}
@@ -195,7 +193,6 @@ const AdminDashboard = () => {
           aria-label='View awaiting review applications'
         />
         <SummaryCard
-          icon={<span>🏅</span>}
           label='Approved'
           value={totals.approvedCount}
           description='Approved applicants'
@@ -205,7 +202,6 @@ const AdminDashboard = () => {
           aria-label='View approved applications'
         />
         <SummaryCard
-          icon={<span>✨</span>}
           label='New Today'
           value={totals.todaysCount}
           description='Since midnight'

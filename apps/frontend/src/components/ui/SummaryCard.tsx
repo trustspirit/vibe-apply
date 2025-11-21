@@ -5,7 +5,7 @@ import styles from './SummaryCard.module.scss';
 type SummaryCardVariant = 'primary' | 'warning' | 'accent' | 'success';
 
 interface SummaryCardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  icon: ReactNode;
+  icon?: ReactNode;
   label: string;
   value: string | number;
   description?: string;
@@ -29,9 +29,11 @@ const SummaryCard = forwardRef<HTMLButtonElement, SummaryCardProps>(
   ) => {
     const content = (
       <>
-        <div className={styles.icon} aria-hidden>
-          {icon}
-        </div>
+        {icon && (
+          <div className={styles.icon} aria-hidden>
+            {icon}
+          </div>
+        )}
         <div className={styles.content}>
           <span className={styles.label}>{label}</span>
           <span className={styles.value}>{value}</span>
