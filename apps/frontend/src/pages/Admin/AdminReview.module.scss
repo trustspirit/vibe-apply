@@ -125,7 +125,10 @@
 }
 
 .list {
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: 1rem;
   box-shadow: var(--shadow-sm);
   padding: 1rem;
@@ -235,7 +238,10 @@
 }
 
 .details {
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: 1rem;
   box-shadow: var(--shadow-sm);
   padding: 1.5rem;
@@ -373,7 +379,10 @@
 }
 
 .reviewCard {
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: 1rem;
   box-shadow: var(--shadow-sm);
   padding: 1.25rem;

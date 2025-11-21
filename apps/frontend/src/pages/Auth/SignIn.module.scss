@@ -29,8 +29,10 @@
   gap: 0.75rem;
   margin-bottom: 1.5rem;
   padding: 0.875rem 1rem;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--color-text);
   border-radius: 0.75rem;
   font-weight: 500;

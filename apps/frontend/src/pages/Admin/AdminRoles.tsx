@@ -65,7 +65,6 @@ const AdminRoles = () => {
               <th scope='col'>Name</th>
               <th scope='col'>Email</th>
               <th scope='col'>Role</th>
-              <th scope='col'>Change Role</th>
               <th scope='col'>Leader Approval</th>
             </tr>
           </thead>
@@ -75,37 +74,6 @@ const AdminRoles = () => {
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>
-                  <StatusChip
-                    status={user.role}
-                    tone={
-                      user.role === USER_ROLES.ADMIN
-                        ? 'admin'
-                        : user.role === USER_ROLES.SESSION_LEADER
-                          ? 'admin'
-                          : user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP
-                            ? 'leader'
-                            : 'applicant'
-                    }
-                    label={
-                      user.role === USER_ROLES.ADMIN
-                        ? 'Admin'
-                        : user.role === USER_ROLES.SESSION_LEADER
-                          ? user.leaderStatus === LEADER_STATUS.APPROVED
-                            ? 'Session Leader'
-                            : 'Session Leader (Pending)'
-                          : user.role === USER_ROLES.STAKE_PRESIDENT
-                            ? user.leaderStatus === LEADER_STATUS.APPROVED
-                              ? 'Stake President'
-                              : 'Stake President (Pending)'
-                            : user.role === USER_ROLES.BISHOP
-                              ? user.leaderStatus === LEADER_STATUS.APPROVED
-                                ? 'Bishop'
-                                : 'Bishop (Pending)'
-                              : 'Applicant'
-                    }
-                  />
-                </td>
-                <td>
                   <ComboBox
                     name={`role-${user.id}`}
                     value={user.role}
@@ -114,11 +82,15 @@ const AdminRoles = () => {
                     }
                     options={ROLE_OPTIONS}
                     tone={
-                      user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SESSION_LEADER
+                      user.role === USER_ROLES.ADMIN
                         ? 'admin'
-                        : user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP
-                          ? 'leader'
-                          : 'applicant'
+                        : user.role === USER_ROLES.STAKE_PRESIDENT
+                          ? 'stakePresident'
+                          : user.role === USER_ROLES.BISHOP
+                            ? 'bishop'
+                            : user.role === USER_ROLES.SESSION_LEADER
+                              ? 'sessionLeader'
+                              : 'applicant'
                     }
                     wrapperClassName={styles.combo}
                     ariaLabel={`Select role for ${user.name}`}
@@ -148,6 +120,58 @@ const AdminRoles = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className={styles.cardList}>
+        {sortedUsers.map((user) => (
+          <div key={user.id} className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardName}>{user.name}</div>
+            </div>
+            <div className={styles.cardEmail}>{user.email}</div>
+            <div className={styles.cardSection}>
+              <label className={styles.cardLabel}>Role</label>
+              <ComboBox
+                name={`role-${user.id}`}
+                value={user.role}
+                onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  handleRoleChange(user.id, event.target.value)
+                }
+                options={ROLE_OPTIONS}
+                tone={
+                  user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SESSION_LEADER
+                    ? 'admin'
+                    : user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP
+                      ? 'leader'
+                      : 'applicant'
+                }
+                wrapperClassName={styles.combo}
+                ariaLabel={`Select role for ${user.name}`}
+                disabled={user.id === currentUser?.id}
+              />
+              {user.id === currentUser?.id && (
+                <span className={styles.selfHint}>
+                  Cannot change your role
+                </span>
+              )}
+            </div>
+            <div className={styles.cardSection}>
+              <label className={styles.cardLabel}>Leader Approval</label>
+              {user.role === USER_ROLES.SESSION_LEADER || user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
+                <ToggleButton
+                  checked={user.leaderStatus === LEADER_STATUS.APPROVED}
+                  onChange={(next: boolean) => handleLeaderToggle(user.id, next)}
+                  labelOn='Approved'
+                  labelOff='Pending'
+                  confirmOnMessage='Approve this leader account?'
+                  className={styles.toggle}
+                />
+              ) : (
+                <span className={styles.statusHint}>N/A</span>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

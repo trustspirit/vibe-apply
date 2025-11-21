@@ -3,7 +3,10 @@
   top: 0;
   left: 0;
   right: 0;
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
   box-shadow: var(--shadow-sm);
   z-index: var(--z-index-sticky);
 }
@@ -80,15 +83,8 @@
   color: var(--color-text);
 }
 
-.role {
-  font-size: var(--font-size-xs);
-  padding: 0.1rem 0.6rem;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
+.roleChip {
   margin-top: 0.1rem;
-  text-transform: capitalize;
-  font-weight: var(--font-weight-medium);
 }
 
 .avatarWrapper {
@@ -100,15 +96,16 @@
   position: absolute;
   top: calc(100% + var(--spacing-xs));
   right: 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   min-width: 200px;
   overflow: hidden;
   z-index: var(--z-index-dropdown);
   animation: fadeIn 0.15s ease-out;
-  backdrop-filter: blur(8px);
 }
 
 @keyframes fadeIn {

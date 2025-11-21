@@ -78,6 +78,9 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
       draft: styles.comboDraft,
       admin: styles.comboAdmin,
       leader: styles.comboLeader,
+      stakePresident: styles.comboStakePresident,
+      bishop: styles.comboBishop,
+      sessionLeader: styles.comboSessionLeader,
       applicant: styles.comboApplicant,
     };
     const toneClass =

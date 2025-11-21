@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useApp } from '@/context/AppContext';
-import { Avatar } from '@/components/ui';
-import { ROUTES } from '@/utils/constants';
+import { Avatar, StatusChip } from '@/components/ui';
+import { ROUTES, USER_ROLES } from '@/utils/constants';
 import { getRoleConfig } from '@/utils/roleConfig';
 import styles from './GlobalNav.module.scss';
 
@@ -101,7 +101,22 @@ const GlobalNav = () => {
         <div className={styles.profile}>
           <div className={styles.profileInfo}>
             <span className={styles.greeting}>Hi, {roleGreeting}</span>
-            <span className={styles.role}>{roleLabel}</span>
+            <StatusChip
+              status={currentUser.role}
+              tone={
+                currentUser.role === USER_ROLES.ADMIN
+                  ? 'admin'
+                  : currentUser.role === USER_ROLES.STAKE_PRESIDENT
+                    ? 'stakePresident'
+                    : currentUser.role === USER_ROLES.BISHOP
+                      ? 'bishop'
+                      : currentUser.role === USER_ROLES.SESSION_LEADER
+                        ? 'sessionLeader'
+                        : 'applicant'
+              }
+              label={roleLabel}
+              className={styles.roleChip}
+            />
           </div>
           <div className={styles.avatarWrapper} ref={avatarRef}>
             <Avatar

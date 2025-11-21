@@ -25,10 +25,12 @@
   --combo-indicator: var(--color-text-muted);
   width: 100%;
   max-width: 350px;
-  border: 1px solid var(--color-border-dark);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 0.45rem 4rem 0.45rem 1.4rem;
-  background-color: var(--color-surface);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--color-text);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-sm);
@@ -39,12 +41,13 @@
   background-position: calc(100% - 1.125rem) 50%;
   background-size: 12px 12px;
   background-repeat: no-repeat;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base), color var(--transition-base);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), color var(--transition-base), background var(--transition-base);
 }
 
 .combo:focus {
   outline: none;
   border-color: var(--color-primary);
+  background-color: var(--glass-bg-hover);
   box-shadow: 0 0 0 2px var(--color-primary-bg-light);
 }
 
@@ -98,10 +101,40 @@
 }
 
 .comboAdmin {
-  background-color: var(--color-primary-bg);
-  border-color: var(--color-primary-border);
-  color: var(--color-primary);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%231d4ed8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-color: rgba(17, 24, 39, 0.15);
+  border-color: rgba(17, 24, 39, 0.4);
+  color: #111827;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23111827' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: calc(100% - 0.875rem) 50%;
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+}
+
+.comboStakePresident {
+  background-color: rgba(22, 163, 74, 0.15);
+  border-color: rgba(22, 163, 74, 0.4);
+  color: #16a34a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%2316a34a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: calc(100% - 0.875rem) 50%;
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+}
+
+.comboBishop {
+  background-color: rgba(234, 88, 12, 0.15);
+  border-color: rgba(234, 88, 12, 0.4);
+  color: #ea580c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23ea580c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: calc(100% - 0.875rem) 50%;
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+}
+
+.comboSessionLeader {
+  background-color: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #a855f7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23a855f7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-position: calc(100% - 0.875rem) 50%;
   background-size: 12px 12px;
   background-repeat: no-repeat;
@@ -118,23 +151,26 @@
 }
 
 .comboApplicant {
-  background-color: var(--color-info-bg);
-  border-color: var(--color-info-border);
-  color: var(--color-info);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%230284c7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-color: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.4);
+  color: #eab308;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23eab308' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-position: calc(100% - 0.875rem) 50%;
   background-size: 12px 12px;
   background-repeat: no-repeat;
 }
 
 .select {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 0.75rem var(--spacing-md);
   padding-right: 3.5rem;
   outline: none;
   font-size: var(--font-size-base);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-position: calc(100% - 1rem) 50%;
   background-size: 12px 12px;
@@ -145,6 +181,7 @@
 
 .select:focus {
   border-color: var(--color-primary);
+  background-color: var(--glass-bg-hover);
   box-shadow: 0 0 0 3px var(--color-primary-bg-light);
 }
 
@@ -178,6 +215,9 @@
   .comboDraft,
   .comboAdmin,
   .comboLeader,
+  .comboStakePresident,
+  .comboBishop,
+  .comboSessionLeader,
   .comboApplicant {
     padding-right: 4.25rem;
     background-position: calc(100% - 1.25rem) 50%;

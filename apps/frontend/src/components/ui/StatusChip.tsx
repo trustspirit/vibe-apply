@@ -29,6 +29,9 @@ type ToneValue =
   | 'reviewed'
   | 'admin'
   | 'leader'
+  | 'stakePresident'
+  | 'bishop'
+  | 'sessionLeader'
   | 'applicant';
 
 const normalizeKey = (value: unknown): StatusKey | undefined =>

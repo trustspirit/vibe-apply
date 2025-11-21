@@ -22,31 +22,39 @@
 }
 
 .input {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 0.75rem var(--spacing-md);
   outline: none;
   font-size: var(--font-size-base);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
 }
 
 .input:focus {
   border-color: var(--color-primary);
+  background-color: var(--glass-bg-hover);
   box-shadow: 0 0 0 3px var(--color-primary-bg-light);
 }
 
 .textarea {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 0.75rem var(--spacing-md);
   outline: none;
   font-size: var(--font-size-base);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
   resize: vertical;
 }
 
 .textarea:focus {
   border-color: var(--color-primary);
+  background-color: var(--glass-bg-hover);
   box-shadow: 0 0 0 3px var(--color-primary-bg-light);
 }
 
