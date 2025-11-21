@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import clsx from 'clsx';
+import styles from './Tabs.module.scss';
 
 interface TabItem {
   id: string;
@@ -28,10 +29,10 @@ const Tabs = ({
   activeId,
   onChange,
   className = '',
-  tabClassName = 'tabs__tab',
-  activeTabClassName = 'tabs__tab--active',
-  labelClassName = 'tabs__label',
-  badgeClassName = 'tabs__badge',
+  tabClassName = styles.tab,
+  activeTabClassName = styles.tabActive,
+  labelClassName = styles.label,
+  badgeClassName = styles.badge,
   getBadge,
   getLabel,
   ariaLabel,
@@ -48,7 +49,7 @@ const Tabs = ({
   };
 
   return (
-    <div className={clsx('tabs', className)} role='tablist' aria-label={ariaLabel}>
+    <div className={clsx(styles.tabs, className)} role='tablist' aria-label={ariaLabel}>
       {items.map((item) => {
         const isActive = item.id === activeId;
         const badgeContent = typeof getBadge === 'function' ? getBadge(item, isActive) : item.badge;
@@ -61,7 +62,7 @@ const Tabs = ({
             role='tab'
             aria-selected={isActive}
             aria-controls={item.controls}
-            className={clsx(tabClassName, isActive && activeTabClassName, item.disabled && 'is-disabled')}
+            className={clsx(tabClassName, isActive && activeTabClassName, item.disabled && styles.tabDisabled)}
             onClick={() => handleClick(item)}
             disabled={item.disabled}
           >

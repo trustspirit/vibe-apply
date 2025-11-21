@@ -1,5 +1,6 @@
 import { HTMLAttributes, ReactNode } from 'react';
 import clsx from 'clsx';
+import styles from './StatusChip.module.scss';
 
 const STATUS_TONES = {
   draft: 'draft',
@@ -20,7 +21,15 @@ const STATUS_LABELS = {
 } as const;
 
 type StatusKey = keyof typeof STATUS_TONES;
-type ToneValue = 'draft' | 'awaiting' | 'approved' | 'rejected' | 'reviewed' | 'admin' | 'leader' | 'applicant';
+type ToneValue =
+  | 'draft'
+  | 'awaiting'
+  | 'approved'
+  | 'rejected'
+  | 'reviewed'
+  | 'admin'
+  | 'leader'
+  | 'applicant';
 
 const normalizeKey = (value: unknown): StatusKey | undefined =>
   typeof value === 'string' ? (value.toLowerCase() as StatusKey) : undefined;
@@ -32,13 +41,25 @@ interface StatusChipProps extends HTMLAttributes<HTMLSpanElement> {
   children?: ReactNode;
 }
 
-const StatusChip = ({ status, tone, label, className = '', children, ...props }: StatusChipProps) => {
+const StatusChip = ({
+  status,
+  tone,
+  label,
+  className = '',
+  children,
+  ...props
+}: StatusChipProps) => {
   const key = normalizeKey(status);
-  const resolvedTone = tone ?? (key ? STATUS_TONES[key] : undefined) ?? 'awaiting';
-  const content = label ?? (key ? STATUS_LABELS[key] : undefined) ?? children ?? status;
+  const resolvedTone =
+    tone ?? (key ? STATUS_TONES[key] : undefined) ?? 'awaiting';
+  const content =
+    label ?? (key ? STATUS_LABELS[key] : undefined) ?? children ?? status;
 
   return (
-    <span className={clsx('status-chip', `status-chip--${resolvedTone}`, className)} {...props}>
+    <span
+      className={clsx(styles.chip, styles[resolvedTone], className)}
+      {...props}
+    >
       {content}
     </span>
   );

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useApp } from '@/context/AppContext';
 import { applicationsApi } from '@/services/api';
-import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StatusChip, TextField } from '@/components/ui';
+import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StakeWardSelector, StatusChip, TextField } from '@/components/ui';
 import { validateEmail, validateAge, validateRequired, validateGender, validatePhone, getStatusDisplay } from '@/utils/validation';
 import styles from './UserApplication.module.scss';
 
@@ -419,23 +419,15 @@ const UserApplication = () => {
                   required
                   error={errors.phone}
                 />
-                <TextField
-                  name='stake'
-                  label='Stake'
-                  value={form.stake}
-                  onChange={handleChange}
-                  required
-                  error={errors.stake}
-                  disabled
-                />
-                <TextField
-                  name='ward'
-                  label='Ward'
-                  value={form.ward}
-                  onChange={handleChange}
-                  required
-                  error={errors.ward}
-                  disabled
+                <StakeWardSelector
+                  stake={form.stake}
+                  ward={form.ward}
+                  onStakeChange={(stake) => setForm((prev) => ({ ...prev, stake }))}
+                  onWardChange={(ward) => setForm((prev) => ({ ...prev, ward }))}
+                  stakeError={errors.stake}
+                  wardError={errors.ward}
+                  stakeDisabled
+                  wardDisabled
                 />
                 <ComboBox
                   name='gender'

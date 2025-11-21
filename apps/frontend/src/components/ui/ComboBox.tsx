@@ -1,5 +1,6 @@
 import { forwardRef, SelectHTMLAttributes, ReactNode } from 'react';
 import clsx from 'clsx';
+import styles from './ComboBox.module.scss';
 
 interface ComboBoxOption {
   value: string;
@@ -8,7 +9,8 @@ interface ComboBoxOption {
   hidden?: boolean;
 }
 
-interface ComboBoxProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className'> {
+interface ComboBoxProps
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className'> {
   id?: string;
   name?: string;
   label?: string;
@@ -45,8 +47,8 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
       helperText,
       wrapperClassName = '',
       selectClassName = '',
-      labelClassName = 'field-label',
-      requiredClassName = 'field-required',
+      labelClassName = '',
+      requiredClassName = '',
       variant = 'combo',
       ariaLabel,
       ...rest
@@ -69,19 +71,38 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
       (typeof controlledValue === 'string' && controlledValue
         ? controlledValue
         : undefined);
-    const toneClass = variant === 'combo' && resolvedTone ? `combo--${resolvedTone}` : '';
-    const baseClass = variant === 'combo' ? 'combo' : '';
+    const toneClassMap: Record<string, string> = {
+      awaiting: styles.comboAwaiting,
+      approved: styles.comboApproved,
+      rejected: styles.comboRejected,
+      draft: styles.comboDraft,
+      admin: styles.comboAdmin,
+      leader: styles.comboLeader,
+      applicant: styles.comboApplicant,
+    };
+    const toneClass =
+      variant === 'combo' && resolvedTone && toneClassMap[resolvedTone]
+        ? toneClassMap[resolvedTone]
+        : '';
+    const baseClass = variant === 'combo' ? styles.combo : styles.select;
 
     return (
       <label
-        className={clsx('form-control', wrapperClassName, error && 'field--error')}
+        className={clsx(
+          styles.formControl,
+          error && styles.formControlError,
+          wrapperClassName
+        )}
         htmlFor={fieldId}
       >
         {label && (
-          <span className={labelClassName}>
+          <span className={clsx(styles.fieldLabel, labelClassName)}>
             {label}
             {showRequiredIndicator ? (
-              <span className={requiredClassName} aria-hidden='true'>
+              <span
+                className={clsx(styles.fieldRequired, requiredClassName)}
+                aria-hidden='true'
+              >
                 *
               </span>
             ) : null}
@@ -93,10 +114,17 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
           name={name}
           ref={ref}
           value={controlledValue}
-          className={clsx(baseClass, toneClass, controlClassName, selectClassName)}
+          className={clsx(
+            baseClass,
+            toneClass,
+            controlClassName,
+            selectClassName
+          )}
           aria-invalid={Boolean(error)}
           aria-label={ariaLabel}
-          aria-describedby={describedBy.length ? describedBy.join(' ') : undefined}
+          aria-describedby={
+            describedBy.length ? describedBy.join(' ') : undefined
+          }
           required={required}
         >
           {options.length
@@ -113,12 +141,12 @@ const ComboBox = forwardRef<HTMLSelectElement, ComboBoxProps>(
             : children}
         </select>
         {helperText && !error ? (
-          <span id={`${fieldId}-helper`} className='form-help'>
+          <span id={`${fieldId}-helper`} className={styles.formHelp}>
             {helperText}
           </span>
         ) : null}
         {error ? (
-          <span id={`${fieldId}-error`} className='form-error'>
+          <span id={`${fieldId}-error`} className={styles.formError}>
             {error}
           </span>
         ) : null}

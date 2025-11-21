@@ -1,5 +1,6 @@
 import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
 import clsx from 'clsx';
+import styles from './TextField.module.scss';
 
 interface BaseTextFieldProps {
   id?: string;
@@ -55,12 +56,12 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
     const Control = multiline ? 'textarea' : 'input';
 
     return (
-      <label className={clsx('form-control', wrapperClassName, error && 'field--error')} htmlFor={fieldId}>
+      <label className={clsx(styles.formControl, error && styles.formControlError, wrapperClassName)} htmlFor={fieldId}>
         {label && (
-          <span className={labelClassName}>
+          <span className={clsx(styles.fieldLabel, labelClassName)}>
             {label}
             {showRequiredIndicator ? (
-              <span className={requiredClassName} aria-hidden='true'>
+              <span className={clsx(styles.fieldRequired, requiredClassName)} aria-hidden='true'>
                 *
               </span>
             ) : null}
@@ -73,18 +74,23 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
           type={multiline ? undefined : type}
           ref={ref as unknown as React.Ref<HTMLInputElement & HTMLTextAreaElement>}
           rows={multiline ? rows : undefined}
-          className={clsx(controlClassName as string, inputClassName, error && 'input--error')}
+          className={clsx(
+            multiline ? styles.textarea : styles.input,
+            error && styles.inputError,
+            controlClassName as string,
+            inputClassName
+          )}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy.length ? describedBy.join(' ') : undefined}
           required={required}
         />
         {helperText && !error ? (
-          <span id={`${fieldId}-helper`} className='form-help'>
+          <span id={`${fieldId}-helper`} className={styles.formHelp}>
             {helperText}
           </span>
         ) : null}
         {error ? (
-          <span id={`${fieldId}-error`} className='form-error'>
+          <span id={`${fieldId}-error`} className={styles.formError}>
             {error}
           </span>
         ) : null}

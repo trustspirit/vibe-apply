@@ -1,3 +1,6 @@
+import clsx from 'clsx';
+import styles from './ReviewItemTags.module.scss';
+
 interface ReviewItemTagsProps {
   type: 'application' | 'recommendation';
   hasRecommendation?: boolean;
@@ -14,24 +17,24 @@ export const ReviewItemTags = ({
   hasApplication = false,
 }: ReviewItemTagsProps) => {
   return (
-    <div className='review__list-tags'>
+    <div className={styles.listTags}>
       {type === 'application' && (
-        <span className='review__list-tag review__list-tag--application'>
+        <span className={clsx(styles.listTag, styles.listTagApplication)}>
           Applied
         </span>
       )}
       {type === 'recommendation' && (
-        <span className='review__list-tag review__list-tag--recommendation'>
+        <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
           Recommended
         </span>
       )}
       {type === 'application' && hasRecommendation && (
-        <span className='review__list-tag review__list-tag--recommendation'>
+        <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
           Recommended
         </span>
       )}
       {type === 'recommendation' && hasApplication && (
-        <span className='review__list-tag review__list-tag--application'>
+        <span className={clsx(styles.listTag, styles.listTagApplication)}>
           Applied
         </span>
       )}

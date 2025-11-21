@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
-import { Button, TextField } from '@/components/ui';
+import { Button, TextField, StakeWardSelector } from '@/components/ui';
 import { authApi } from '@/services/api';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import styles from './AccountSettings.module.scss';
@@ -28,6 +28,18 @@ const AccountSettings = () => {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    setError('');
+    setSuccess('');
+  };
+
+  const handleStakeChange = (stake: string) => {
+    setForm((prev) => ({ ...prev, stake }));
+    setError('');
+    setSuccess('');
+  };
+
+  const handleWardChange = (ward: string) => {
+    setForm((prev) => ({ ...prev, ward }));
     setError('');
     setSuccess('');
   };
@@ -133,22 +145,11 @@ const AccountSettings = () => {
             </p>
             
             <div className={styles.fields}>
-              <TextField
-                label='Stake'
-                name='stake'
-                value={form.stake}
-                onChange={handleChange}
-                required
-                placeholder='Enter your stake'
-              />
-
-              <TextField
-                label='Ward'
-                name='ward'
-                value={form.ward}
-                onChange={handleChange}
-                required
-                placeholder='Enter your ward'
+              <StakeWardSelector
+                stake={form.stake}
+                ward={form.ward}
+                onStakeChange={handleStakeChange}
+                onWardChange={handleWardChange}
               />
             </div>
           </div>

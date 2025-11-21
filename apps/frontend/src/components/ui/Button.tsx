@@ -1,10 +1,11 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
+import styles from './Button.module.scss';
 
 const VARIANT_CLASSNAMES = {
   default: '',
-  primary: 'btn--primary',
-  danger: 'btn--danger',
+  primary: styles.primary,
+  danger: styles.danger,
 } as const;
 
 type ButtonVariant = keyof typeof VARIANT_CLASSNAMES | string;
@@ -17,7 +18,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'default', className = '', type = 'button', ...props }, ref) => {
     const variantClass =
       variant in VARIANT_CLASSNAMES ? VARIANT_CLASSNAMES[variant as keyof typeof VARIANT_CLASSNAMES] : variant;
-    const combinedClassName = clsx('btn', variantClass, className);
+    const combinedClassName = clsx(styles.btn, variantClass, className);
 
     return <button ref={ref} type={type} className={combinedClassName} {...props} />;
   }

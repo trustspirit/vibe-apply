@@ -2,7 +2,7 @@ import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserRole } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
-import { Button, ComboBox } from '@/components/ui';
+import { Button, ComboBox, StakeWardSelector } from '@/components/ui';
 import { getDefaultPathForUser } from '@/utils/navigation';
 import { authApi } from '@/services/api';
 import { USER_ROLES, ROUTES } from '@/utils/constants';
@@ -36,6 +36,14 @@ const CompleteProfile = () => {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleStakeChange = (stake: string) => {
+    setForm((prev) => ({ ...prev, stake }));
+  };
+
+  const handleWardChange = (ward: string) => {
+    setForm((prev) => ({ ...prev, ward }));
   };
 
   const handleRoleChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -75,55 +83,41 @@ const CompleteProfile = () => {
   }
 
   return (
-    <div className='auth auth--centered'>
-      <div className='auth__panel'>
-        <h1 className='auth__title'>Complete Your Profile</h1>
-        <p className='auth__subtitle'>
+    <div className={`${styles.auth} ${styles.authCentered}`}>
+      <div className={styles.panel}>
+        <h1 className={styles.title}>Complete Your Profile</h1>
+        <p className={styles.subtitle}>
           Welcome {currentUser.name}! Please select your role to continue.
         </p>
 
-        <form className='auth__form' onSubmit={handleSubmit}>
-          <label className='auth__label'>
-            Stake
-            <input
-              type='text'
-              name='stake'
-              value={form.stake}
-              onChange={handleChange}
-              className='auth__input'
-              required
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.label}>
+            <StakeWardSelector
+              stake={form.stake}
+              ward={form.ward}
+              onStakeChange={handleStakeChange}
+              onWardChange={handleWardChange}
             />
-          </label>
-          <label className='auth__label'>
-            Ward
-            <input
-              type='text'
-              name='ward'
-              value={form.ward}
-              onChange={handleChange}
-              className='auth__input'
-              required
-            />
-          </label>
+          </div>
 
-          <div className='auth__label'>
+          <div className={styles.label}>
             <span>Account Type</span>
             <ComboBox
               options={roleOptions}
               value={form.role}
               onChange={handleRoleChange}
             />
-            <p className='auth__choice-hint'>
+            <p className={styles.choiceHint}>
               Session Leader, Bishop and Stake President access requires admin approval before activation.
             </p>
           </div>
 
-          {error && <p className='auth__error'>{error}</p>}
+          {error && <p className={styles.error}>{error}</p>}
 
           <Button
             type='submit'
             variant='primary'
-            className='auth__submit'
+            className={styles.submit}
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Completing Profile...' : 'Complete Profile'}

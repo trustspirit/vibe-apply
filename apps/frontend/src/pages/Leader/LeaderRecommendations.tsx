@@ -521,8 +521,8 @@ const LeaderRecommendations = () => {
     const isSelected = selectedId === item.id;
     const isActive = currentFormId === item.id;
     const listItemClassName = clsx(
-      'review__list-item',
-      (isSelected || isActive) && 'review__list-item--active'
+      styles.listItem,
+      (isSelected || isActive) && styles.listItemActive
     );
 
     const dateToShow = item.updatedAt || item.createdAt;
@@ -534,33 +534,33 @@ const LeaderRecommendations = () => {
         onClick={() => handleSelect(item.id)}
         aria-current={isSelected ? 'true' : 'false'}
       >
-        <div className='review__list-top'>
-          <span className='review__list-name'>{item.name}</span>
+        <div className={styles.listTop}>
+          <span className={styles.listName}>{item.name}</span>
           {'isApplication' in item && item.isApplication ? (
             <StatusChip status={'status' in item ? item.status : 'awaiting'} />
           ) : (
             <StatusChip status={'status' in item ? item.status : 'draft'} />
           )}
         </div>
-        <div className='review__list-bottom'>
-          <span className='review__list-meta'>{item.stake}</span>
-          <span className='review__list-meta'>{item.ward}</span>
-          <span className='review__list-meta review__list-date'>
+        <div className={styles.listBottom}>
+          <span className={styles.listMeta}>{item.stake}</span>
+          <span className={styles.listMeta}>{item.ward}</span>
+          <span className={clsx(styles.listMeta, styles.listDate)}>
             {new Date(dateToShow).toLocaleDateString()}
           </span>
-          <div className='review__list-tags'>
+          <div className={styles.listTags}>
             {!('isApplication' in item && item.isApplication) && (
-              <span className='review__list-tag review__list-tag--recommendation'>
+              <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
                 Recommended
               </span>
             )}
             {'isApplication' in item && item.isApplication && (
-              <span className='review__list-tag review__list-tag--application'>
+              <span className={clsx(styles.listTag, styles.listTagApplication)}>
                 Applied
               </span>
             )}
             {!('isApplication' in item && item.isApplication) && 'hasApplication' in item && item.hasApplication && (
-              <span className='review__list-tag review__list-tag--application'>
+              <span className={clsx(styles.listTag, styles.listTagApplication)}>
                 Applied
               </span>
             )}
@@ -714,20 +714,20 @@ const LeaderRecommendations = () => {
     if (selectedItem) {
       if ('isApplication' in selectedItem && selectedItem.isApplication) {
         return (
-          <div className='review__details-card'>
-            <header className='review__details-header'>
-              <div className='review__details-info'>
-                <div className='review__details-heading'>
+          <div className={styles.detailsCard}>
+            <header className={styles.detailsHeader}>
+              <div className={styles.detailsInfo}>
+                <div className={styles.detailsHeading}>
                   <h2>{selectedItem.name}</h2>
                 </div>
-                <p className='review__details-meta'>
+                <p className={styles.detailsMeta}>
                   Application submitted{' '}
                   {new Date(selectedItem.createdAt).toLocaleString()}
                 </p>
               </div>
               <StatusChip status={'status' in selectedItem ? selectedItem.status : 'awaiting'} />
             </header>
-            <dl className='review__grid'>
+            <dl className={styles.detailsGrid}>
               <div>
                 <dt>Email</dt>
                 <dd>{selectedItem.email}</dd>
@@ -773,27 +773,27 @@ const LeaderRecommendations = () => {
       const canModify = 'canEdit' in selectedItem && selectedItem.canEdit && 'canDelete' in selectedItem && selectedItem.canDelete;
 
       return (
-        <div className='review__details-card'>
-          <header className='review__details-header'>
-            <div className='review__details-info'>
-              <div className='review__details-heading'>
+        <div className={styles.detailsCard}>
+          <header className={styles.detailsHeader}>
+            <div className={styles.detailsInfo}>
+              <div className={styles.detailsHeading}>
                 <h2>{selectedItem.name}</h2>
-                <div className='review__details-tags'>
-                  <span className='review__details-tag review__details-tag--recommendation'>
+                <div className={styles.detailsTags}>
+                  <span className={clsx(styles.detailsTag, styles.detailsTagRecommendation)}>
                     Recommended
                   </span>
                   {'hasApplication' in selectedItem && selectedItem.hasApplication && (
-                    <span className='review__details-tag review__details-tag--application'>
+                    <span className={clsx(styles.detailsTag, styles.detailsTagApplication)}>
                       Applied
                     </span>
                   )}
                 </div>
               </div>
-              <p className='review__details-meta'>{updatedLabel}</p>
+              <p className={styles.detailsMeta}>{updatedLabel}</p>
             </div>
             {'status' in selectedItem && selectedItem.status && <StatusChip status={selectedItem.status} />}
           </header>
-          <dl className='review__grid'>
+          <dl className={styles.detailsGrid}>
             <div>
               <dt>Email</dt>
               <dd>{selectedItem.email}</dd>
@@ -819,7 +819,7 @@ const LeaderRecommendations = () => {
               <dd>{selectedItem.gender ?? 'N/A'}</dd>
             </div>
           </dl>
-          <div className='review__notes'>
+          <div className={styles.detailsNotes}>
             <h3>Additional Information</h3>
             <p>
               {selectedItem.moreInfo || 'No additional information provided.'}
@@ -875,7 +875,7 @@ const LeaderRecommendations = () => {
     }
 
     return (
-      <div className='review__placeholder'>
+      <div className={styles.placeholder}>
         Select a recommendation to review its details.
       </div>
     );
@@ -888,16 +888,16 @@ const LeaderRecommendations = () => {
           key={item.id}
           className={`${styles.reviewCard} ${styles.mobileCard}`}
         >
-          <div className='review-card__header'>
+          <div className={styles.reviewCardHeader}>
             <div>
               <h2>{item.name}</h2>
-              <p className='review-card__meta'>
+              <p className={styles.reviewCardMeta}>
                 Submitted {new Date(item.createdAt).toLocaleString()}
               </p>
             </div>
             <StatusChip status={'status' in item ? item.status : 'awaiting'} />
           </div>
-          <dl className='review-card__grid'>
+          <dl className={styles.reviewCardGrid}>
             <div>
               <dt>Email</dt>
               <dd>{item.email}</dd>
@@ -945,31 +945,31 @@ const LeaderRecommendations = () => {
       <article
         key={item.id}
         className={clsx(
-          'review-card',
-          'leader-recommendations__mobile-card',
-          isEditingThis && 'leader-recommendations__mobile-card--editing'
+          styles.reviewCard,
+          styles.mobileCard,
+          isEditingThis && styles.mobileCardEditing
         )}
       >
-        <div className='review-card__header'>
+        <div className={styles.reviewCardHeader}>
           <div>
             <h2>{item.name}</h2>
-            <p className='review-card__meta'>
+            <p className={styles.reviewCardMeta}>
               Updated {new Date(item.updatedAt).toLocaleString()}
             </p>
           </div>
           {'status' in item && <StatusChip status={item.status} />}
         </div>
-        <div className='review-card__tags'>
-          <span className='review-card__tag review-card__tag--recommendation'>
+        <div className={styles.reviewCardTags}>
+          <span className={clsx(styles.reviewCardTag, styles.reviewCardTagRecommendation)}>
             Recommended
           </span>
           {'hasApplication' in item && item.hasApplication && (
-            <span className='review-card__tag review-card__tag--application'>
+            <span className={clsx(styles.reviewCardTag, styles.reviewCardTagApplication)}>
               Applied
             </span>
           )}
         </div>
-        <dl className='review-card__grid'>
+        <dl className={styles.reviewCardGrid}>
           <div>
             <dt>Email</dt>
             <dd>{item.email}</dd>
@@ -995,7 +995,7 @@ const LeaderRecommendations = () => {
             <dd>{item.gender ?? 'N/A'}</dd>
           </div>
         </dl>
-        <div className='review-card__notes'>
+        <div className={styles.reviewCardNotes}>
           <h3>Additional Information</h3>
           <p>{item.moreInfo || 'No additional information provided.'}</p>
         </div>
@@ -1055,10 +1055,10 @@ const LeaderRecommendations = () => {
 
   return (
     <section className={`${styles.review} ${styles.leaderRecommendations}`}>
-      <div className='review__header'>
-        <div className='review__header-copy'>
-          <h1 className='review__title'>Recommendations</h1>
-          <p className='review__subtitle'>
+      <div className={styles.header}>
+        <div className={styles.headerCopy}>
+          <h1 className={styles.title}>Recommendations</h1>
+          <p className={styles.subtitle}>
             Manage drafts and submitted recommendations. Update details and
             resubmit when ready.
           </p>
@@ -1074,11 +1074,11 @@ const LeaderRecommendations = () => {
         items={TAB_DEFS}
         activeId={activeTab}
         onChange={(_, tab) => handleTabChange(tab.id)}
-        className='review__tabs'
-        tabClassName='review__tab'
-        activeTabClassName='review__tab--active'
-        labelClassName='review__tab-label'
-        badgeClassName='review__tab-pill'
+        className={styles.tabs}
+        tabClassName={styles.tab}
+        activeTabClassName={styles.tabActive}
+        labelClassName={styles.tabLabel}
+        badgeClassName={styles.tabPill}
         ariaLabel='Recommendation status filters'
         getBadge={(tab) =>
           combinedItems.filter((item) => {
@@ -1094,8 +1094,8 @@ const LeaderRecommendations = () => {
         }
       />
 
-      <div className='review__body'>
-        <aside className='review__list'>
+      <div className={styles.body}>
+        <aside className={styles.list}>
           {listRecommendations.length ? (
             <ul>
               {listRecommendations.map((recommendation) => (
@@ -1105,21 +1105,21 @@ const LeaderRecommendations = () => {
               ))}
             </ul>
           ) : (
-            <p className='review__empty'>
+            <p className={styles.empty}>
               No recommendations in this view yet.
             </p>
           )}
         </aside>
 
         <div
-          className={`${styles.details} ${styles.details}`}
+          className={styles.details}
           aria-live='polite'
         >
           {renderDesktopDetails()}
         </div>
       </div>
 
-      <div className='review__mobile' aria-live='polite'>
+      <div className={styles.mobile} aria-live='polite'>
         {isEditing && (
           <article className={`${styles.reviewCard} ${styles.mobileForm}`}>
             {renderForm('mobile')}
@@ -1128,7 +1128,7 @@ const LeaderRecommendations = () => {
         {filteredRecommendations.length ? (
           filteredRecommendations.map((item) => renderMobileCard(item))
         ) : (
-          <p className='review__empty'>No recommendations in this view yet.</p>
+          <p className={styles.empty}>No recommendations in this view yet.</p>
         )}
       </div>
     </section>

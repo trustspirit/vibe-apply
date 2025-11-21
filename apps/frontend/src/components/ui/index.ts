@@ -5,6 +5,7 @@ export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card.tsx
 export { default as ComboBox } from './ComboBox.tsx';
 export { default as GoogleButton } from './GoogleButton.tsx';
 export { default as MenuButton } from './MenuButton.tsx';
+export { default as StakeWardSelector } from './StakeWardSelector.tsx';
 export { default as StatusChip } from './StatusChip.tsx';
 export { default as SummaryCard } from './SummaryCard.tsx';
 export { default as Tabs } from './Tabs.tsx';

@@ -5,13 +5,13 @@
   right: 0;
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-  z-index: 10;
+  z-index: var(--z-index-sticky);
 }
 
 .container {
   width: min(1200px, 100%);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 var(--spacing-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,7 +24,7 @@
 
 .links {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-md);
   flex: 1;
   justify-content: center;
   align-items: center;
@@ -39,25 +39,25 @@
 
 .link {
   position: relative;
-  padding: 0.75rem 1rem;
-  color: var(--color-muted);
-  font-weight: 500;
-  font-size: 0.9rem;
+  padding: 0.6rem var(--spacing-md);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base);
   white-space: nowrap;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
 }
 
 .link:hover {
   color: var(--color-primary);
-  background: rgba(29, 78, 216, 0.05);
+  background: var(--color-primary-bg-light);
 }
 
 .linkActive {
   color: var(--color-primary);
-  background: rgba(29, 78, 216, 0.1);
-  font-weight: 600;
+  background: var(--color-primary-bg);
+  font-weight: var(--font-weight-semibold);
 }
 
 .profile {
@@ -71,24 +71,24 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  font-size: 0.85rem;
-  line-height: 1.3;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
 }
 
 .greeting {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
 }
 
 .role {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   padding: 0.1rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(29, 78, 216, 0.08);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-bg);
   color: var(--color-primary);
   margin-top: 0.1rem;
   text-transform: capitalize;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .avatarWrapper {
@@ -98,42 +98,63 @@
 
 .menu {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + var(--spacing-xs));
   right: 0;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-md);
-  min-width: 180px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
   overflow: hidden;
-  z-index: 20;
+  z-index: var(--z-index-dropdown);
+  animation: fadeIn 0.15s ease-out;
+  backdrop-filter: blur(8px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .menuItem {
   display: block;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   text-align: left;
   background: none;
   border: none;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text);
   cursor: pointer;
-  transition: background 0.2s ease;
-  font-weight: 500;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  font-weight: var(--font-weight-medium);
+  margin: var(--spacing-xs);
+  border-radius: var(--radius-sm);
 }
 
 .menuItem:hover {
-  background: rgba(29, 78, 216, 0.05);
+  background: var(--color-primary-bg-light);
+  color: var(--color-primary);
+}
+
+.menuItem:active {
+  background: var(--color-primary-bg);
+  transform: scale(0.98);
 }
 
 .menuItem:not(:last-child) {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: none;
 }
 
 @media (max-width: 1024px) {
   .container {
-    padding: 0 1.5rem;
+    padding: 0 var(--spacing-lg);
   }
   
   .links {
@@ -142,7 +163,7 @@
   
   .link {
     padding: 0.6rem 0.8rem;
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
   }
 }
 
@@ -150,15 +171,15 @@
   .container {
     flex-direction: column;
     align-items: stretch;
-    padding: 1rem;
-    gap: 1rem;
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
     min-height: auto;
   }
 
   .links {
     order: 2;
     justify-content: flex-start;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
     padding: 0.75rem 0 0;
     border-top: 1px solid var(--color-border);
     overflow-x: auto;
@@ -167,7 +188,7 @@
 
   .link {
     padding: 0.6rem 0.8rem;
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     flex-shrink: 0;
   }
 
@@ -194,13 +215,13 @@
   }
 
   .links {
-    gap: 0.25rem;
-    padding-top: 0.5rem;
+    gap: var(--spacing-xs);
+    padding-top: var(--spacing-sm);
   }
 
   .link {
-    padding: 0.5rem 0.7rem;
-    font-size: 0.8rem;
+    padding: var(--spacing-sm) 0.7rem;
+    font-size: var(--font-size-xs);
   }
 
   .profile {

@@ -7,21 +7,21 @@
 .content {
   flex: 1;
   width: min(1200px, 100%);
-  margin: 0 auto 2.5rem;
-  padding: 0 1.5rem;
-  padding-top: calc(var(--gnb-height, 4rem) + 2rem);
+  margin: 0 auto var(--spacing-2xl);
+  padding: 0 var(--spacing-lg);
+  padding-top: calc(var(--gnb-height, 4rem) + var(--spacing-xl));
 }
 
 @media (max-width: 768px) {
   .content {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: calc(var(--gnb-height, 8rem) + 1.5rem);
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+    padding-top: calc(var(--gnb-height, 8rem) + var(--spacing-lg));
   }
 }
 
 @media (max-width: 480px) {
   .content {
-    padding-top: calc(var(--gnb-height, 10rem) + 1rem);
+    padding-top: calc(var(--gnb-height, 10rem) + var(--spacing-md));
   }
 }
