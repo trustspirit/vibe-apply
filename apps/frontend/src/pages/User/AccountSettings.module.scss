@@ -78,8 +78,34 @@
   grid-column: 1 / -1;
 }
 
+.roleField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.roleFieldLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.roleFieldContent {
+  display: flex;
+  align-items: center;
+}
+
+.roleFieldHelp {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
 .roleDisplay {
-  padding: 1rem;
+  padding: 0.625rem;
   background: rgba(29, 78, 216, 0.02);
   border-radius: 0.5rem;
   border: 1px solid rgba(29, 78, 216, 0.08);
@@ -89,7 +115,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.5rem 0.625rem;
   background: var(--glass-bg);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -98,29 +124,29 @@
 }
 
 .roleLabel {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-muted);
   font-weight: 500;
 }
 
 .roleValue {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   color: var(--color-text);
   font-weight: 600;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.5rem;
   background: rgba(29, 78, 216, 0.08);
   border-radius: 0.25rem;
   color: var(--color-primary);
 }
 
 .roleNote {
-  margin: 0.75rem 0 0 0;
-  padding: 0.75rem;
+  margin: 0.5rem 0 0 0;
+  padding: 0.5rem 0.625rem;
   background: rgba(245, 158, 11, 0.08);
   color: rgb(180, 83, 9);
   border-radius: 0.375rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.8rem;
+  line-height: 1.4;
   border-left: 3px solid rgb(245, 158, 11);
 }
 

@@ -129,12 +129,12 @@ const AccountSettings = () => {
 
   const handleDeleteSelected = async () => {
     if (selectedUsers.size === 0) return;
-    
+
     const userNames = filteredUsers
       .filter((u) => selectedUsers.has(u.id))
       .map((u) => u.name)
       .join(', ');
-    
+
     if (
       !window.confirm(
         `Are you sure you want to delete ${selectedUsers.size} user(s): ${userNames}? This action cannot be undone.`
@@ -160,13 +160,14 @@ const AccountSettings = () => {
       await authApi.approveStakeWardChange({ requestId, approved });
       await loadChangeRequests();
       setSuccess(
-        approved ? t('accountSettings.approvals.approved') : t('accountSettings.approvals.rejected')
+        approved
+          ? t('accountSettings.approvals.approved')
+          : t('accountSettings.approvals.rejected')
       );
     } catch (err) {
       setError((err as Error).message);
     }
   };
-
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -270,8 +271,12 @@ const AccountSettings = () => {
 
   const tabs = [
     { id: 'settings', label: t('accountSettings.tabs.settings') },
-    ...(canApprove ? [{ id: 'approvals', label: t('accountSettings.tabs.approvals') }] : []),
-    ...(isAdmin ? [{ id: 'delete', label: t('accountSettings.tabs.deleteUsers') }] : []),
+    ...(canApprove
+      ? [{ id: 'approvals', label: t('accountSettings.tabs.approvals') }]
+      : []),
+    ...(isAdmin
+      ? [{ id: 'delete', label: t('accountSettings.tabs.deleteUsers') }]
+      : []),
   ];
 
   return (
@@ -279,9 +284,7 @@ const AccountSettings = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>{t('accountSettings.title')}</h1>
-          <p className={styles.subtitle}>
-            {t('accountSettings.subtitle')}
-          </p>
+          <p className={styles.subtitle}>{t('accountSettings.subtitle')}</p>
         </div>
 
         {tabs.length > 1 && (
@@ -296,7 +299,9 @@ const AccountSettings = () => {
         {activeTab === 'settings' && (
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>{t('accountSettings.sections.personalInformation.title')}</h2>
+              <h2 className={styles.sectionTitle}>
+                {t('accountSettings.sections.personalInformation.title')}
+              </h2>
               <p className={styles.sectionDescription}>
                 {t('accountSettings.sections.personalInformation.description')}
               </p>
@@ -307,7 +312,9 @@ const AccountSettings = () => {
                   name='name'
                   value={currentUser.name}
                   disabled
-                  helperText={t('accountSettings.sections.personalInformation.contactAdminToUpdate')}
+                  helperText={t(
+                    'accountSettings.sections.personalInformation.contactAdminToUpdate'
+                  )}
                 />
 
                 <TextField
@@ -316,7 +323,9 @@ const AccountSettings = () => {
                   type='email'
                   value={currentUser.email}
                   disabled
-                  helperText={t('accountSettings.sections.personalInformation.contactAdminToUpdate')}
+                  helperText={t(
+                    'accountSettings.sections.personalInformation.contactAdminToUpdate'
+                  )}
                 />
 
                 <TextField
@@ -327,23 +336,66 @@ const AccountSettings = () => {
                   onChange={handleChange}
                   placeholder={t('common.phoneNumber')}
                 />
+
+                <div className={styles.roleField}>
+                  <label className={styles.roleFieldLabel}>
+                    {t('common.role')}
+                  </label>
+                  <div className={styles.roleFieldContent}>
+                    <StatusChip
+                      status={currentUser.role}
+                      tone={
+                        currentUser.role === USER_ROLES.ADMIN
+                          ? 'admin'
+                          : currentUser.role === USER_ROLES.STAKE_PRESIDENT
+                            ? 'stakePresident'
+                            : currentUser.role === USER_ROLES.BISHOP
+                              ? 'bishop'
+                              : currentUser.role === USER_ROLES.SESSION_LEADER
+                                ? 'sessionLeader'
+                                : 'applicant'
+                      }
+                      label={getRoleLabel()}
+                    />
+                  </div>
+                  {(currentUser.role === (USER_ROLES.BISHOP as UserRole) ||
+                    currentUser.role ===
+                      (USER_ROLES.STAKE_PRESIDENT as UserRole)) &&
+                    currentUser.leaderStatus ===
+                      (LEADER_STATUS.PENDING as LeaderStatus) && (
+                      <span className={styles.roleFieldHelp}>
+                        {t(
+                          'accountSettings.sections.accountRole.pendingApproval'
+                        )}
+                      </span>
+                    )}
+                </div>
               </div>
             </div>
 
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>{t('accountSettings.sections.churchInformation.title')}</h2>
+              <h2 className={styles.sectionTitle}>
+                {t('accountSettings.sections.churchInformation.title')}
+              </h2>
               <p className={styles.sectionDescription}>
                 {canChangeStakeWardDirectly
-                  ? t('accountSettings.sections.churchInformation.description.immediate')
-                  : t('accountSettings.sections.churchInformation.description.requiresApproval')}
+                  ? t(
+                      'accountSettings.sections.churchInformation.description.immediate'
+                    )
+                  : t(
+                      'accountSettings.sections.churchInformation.description.requiresApproval'
+                    )}
               </p>
 
               {(pendingStake || pendingWard) && (
                 <Alert variant='info' className={styles.pendingAlert}>
-                  {t('accountSettings.sections.churchInformation.pendingAlert', {
-                    stake: pendingStake,
-                    ward: pendingWard,
-                  })}
+                  {t(
+                    'accountSettings.sections.churchInformation.pendingAlert',
+                    {
+                      stake: pendingStake,
+                      ward: pendingWard,
+                    }
+                  )}
                 </Alert>
               )}
 
@@ -354,29 +406,6 @@ const AccountSettings = () => {
                   onStakeChange={handleStakeChange}
                   onWardChange={handleWardChange}
                 />
-              </div>
-            </div>
-
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>{t('accountSettings.sections.accountRole.title')}</h2>
-              <p className={styles.sectionDescription}>
-                {t('accountSettings.sections.accountRole.description')}
-              </p>
-
-              <div className={styles.roleDisplay}>
-                <div className={styles.roleItem}>
-                  <span className={styles.roleLabel}>{t('accountSettings.sections.accountRole.currentRole')}</span>
-                  <span className={styles.roleValue}>{getRoleLabel()}</span>
-                </div>
-                {(currentUser.role === (USER_ROLES.BISHOP as UserRole) ||
-                  currentUser.role ===
-                    (USER_ROLES.STAKE_PRESIDENT as UserRole)) &&
-                  currentUser.leaderStatus ===
-                    (LEADER_STATUS.PENDING as LeaderStatus) && (
-                    <p className={styles.roleNote}>
-                      {t('accountSettings.sections.accountRole.pendingApproval')}
-                    </p>
-                  )}
               </div>
             </div>
 
@@ -393,7 +422,9 @@ const AccountSettings = () => {
 
             <div className={styles.actions}>
               <Button type='submit' variant='primary' disabled={isSubmitting}>
-                {isSubmitting ? t('accountSettings.messages.saving') : t('accountSettings.messages.saveChanges')}
+                {isSubmitting
+                  ? t('accountSettings.messages.saving')
+                  : t('accountSettings.messages.saveChanges')}
               </Button>
             </div>
           </form>
@@ -410,9 +441,13 @@ const AccountSettings = () => {
               </p>
 
               {loadingRequests ? (
-                <p className={styles.loading}>{t('accountSettings.approvals.loading')}</p>
+                <p className={styles.loading}>
+                  {t('accountSettings.approvals.loading')}
+                </p>
               ) : changeRequests.length === 0 ? (
-                <p className={styles.empty}>{t('accountSettings.approvals.empty')}</p>
+                <p className={styles.empty}>
+                  {t('accountSettings.approvals.empty')}
+                </p>
               ) : (
                 <div className={styles.requestList}>
                   {changeRequests.map((request) => (
@@ -446,14 +481,18 @@ const AccountSettings = () => {
                       </div>
                       <div className={styles.requestChange}>
                         <div className={styles.changeFrom}>
-                          <span className={styles.changeLabel}>{t('common.from')}:</span>
+                          <span className={styles.changeLabel}>
+                            {t('common.from')}:
+                          </span>
                           <span>
                             {request.currentStake} / {request.currentWard}
                           </span>
                         </div>
                         <div className={styles.changeArrow}>→</div>
                         <div className={styles.changeTo}>
-                          <span className={styles.changeLabel}>{t('common.to')}:</span>
+                          <span className={styles.changeLabel}>
+                            {t('common.to')}:
+                          </span>
                           <span>
                             {request.requestedStake} / {request.requestedWard}
                           </span>
@@ -484,7 +523,9 @@ const AccountSettings = () => {
         {activeTab === 'delete' && isAdmin && (
           <div className={styles.form}>
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>{t('accountSettings.deleteUsers.title')}</h2>
+              <h2 className={styles.sectionTitle}>
+                {t('accountSettings.deleteUsers.title')}
+              </h2>
               <p className={styles.sectionDescription}>
                 {t('accountSettings.deleteUsers.description')}
               </p>
@@ -495,19 +536,26 @@ const AccountSettings = () => {
                   name='search'
                   type='text'
                   value={searchQuery}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                  placeholder={t('accountSettings.deleteUsers.searchPlaceholder')}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setSearchQuery(e.target.value)
+                  }
+                  placeholder={t(
+                    'accountSettings.deleteUsers.searchPlaceholder'
+                  )}
                   className={styles.searchInput}
                 />
                 {selectedUsers.size > 0 && (
                   <div className={styles.bulkActions}>
                     <span className={styles.selectedCount}>
-                      {selectedUsers.size} {t('accountSettings.deleteUsers.selected')}
+                      {selectedUsers.size}{' '}
+                      {t('accountSettings.deleteUsers.selected')}
                     </span>
                     <Button
                       variant='danger'
                       onClick={handleDeleteSelected}
-                      aria-label={t('accountSettings.deleteUsers.deleteSelected')}
+                      aria-label={t(
+                        'accountSettings.deleteUsers.deleteSelected'
+                      )}
                     >
                       <svg
                         width='16'
@@ -545,10 +593,14 @@ const AccountSettings = () => {
               </div>
 
               {loadingUsers ? (
-                <p className={styles.loading}>{t('accountSettings.deleteUsers.loading')}</p>
+                <p className={styles.loading}>
+                  {t('accountSettings.deleteUsers.loading')}
+                </p>
               ) : filteredUsers.length === 0 ? (
                 <p className={styles.empty}>
-                  {searchQuery ? t('accountSettings.deleteUsers.noResults') : t('accountSettings.deleteUsers.empty')}
+                  {searchQuery
+                    ? t('accountSettings.deleteUsers.noResults')
+                    : t('accountSettings.deleteUsers.empty')}
                 </p>
               ) : (
                 <>
@@ -559,7 +611,10 @@ const AccountSettings = () => {
                           <th>
                             <input
                               type='checkbox'
-                              checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                              checked={
+                                selectedUsers.size === filteredUsers.length &&
+                                filteredUsers.length > 0
+                              }
                               onChange={handleSelectAll}
                               className={styles.checkbox}
                             />
@@ -585,8 +640,12 @@ const AccountSettings = () => {
                             </td>
                             <td>{user.name}</td>
                             <td>{user.email}</td>
-                            <td className={styles.stakeWardCell}>{user.stake || '-'}</td>
-                            <td className={styles.stakeWardCell}>{user.ward || '-'}</td>
+                            <td className={styles.stakeWardCell}>
+                              {user.stake || '-'}
+                            </td>
+                            <td className={styles.stakeWardCell}>
+                              {user.ward || '-'}
+                            </td>
                             <td>
                               <StatusChip
                                 status={user.role || ''}
@@ -597,7 +656,8 @@ const AccountSettings = () => {
                                       ? 'stakePresident'
                                       : user.role === USER_ROLES.BISHOP
                                         ? 'bishop'
-                                        : user.role === USER_ROLES.SESSION_LEADER
+                                        : user.role ===
+                                            USER_ROLES.SESSION_LEADER
                                           ? 'sessionLeader'
                                           : 'applicant'
                                 }
@@ -610,7 +670,10 @@ const AccountSettings = () => {
                                 onClick={async () => {
                                   if (
                                     window.confirm(
-                                      t('accountSettings.deleteUsers.confirmDeleteSingle', { userName: user.name })
+                                      t(
+                                        'accountSettings.deleteUsers.confirmDeleteSingle',
+                                        { userName: user.name }
+                                      )
                                     )
                                   ) {
                                     try {
@@ -621,7 +684,12 @@ const AccountSettings = () => {
                                         next.delete(user.id);
                                         return next;
                                       });
-                                      setSuccess(t('accountSettings.deleteUsers.deletedSingle', { userName: user.name }));
+                                      setSuccess(
+                                        t(
+                                          'accountSettings.deleteUsers.deletedSingle',
+                                          { userName: user.name }
+                                        )
+                                      );
                                     } catch (err) {
                                       setError((err as Error).message);
                                     }
@@ -676,7 +744,8 @@ const AccountSettings = () => {
                                       ? 'stakePresident'
                                       : user.role === USER_ROLES.BISHOP
                                         ? 'bishop'
-                                        : user.role === USER_ROLES.SESSION_LEADER
+                                        : user.role ===
+                                            USER_ROLES.SESSION_LEADER
                                           ? 'sessionLeader'
                                           : 'applicant'
                                 }
@@ -688,12 +757,20 @@ const AccountSettings = () => {
                           </div>
                         </div>
                         <div className={styles.cardSection}>
-                          <label className={styles.cardLabel}>{t('common.stake')}</label>
-                          <div className={styles.cardValue}>{user.stake || '-'}</div>
+                          <label className={styles.cardLabel}>
+                            {t('common.stake')}
+                          </label>
+                          <div className={styles.cardValue}>
+                            {user.stake || '-'}
+                          </div>
                         </div>
                         <div className={styles.cardSection}>
-                          <label className={styles.cardLabel}>{t('common.ward')}</label>
-                          <div className={styles.cardValue}>{user.ward || '-'}</div>
+                          <label className={styles.cardLabel}>
+                            {t('common.ward')}
+                          </label>
+                          <div className={styles.cardValue}>
+                            {user.ward || '-'}
+                          </div>
                         </div>
                         <div className={styles.cardActions}>
                           <Button
@@ -701,7 +778,10 @@ const AccountSettings = () => {
                             onClick={async () => {
                               if (
                                 window.confirm(
-                                  t('accountSettings.deleteUsers.confirmDeleteSingle', { userName: user.name })
+                                  t(
+                                    'accountSettings.deleteUsers.confirmDeleteSingle',
+                                    { userName: user.name }
+                                  )
                                 )
                               ) {
                                 try {
@@ -712,7 +792,12 @@ const AccountSettings = () => {
                                     next.delete(user.id);
                                     return next;
                                   });
-                                  setSuccess(t('accountSettings.deleteUsers.deletedSingle', { userName: user.name }));
+                                  setSuccess(
+                                    t(
+                                      'accountSettings.deleteUsers.deletedSingle',
+                                      { userName: user.name }
+                                    )
+                                  );
                                 } catch (err) {
                                   setError((err as Error).message);
                                 }

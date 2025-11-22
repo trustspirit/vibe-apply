@@ -81,7 +81,7 @@
         "title": "Church Information",
         "description": {
           "immediate": "Your current stake and ward assignment. Changes will be reflected immediately.",
-          "requiresApproval": "Your current stake and ward assignment. Changes require approval from your stake president or bishop."
+          "requiresApproval": "Your current stake and ward assignment. Changes require approval from the stake president or bishop of the stake/ward you want to change to."
         },
         "pendingAlert": "You have a pending stake/ward change request: {{stake}} / {{ward}}. Your current assignment will remain until approved."
       },

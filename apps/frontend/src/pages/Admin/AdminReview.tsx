@@ -410,11 +410,6 @@ const AdminReview = () => {
                       )}
                     </div>
                   </div>
-                  {selectedItem.type === 'recommendation' && (
-                    <p className={styles.detailsOrigin}>
-                      Leader Recommendation
-                    </p>
-                  )}
                   <p className={styles.detailsMeta}>
                     Submitted{' '}
                     {new Date(selectedItem.createdAt).toLocaleString()}
@@ -527,11 +522,6 @@ const AdminReview = () => {
                 {item.type === 'recommendation' && item.hasApplication && (
                   <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
                     Applied
-                  </span>
-                )}
-                {item.type === 'recommendation' && (
-                  <span className={styles.reviewCardSource}>
-                    Leader Recommendation
                   </span>
                 )}
               </div>
