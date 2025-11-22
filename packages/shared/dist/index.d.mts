@@ -36,6 +36,8 @@ interface User {
     stake: string;
     phone?: string;
     picture?: string;
+    pendingWard?: string;
+    pendingStake?: string;
     createdAt: string;
 }
 interface ApplicationMemo {
@@ -149,6 +151,30 @@ interface UpdateUserProfileDto {
     stake?: string;
     phone?: string;
 }
+interface StakeWardChangeRequest {
+    id: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    userRole: UserRole;
+    currentStake: string;
+    currentWard: string;
+    requestedStake: string;
+    requestedWard: string;
+    status: 'pending' | 'approved' | 'rejected';
+    requestedAt: string;
+    approvedAt?: string;
+    approvedBy?: string;
+    approvedByName?: string;
+}
+interface CreateStakeWardChangeRequestDto {
+    stake: string;
+    ward: string;
+}
+interface ApproveStakeWardChangeDto {
+    requestId: string;
+    approved: boolean;
+}
 interface CreateMemoDto {
     content: string;
 }
@@ -240,4 +266,4 @@ declare function normalizeEmail(email: string | null | undefined): string;
  */
 declare function normalizeWardStakeName(name: string | null | undefined): string;
 
-export { type Application, type ApplicationMemo, ApplicationStatus, type CompleteProfileDto, type CreateApplicationDto, type CreateMemoDto, type CreateRecommendationDto, type CreateUserDto, type ExchangeCodeDto, Gender, type GoogleOAuthDto, type JwtPayload, LEADER_ROLES, type LeaderRecommendation, LeaderStatus, RecommendationStatus, type RefreshTokenDto, type SignInDto, type TokenResponse, type UpdateApplicationDto, type UpdateLeaderStatusDto, type UpdateMemoDto, type UpdateRecommendationDto, type UpdateUserProfileDto, type UpdateUserRoleDto, type User, UserRole, canReviewApplications, isAdmin, isApprovedLeader, isLeaderRole, normalizeEmail, normalizeString, normalizeUserRole, normalizeWardStakeName };
+export { type Application, type ApplicationMemo, ApplicationStatus, type ApproveStakeWardChangeDto, type CompleteProfileDto, type CreateApplicationDto, type CreateMemoDto, type CreateRecommendationDto, type CreateStakeWardChangeRequestDto, type CreateUserDto, type ExchangeCodeDto, Gender, type GoogleOAuthDto, type JwtPayload, LEADER_ROLES, type LeaderRecommendation, LeaderStatus, RecommendationStatus, type RefreshTokenDto, type SignInDto, type StakeWardChangeRequest, type TokenResponse, type UpdateApplicationDto, type UpdateLeaderStatusDto, type UpdateMemoDto, type UpdateRecommendationDto, type UpdateUserProfileDto, type UpdateUserRoleDto, type User, UserRole, canReviewApplications, isAdmin, isApprovedLeader, isLeaderRole, normalizeEmail, normalizeString, normalizeUserRole, normalizeWardStakeName };

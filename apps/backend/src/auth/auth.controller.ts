@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -30,6 +31,9 @@ import type {
   GoogleOAuthDto,
   JwtPayload,
   ExchangeCodeDto,
+  StakeWardChangeRequest,
+  CreateStakeWardChangeRequestDto,
+  ApproveStakeWardChangeDto,
 } from '@vibe-apply/shared';
 
 @Controller('auth')
@@ -153,5 +157,41 @@ export class AuthController {
     @Body() updateUserProfileDto: UpdateUserProfileDto,
   ): Promise<User> {
     return this.authService.updateUserProfile(user.sub, updateUserProfileDto);
+  }
+
+  @Post('stake-ward-change-request')
+  @UseGuards(JwtAuthGuard)
+  async requestStakeWardChange(
+    @CurrentUser() user: JwtPayload,
+    @Body() createRequestDto: CreateStakeWardChangeRequestDto,
+  ): Promise<{ message: string; requestId: string }> {
+    return this.authService.requestStakeWardChange(user.sub, createRequestDto);
+  }
+
+  @Get('stake-ward-change-requests')
+  @UseGuards(JwtAuthGuard)
+  async getStakeWardChangeRequests(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<StakeWardChangeRequest[]> {
+    return this.authService.getStakeWardChangeRequests(user.sub);
+  }
+
+  @Post('stake-ward-change-approve')
+  @UseGuards(JwtAuthGuard)
+  async approveStakeWardChange(
+    @CurrentUser() user: JwtPayload,
+    @Body() approveDto: ApproveStakeWardChangeDto,
+  ): Promise<{ message: string }> {
+    return this.authService.approveStakeWardChange(user.sub, approveDto);
+  }
+
+  @Delete('users/:uid')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async deleteUser(
+    @CurrentUser() user: JwtPayload,
+    @Param('uid') uid: string,
+  ): Promise<{ message: string }> {
+    return this.authService.deleteUser(user.sub, uid);
   }
 }

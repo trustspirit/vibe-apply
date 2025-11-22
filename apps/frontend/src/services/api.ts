@@ -8,6 +8,9 @@ import type {
   LeaderRecommendation,
   RecommendationStatus,
   TokenResponse,
+  StakeWardChangeRequest,
+  CreateStakeWardChangeRequestDto,
+  ApproveStakeWardChangeDto,
 } from '@vibe-apply/shared';
 import { ROUTES } from '../utils/constants';
 
@@ -111,9 +114,15 @@ api.interceptors.response.use(
   async (error: AxiosError<ErrorData>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig;
     const requestId = `${originalRequest.method}-${originalRequest.url}`;
-    const isAuthEndpoint = originalRequest.url?.includes('/auth/signin') || originalRequest.url?.includes('/auth/signup');
+    const isAuthEndpoint =
+      originalRequest.url?.includes('/auth/signin') ||
+      originalRequest.url?.includes('/auth/signup');
 
-    if (error.response?.status === 401 && !retriedRequests.has(requestId) && !isAuthEndpoint) {
+    if (
+      error.response?.status === 401 &&
+      !retriedRequests.has(requestId) &&
+      !isAuthEndpoint
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -261,6 +270,29 @@ export const authApi = {
   updateProfile: async (profileData: Partial<ProfileData>): Promise<User> => {
     return api.put('/auth/profile', profileData) as Promise<User>;
   },
+
+  requestStakeWardChange: async (
+    data: CreateStakeWardChangeRequestDto
+  ): Promise<{ message: string; requestId: string }> => {
+    return api.post('/auth/stake-ward-change-request', data) as Promise<{
+      message: string;
+      requestId: string;
+    }>;
+  },
+
+  getStakeWardChangeRequests: async (): Promise<StakeWardChangeRequest[]> => {
+    return api.get('/auth/stake-ward-change-requests') as Promise<
+      StakeWardChangeRequest[]
+    >;
+  },
+
+  approveStakeWardChange: async (
+    data: ApproveStakeWardChangeDto
+  ): Promise<{ message: string }> => {
+    return api.post('/auth/stake-ward-change-approve', data) as Promise<{
+      message: string;
+    }>;
+  },
 };
 
 export const usersApi = {
@@ -279,6 +311,10 @@ export const usersApi = {
     return api.put(`/auth/users/${userId}/leader-status`, {
       leaderStatus: status,
     }) as Promise<User>;
+  },
+
+  deleteUser: async (userId: string): Promise<{ message: string }> => {
+    return api.delete(`/auth/users/${userId}`) as Promise<{ message: string }>;
   },
 };
 

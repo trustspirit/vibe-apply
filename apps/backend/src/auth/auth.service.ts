@@ -16,6 +16,9 @@ import {
   RefreshTokenDto,
   GoogleOAuthDto,
   UpdateUserProfileDto,
+  StakeWardChangeRequest,
+  CreateStakeWardChangeRequestDto,
+  ApproveStakeWardChangeDto,
 } from '@vibe-apply/shared';
 
 @Injectable()
@@ -61,6 +64,8 @@ export class AuthService {
       stake: (data.stake as string) || '',
       phone: (data.phone as string) || undefined,
       picture: (data.picture as string) || undefined,
+      pendingStake: (data.pendingStake as string) || undefined,
+      pendingWard: (data.pendingWard as string) || undefined,
     };
   }
 
@@ -448,5 +453,221 @@ export class AuthService {
     }
 
     return this.getUser(uid);
+  }
+
+  async requestStakeWardChange(
+    uid: string,
+    createRequestDto: CreateStakeWardChangeRequestDto,
+  ): Promise<{ message: string; requestId: string }> {
+    const user = await this.getUser(uid);
+    
+    if (!user.role || [UserRole.ADMIN, UserRole.SESSION_LEADER].includes(user.role)) {
+      throw new UnauthorizedException('Admins and session leaders can change stake/ward directly');
+    }
+
+    const requestedStake = createRequestDto.stake.trim().toLowerCase();
+    const requestedWard = createRequestDto.ward.trim().toLowerCase();
+
+    if (user.stake === requestedStake && user.ward === requestedWard) {
+      throw new ConflictException('Stake and ward are already set to these values');
+    }
+
+    const requestData = {
+      userId: uid,
+      userName: user.name,
+      userEmail: user.email,
+      userRole: user.role,
+      currentStake: user.stake,
+      currentWard: user.ward,
+      requestedStake,
+      requestedWard,
+      status: 'pending',
+      requestedAt: new Date().toISOString(),
+    };
+
+    const docRef = await this.firebaseService
+      .getFirestore()
+      .collection('stakeWardChangeRequests')
+      .add(requestData);
+
+    await this.firebaseService
+      .getFirestore()
+      .collection('users')
+      .doc(uid)
+      .update({
+        pendingStake: requestedStake,
+        pendingWard: requestedWard,
+      });
+
+    return {
+      message: 'Stake/Ward change request submitted successfully',
+      requestId: docRef.id,
+    };
+  }
+
+  async getStakeWardChangeRequests(
+    approverId: string,
+  ): Promise<StakeWardChangeRequest[]> {
+    const approver = await this.getUser(approverId);
+    const approverRole = approver.role;
+    const approverStake = approver.stake;
+    const approverWard = approver.ward;
+
+    const query = this.firebaseService
+      .getFirestore()
+      .collection('stakeWardChangeRequests')
+      .where('status', '==', 'pending');
+
+    const snapshot = await query.get();
+    const allRequests = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as StakeWardChangeRequest[];
+
+    if (approverRole === UserRole.ADMIN || approverRole === UserRole.SESSION_LEADER) {
+      return allRequests;
+    }
+
+    const finalRequests: StakeWardChangeRequest[] = [];
+    for (const request of allRequests) {
+      if (approverRole === UserRole.STAKE_PRESIDENT) {
+        if (request.userRole === UserRole.BISHOP && request.requestedStake === approverStake) {
+          finalRequests.push(request);
+        }
+      } else if (approverRole === UserRole.BISHOP) {
+        if (request.userRole === UserRole.APPLICANT && request.requestedWard === approverWard) {
+          finalRequests.push(request);
+        }
+      }
+    }
+
+    return finalRequests;
+  }
+
+  async approveStakeWardChange(
+    approverId: string,
+    approveDto: ApproveStakeWardChangeDto,
+  ): Promise<{ message: string }> {
+    const approver = await this.getUser(approverId);
+    const approverRole = approver.role;
+    const approverStake = approver.stake;
+    const approverWard = approver.ward;
+
+    const requestDoc = await this.firebaseService
+      .getFirestore()
+      .collection('stakeWardChangeRequests')
+      .doc(approveDto.requestId)
+      .get();
+
+    if (!requestDoc.exists) {
+      throw new ConflictException('Change request not found');
+    }
+
+    const request = requestDoc.data() as StakeWardChangeRequest;
+    if (request.status !== 'pending') {
+      throw new ConflictException('Request is not pending');
+    }
+
+    if (approverRole !== UserRole.ADMIN && approverRole !== UserRole.SESSION_LEADER) {
+      let hasPermission = false;
+      
+      if (approverRole === UserRole.STAKE_PRESIDENT) {
+        if (request.userRole === UserRole.BISHOP && request.requestedStake === approverStake) {
+          hasPermission = true;
+        }
+      } else if (approverRole === UserRole.BISHOP) {
+        if (request.userRole === UserRole.APPLICANT && request.requestedWard === approverWard) {
+          hasPermission = true;
+        }
+      }
+      
+      if (!hasPermission) {
+        throw new UnauthorizedException('You do not have permission to approve this request');
+      }
+    }
+
+    if (approveDto.approved) {
+      await this.firebaseService
+        .getFirestore()
+        .collection('users')
+        .doc(request.userId)
+        .update({
+          stake: request.requestedStake,
+          ward: request.requestedWard,
+          pendingStake: null,
+          pendingWard: null,
+        });
+
+      const applicationsSnapshot = await this.firebaseService
+        .getFirestore()
+        .collection('applications')
+        .where('userId', '==', request.userId)
+        .get();
+
+      const appUpdatePromises = applicationsSnapshot.docs.map(async (doc) => {
+        await doc.ref.update({
+          stake: request.requestedStake,
+          ward: request.requestedWard,
+        });
+      });
+
+      const recommendationsSnapshot = await this.firebaseService
+        .getFirestore()
+        .collection('recommendations')
+        .where('leaderId', '==', request.userId)
+        .get();
+
+      const recUpdatePromises = recommendationsSnapshot.docs.map(async (doc) => {
+        await doc.ref.update({
+          stake: request.requestedStake,
+          ward: request.requestedWard,
+        });
+      });
+
+      await Promise.all([...appUpdatePromises, ...recUpdatePromises]);
+    } else {
+      await this.firebaseService
+        .getFirestore()
+        .collection('users')
+        .doc(request.userId)
+        .update({
+          pendingStake: null,
+          pendingWard: null,
+        });
+    }
+
+    await requestDoc.ref.update({
+      status: approveDto.approved ? 'approved' : 'rejected',
+      approvedAt: new Date().toISOString(),
+      approvedBy: approverId,
+      approvedByName: approver.name,
+    });
+
+    return {
+      message: approveDto.approved
+        ? 'Stake/Ward change approved successfully'
+        : 'Stake/Ward change request rejected',
+    };
+  }
+
+  async deleteUser(adminId: string, userId: string): Promise<{ message: string }> {
+    const admin = await this.getUser(adminId);
+    if (admin.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Only admins can delete users');
+    }
+
+    const user = await this.getUser(userId);
+    if (user.role === UserRole.ADMIN) {
+      throw new ConflictException('Cannot delete admin users');
+    }
+
+    await this.firebaseService.deleteUser(userId);
+    await this.firebaseService
+      .getFirestore()
+      .collection('users')
+      .doc(userId)
+      .delete();
+
+    return { message: 'User deleted successfully' };
   }
 }

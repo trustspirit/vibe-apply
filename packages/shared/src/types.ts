@@ -41,6 +41,8 @@ export interface User {
   stake: string;
   phone?: string;
   picture?: string;
+  pendingWard?: string;
+  pendingStake?: string;
   createdAt: string;
 }
 
@@ -165,6 +167,33 @@ export interface UpdateUserProfileDto {
   ward?: string;
   stake?: string;
   phone?: string;
+}
+
+export interface StakeWardChangeRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userRole: UserRole;
+  currentStake: string;
+  currentWard: string;
+  requestedStake: string;
+  requestedWard: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  approvedAt?: string;
+  approvedBy?: string;
+  approvedByName?: string;
+}
+
+export interface CreateStakeWardChangeRequestDto {
+  stake: string;
+  ward: string;
+}
+
+export interface ApproveStakeWardChangeDto {
+  requestId: string;
+  approved: boolean;
 }
 
 export interface CreateMemoDto {
