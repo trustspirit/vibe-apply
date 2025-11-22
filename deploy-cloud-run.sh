@@ -107,7 +107,13 @@ gcloud run deploy "${SERVICE_NAME}" \
     --image="${IMAGE_TAG}" \
     --region="${REGION}" \
     --platform=managed \
-    --allow-unauthenticated
+    --allow-unauthenticated \
+    --concurrency=10 \
+    --max-instances=1 \
+    --min-instances=0 \
+    --memory=256Mi \
+    --cpu=1 \
+    --timeout=300
 
 echo ""
 echo -e "${GREEN}✓ Deployment completed successfully!${NC}"

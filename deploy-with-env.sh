@@ -94,7 +94,13 @@ gcloud run deploy "${SERVICE_NAME}" \
     --region="${REGION}" \
     --platform=managed \
     --allow-unauthenticated \
-    --env-vars-file="${ENV_FILE}"
+    --env-vars-file="${ENV_FILE}" \
+    --concurrency=10 \
+    --max-instances=1 \
+    --min-instances=0 \
+    --memory=256Mi \
+    --cpu=1 \
+    --timeout=300
 
 echo ""
 echo -e "${GREEN}✓ Deployment completed successfully!${NC}"
