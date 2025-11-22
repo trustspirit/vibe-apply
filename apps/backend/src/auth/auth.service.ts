@@ -48,10 +48,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  private mapFirestoreDataToUser(
-    uid: string,
-    data: Record<string, any>,
-  ): User {
+  private mapFirestoreDataToUser(uid: string, data: Record<string, any>): User {
     return {
       id: uid,
       name: data.name as string,
@@ -75,10 +72,7 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  generateAuthorizationCode(
-    accessToken: string,
-    refreshToken: string,
-  ): string {
+  generateAuthorizationCode(accessToken: string, refreshToken: string): string {
     const codePayload = {
       accessToken,
       refreshToken,
@@ -188,21 +182,32 @@ export class AuthService {
         ...tokens,
         user: this.omitPassword(user),
       };
-    } catch (error: any) {
-      console.error('Sign in error:', error.message);
-      
-      if (error.message === 'Invalid password' || 
-          error.message === 'Email not found' ||
-          error.message === 'User account has been disabled') {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Authentication failed';
+      console.error('Sign in error:', errorMessage);
+
+      if (
+        errorMessage === 'Invalid password' ||
+        errorMessage === 'Email not found' ||
+        errorMessage === 'User account has been disabled'
+      ) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      if (error.message?.includes('FIREBASE_WEB_API_KEY is not configured')) {
-        throw new UnauthorizedException('Authentication service is not properly configured. Please contact administrator.');
+      if (errorMessage.includes('Password login is disabled')) {
+        throw new UnauthorizedException(
+          'Password login is disabled. Please use Google login or contact administrator.',
+        );
+      }
+      if (errorMessage.includes('FIREBASE_WEB_API_KEY is not configured')) {
+        throw new UnauthorizedException(
+          'Authentication service is not properly configured. Please contact administrator.',
+        );
       }
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException(`Invalid credentials: ${error.message || 'Authentication failed'}`);
+      throw new UnauthorizedException(`Invalid credentials: ${errorMessage}`);
     }
   }
 
@@ -231,8 +236,8 @@ export class AuthService {
     ward?: string,
     stake?: string,
   ): Promise<void> {
-    const isLeaderRole = 
-      role === UserRole.BISHOP || 
+    const isLeaderRole =
+      role === UserRole.BISHOP ||
       role === UserRole.STAKE_PRESIDENT ||
       role === UserRole.SESSION_LEADER;
     const leaderStatus = isLeaderRole ? LeaderStatus.PENDING : null;
@@ -312,7 +317,10 @@ export class AuthService {
         .getUserByEmail(googleUser.email);
       const user = await this.getUser(userRecord.uid);
 
-      if (googleUser.picture && (!user.picture || googleUser.picture !== user.picture)) {
+      if (
+        googleUser.picture &&
+        (!user.picture || googleUser.picture !== user.picture)
+      ) {
         await this.firebaseService
           .getFirestore()
           .collection('users')
@@ -385,7 +393,7 @@ export class AuthService {
     const user = await this.getUser(uid);
     const oldWard = user.ward;
     const oldStake = user.stake;
-    const oldPhone: string = (user.phone) || '';
+    const oldPhone: string = user.phone || '';
 
     const updateData: Record<string, string> = {};
 
@@ -475,16 +483,23 @@ export class AuthService {
     createRequestDto: CreateStakeWardChangeRequestDto,
   ): Promise<{ message: string; requestId: string }> {
     const user = await this.getUser(uid);
-    
-    if (!user.role || [UserRole.ADMIN, UserRole.SESSION_LEADER].includes(user.role)) {
-      throw new UnauthorizedException('Admins and session leaders can change stake/ward directly');
+
+    if (
+      !user.role ||
+      [UserRole.ADMIN, UserRole.SESSION_LEADER].includes(user.role)
+    ) {
+      throw new UnauthorizedException(
+        'Admins and session leaders can change stake/ward directly',
+      );
     }
 
     const requestedStake = createRequestDto.stake.trim().toLowerCase();
     const requestedWard = createRequestDto.ward.trim().toLowerCase();
 
     if (user.stake === requestedStake && user.ward === requestedWard) {
-      throw new ConflictException('Stake and ward are already set to these values');
+      throw new ConflictException(
+        'Stake and ward are already set to these values',
+      );
     }
 
     // Cancel any existing pending requests for this user
@@ -501,7 +516,7 @@ export class AuthService {
         approvedAt: new Date().toISOString(),
         approvedBy: uid,
         approvedByName: user.name,
-      })
+      }),
     );
 
     await Promise.all(cancelPromises);
@@ -558,18 +573,27 @@ export class AuthService {
       ...doc.data(),
     })) as StakeWardChangeRequest[];
 
-    if (approverRole === UserRole.ADMIN || approverRole === UserRole.SESSION_LEADER) {
+    if (
+      approverRole === UserRole.ADMIN ||
+      approverRole === UserRole.SESSION_LEADER
+    ) {
       return allRequests;
     }
 
     const finalRequests: StakeWardChangeRequest[] = [];
     for (const request of allRequests) {
       if (approverRole === UserRole.STAKE_PRESIDENT) {
-        if (request.userRole === UserRole.BISHOP && request.requestedStake?.trim().toLowerCase() === approverStake) {
+        if (
+          request.userRole === UserRole.BISHOP &&
+          request.requestedStake?.trim().toLowerCase() === approverStake
+        ) {
           finalRequests.push(request);
         }
       } else if (approverRole === UserRole.BISHOP) {
-        if (request.userRole === UserRole.APPLICANT && request.requestedWard?.trim().toLowerCase() === approverWard) {
+        if (
+          request.userRole === UserRole.APPLICANT &&
+          request.requestedWard?.trim().toLowerCase() === approverWard
+        ) {
           finalRequests.push(request);
         }
       }
@@ -602,21 +626,32 @@ export class AuthService {
       throw new ConflictException('Request is not pending');
     }
 
-    if (approverRole !== UserRole.ADMIN && approverRole !== UserRole.SESSION_LEADER) {
+    if (
+      approverRole !== UserRole.ADMIN &&
+      approverRole !== UserRole.SESSION_LEADER
+    ) {
       let hasPermission = false;
-      
+
       if (approverRole === UserRole.STAKE_PRESIDENT) {
-        if (request.userRole === UserRole.BISHOP && request.requestedStake?.trim().toLowerCase() === approverStake) {
+        if (
+          request.userRole === UserRole.BISHOP &&
+          request.requestedStake?.trim().toLowerCase() === approverStake
+        ) {
           hasPermission = true;
         }
       } else if (approverRole === UserRole.BISHOP) {
-        if (request.userRole === UserRole.APPLICANT && request.requestedWard?.trim().toLowerCase() === approverWard) {
+        if (
+          request.userRole === UserRole.APPLICANT &&
+          request.requestedWard?.trim().toLowerCase() === approverWard
+        ) {
           hasPermission = true;
         }
       }
-      
+
       if (!hasPermission) {
-        throw new UnauthorizedException('You do not have permission to approve this request');
+        throw new UnauthorizedException(
+          'You do not have permission to approve this request',
+        );
       }
     }
 
@@ -651,12 +686,14 @@ export class AuthService {
         .where('leaderId', '==', request.userId)
         .get();
 
-      const recUpdatePromises = recommendationsSnapshot.docs.map(async (doc) => {
-        await doc.ref.update({
-          stake: request.requestedStake,
-          ward: request.requestedWard,
-        });
-      });
+      const recUpdatePromises = recommendationsSnapshot.docs.map(
+        async (doc) => {
+          await doc.ref.update({
+            stake: request.requestedStake,
+            ward: request.requestedWard,
+          });
+        },
+      );
 
       await Promise.all([...appUpdatePromises, ...recUpdatePromises]);
     } else {
@@ -684,7 +721,10 @@ export class AuthService {
     };
   }
 
-  async deleteUser(adminId: string, userId: string): Promise<{ message: string }> {
+  async deleteUser(
+    adminId: string,
+    userId: string,
+  ): Promise<{ message: string }> {
     const admin = await this.getUser(adminId);
     if (admin.role !== UserRole.ADMIN) {
       throw new UnauthorizedException('Only admins can delete users');

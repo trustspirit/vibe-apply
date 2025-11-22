@@ -70,7 +70,9 @@ export class FirebaseService {
   ): Promise<admin.auth.DecodedIdToken> {
     const apiKey = this.configService.get<string>('FIREBASE_WEB_API_KEY');
     if (!apiKey) {
-      throw new Error('FIREBASE_WEB_API_KEY is not configured. Please set this environment variable to enable password verification.');
+      throw new Error(
+        'FIREBASE_WEB_API_KEY is not configured. Please set this environment variable to enable password verification.',
+      );
     }
 
     try {
@@ -90,22 +92,49 @@ export class FirebaseService {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = (await response.json()) as {
+          error?: { message?: string };
+        };
         const errorMessage = error.error?.message || 'Authentication failed';
-        
-        if (errorMessage === 'INVALID_PASSWORD' || errorMessage.includes('INVALID_PASSWORD')) {
+
+        if (
+          errorMessage === 'INVALID_PASSWORD' ||
+          errorMessage.includes('INVALID_PASSWORD')
+        ) {
           throw new Error('Invalid password');
         }
-        if (errorMessage === 'EMAIL_NOT_FOUND' || errorMessage.includes('EMAIL_NOT_FOUND')) {
+        if (
+          errorMessage === 'EMAIL_NOT_FOUND' ||
+          errorMessage.includes('EMAIL_NOT_FOUND')
+        ) {
           throw new Error('Email not found');
         }
-        if (errorMessage === 'USER_DISABLED' || errorMessage.includes('USER_DISABLED')) {
+        if (
+          errorMessage === 'USER_DISABLED' ||
+          errorMessage.includes('USER_DISABLED')
+        ) {
           throw new Error('User account has been disabled');
+        }
+        if (
+          errorMessage === 'OPERATION_NOT_ALLOWED' ||
+          errorMessage.includes('OPERATION_NOT_ALLOWED')
+        ) {
+          throw new Error(
+            'Password login is disabled. Please use Google login or contact administrator.',
+          );
+        }
+        if (
+          errorMessage === 'PASSWORD_LOGIN_DISABLED' ||
+          errorMessage.includes('PASSWORD_LOGIN_DISABLED')
+        ) {
+          throw new Error(
+            'Password login is disabled. Please use Google login or contact administrator.',
+          );
         }
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as { idToken?: string };
       const idToken = data.idToken;
 
       if (!idToken) {
@@ -113,13 +142,18 @@ export class FirebaseService {
       }
 
       return this.auth.verifyIdToken(idToken);
-    } catch (error: any) {
-      if (error.message === 'Invalid password' || 
-          error.message === 'Email not found' ||
-          error.message === 'User account has been disabled') {
-        throw error;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      if (
+        errorMessage === 'Invalid password' ||
+        errorMessage === 'Email not found' ||
+        errorMessage === 'User account has been disabled' ||
+        errorMessage.includes('Password login is disabled')
+      ) {
+        throw error instanceof Error ? error : new Error(errorMessage);
       }
-      throw new Error(`Password verification failed: ${error.message}`);
+      throw new Error(`Password verification failed: ${errorMessage}`);
     }
   }
 }
