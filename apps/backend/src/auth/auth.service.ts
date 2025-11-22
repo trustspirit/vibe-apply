@@ -189,13 +189,20 @@ export class AuthService {
         user: this.omitPassword(user),
       };
     } catch (error: any) {
-      if (error.message === 'Invalid password' || error.message === 'Email not found') {
+      console.error('Sign in error:', error.message);
+      
+      if (error.message === 'Invalid password' || 
+          error.message === 'Email not found' ||
+          error.message === 'User account has been disabled') {
         throw new UnauthorizedException('Invalid credentials');
+      }
+      if (error.message?.includes('FIREBASE_WEB_API_KEY is not configured')) {
+        throw new UnauthorizedException('Authentication service is not properly configured. Please contact administrator.');
       }
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(`Invalid credentials: ${error.message || 'Authentication failed'}`);
     }
   }
 

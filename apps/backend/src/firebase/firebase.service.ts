@@ -70,38 +70,56 @@ export class FirebaseService {
   ): Promise<admin.auth.DecodedIdToken> {
     const apiKey = this.configService.get<string>('FIREBASE_WEB_API_KEY');
     if (!apiKey) {
-      throw new Error('FIREBASE_WEB_API_KEY is not configured');
+      throw new Error('FIREBASE_WEB_API_KEY is not configured. Please set this environment variable to enable password verification.');
     }
 
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    try {
+      const response = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            returnSecureToken: true,
+          }),
         },
-        body: JSON.stringify({
-          email,
-          password,
-          returnSecureToken: true,
-        }),
-      },
-    );
+      );
 
-    if (!response.ok) {
-      const error = await response.json();
-      if (error.error?.message === 'INVALID_PASSWORD') {
-        throw new Error('Invalid password');
+      if (!response.ok) {
+        const error = await response.json();
+        const errorMessage = error.error?.message || 'Authentication failed';
+        
+        if (errorMessage === 'INVALID_PASSWORD' || errorMessage.includes('INVALID_PASSWORD')) {
+          throw new Error('Invalid password');
+        }
+        if (errorMessage === 'EMAIL_NOT_FOUND' || errorMessage.includes('EMAIL_NOT_FOUND')) {
+          throw new Error('Email not found');
+        }
+        if (errorMessage === 'USER_DISABLED' || errorMessage.includes('USER_DISABLED')) {
+          throw new Error('User account has been disabled');
+        }
+        throw new Error(errorMessage);
       }
-      if (error.error?.message === 'EMAIL_NOT_FOUND') {
-        throw new Error('Email not found');
+
+      const data = await response.json();
+      const idToken = data.idToken;
+
+      if (!idToken) {
+        throw new Error('No ID token received from Firebase');
       }
-      throw new Error(error.error?.message || 'Authentication failed');
+
+      return this.auth.verifyIdToken(idToken);
+    } catch (error: any) {
+      if (error.message === 'Invalid password' || 
+          error.message === 'Email not found' ||
+          error.message === 'User account has been disabled') {
+        throw error;
+      }
+      throw new Error(`Password verification failed: ${error.message}`);
     }
-
-    const data = await response.json();
-    const idToken = data.idToken;
-
-    return this.auth.verifyIdToken(idToken);
   }
 }
