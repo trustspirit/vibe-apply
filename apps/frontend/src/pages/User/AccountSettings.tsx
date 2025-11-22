@@ -665,7 +665,25 @@ const AccountSettings = () => {
                             />
                           </div>
                           <div className={styles.cardInfo}>
-                            <div className={styles.cardName}>{user.name}</div>
+                            <div className={styles.cardNameRow}>
+                              <div className={styles.cardName}>{user.name}</div>
+                              <StatusChip
+                                status={user.role || ''}
+                                tone={
+                                  user.role === USER_ROLES.ADMIN
+                                    ? 'admin'
+                                    : user.role === USER_ROLES.STAKE_PRESIDENT
+                                      ? 'stakePresident'
+                                      : user.role === USER_ROLES.BISHOP
+                                        ? 'bishop'
+                                        : user.role === USER_ROLES.SESSION_LEADER
+                                          ? 'sessionLeader'
+                                          : 'applicant'
+                                }
+                                label={getRoleLabelForUser(user.role)}
+                                className={styles.cardRole}
+                              />
+                            </div>
                             <div className={styles.cardEmail}>{user.email}</div>
                           </div>
                         </div>
@@ -676,24 +694,6 @@ const AccountSettings = () => {
                         <div className={styles.cardSection}>
                           <label className={styles.cardLabel}>{t('common.ward')}</label>
                           <div className={styles.cardValue}>{user.ward || '-'}</div>
-                        </div>
-                        <div className={styles.cardSection}>
-                          <label className={styles.cardLabel}>{t('common.role')}</label>
-                          <StatusChip
-                            status={user.role || ''}
-                            tone={
-                              user.role === USER_ROLES.ADMIN
-                                ? 'admin'
-                                : user.role === USER_ROLES.STAKE_PRESIDENT
-                                  ? 'stakePresident'
-                                  : user.role === USER_ROLES.BISHOP
-                                    ? 'bishop'
-                                    : user.role === USER_ROLES.SESSION_LEADER
-                                      ? 'sessionLeader'
-                                      : 'applicant'
-                            }
-                            label={getRoleLabelForUser(user.role)}
-                          />
                         </div>
                         <div className={styles.cardActions}>
                           <Button
