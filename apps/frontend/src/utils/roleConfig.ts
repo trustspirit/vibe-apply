@@ -2,6 +2,7 @@
  * Role-based configuration for navigation and UI display
  */
 
+import type { TFunction } from 'i18next';
 import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants';
 
 export interface NavItem {
@@ -9,103 +10,87 @@ export interface NavItem {
   label: string;
 }
 
-export interface RoleConfig {
-  navItems: (isApprovedLeader?: boolean) => NavItem[];
-  greeting: string;
-  label: (isApprovedLeader?: boolean) => string;
-}
-
 type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
-
-/**
- * Configuration map for each user role
- */
-export const ROLE_CONFIG_MAP: Record<UserRole, RoleConfig> = {
-  [USER_ROLES.ADMIN]: {
-    navItems: () => [
-      { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
-      { to: ROUTES.ADMIN_REVIEW, label: 'Review Applications' },
-      { to: ROUTES.ADMIN_ROLES, label: 'Manage Roles' },
-    ],
-    greeting: 'Admin',
-    label: () => 'Admin',
-  },
-  [USER_ROLES.SESSION_LEADER]: {
-    navItems: () => [
-      { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
-      { to: ROUTES.ADMIN_REVIEW, label: 'Review Applications' },
-    ],
-    greeting: 'Session Leader',
-    label: (isApprovedLeader = false) =>
-      isApprovedLeader ? 'Session Leader' : 'Session Leader (Pending)',
-  },
-  [USER_ROLES.BISHOP]: {
-    navItems: (isApprovedLeader = false) => {
-      if (isApprovedLeader) {
-        return [
-          { to: ROUTES.LEADER_DASHBOARD, label: 'Leader Dashboard' },
-          { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
-        ];
-      }
-      return [
-        { to: ROUTES.LEADER_PENDING, label: 'Leader Access' },
-        { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
-      ];
-    },
-    greeting: 'Bishop',
-    label: (isApprovedLeader = false) =>
-      isApprovedLeader ? 'Bishop' : 'Bishop (Pending)',
-  },
-  [USER_ROLES.STAKE_PRESIDENT]: {
-    navItems: (isApprovedLeader = false) => {
-      if (isApprovedLeader) {
-        return [
-          { to: ROUTES.LEADER_DASHBOARD, label: 'Leader Dashboard' },
-          { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
-        ];
-      }
-      return [
-        { to: ROUTES.LEADER_PENDING, label: 'Leader Access' },
-        { to: ROUTES.LEADER_RECOMMENDATIONS, label: 'Recommendations' },
-      ];
-    },
-    greeting: 'Stake President',
-    label: (isApprovedLeader = false) =>
-      isApprovedLeader ? 'Stake President' : 'Stake President (Pending)',
-  },
-  [USER_ROLES.APPLICANT]: {
-    navItems: () => [{ to: ROUTES.APPLICATION, label: 'Application' }],
-    greeting: 'Applicant',
-    label: () => 'Applicant',
-  },
-};
 
 /**
  * Get role configuration for a specific user role
  */
 export const getRoleConfig = (
   role: UserRole,
-  leaderStatus?: string
+  leaderStatus: string | undefined,
+  t: TFunction
 ): {
   navItems: NavItem[];
   greeting: string;
   label: string;
 } => {
-  const config = ROLE_CONFIG_MAP[role];
-  if (!config) {
-    // Fallback for unknown roles
-    return {
-      navItems: [],
-      greeting: 'User',
-      label: 'User',
-    };
-  }
-
   const isApprovedLeader = leaderStatus === LEADER_STATUS.APPROVED;
 
-  return {
-    navItems: config.navItems(isApprovedLeader),
-    greeting: config.greeting,
-    label: config.label(isApprovedLeader),
-  };
+  switch (role) {
+    case USER_ROLES.ADMIN:
+      return {
+        navItems: [
+          { to: ROUTES.ADMIN_DASHBOARD, label: t('navigation.adminDashboard') },
+          { to: ROUTES.ADMIN_REVIEW, label: t('navigation.reviewApplications') },
+          { to: ROUTES.ADMIN_ROLES, label: t('navigation.manageRoles') },
+        ],
+        greeting: t('roles.admin'),
+        label: t('roles.admin'),
+      };
+    case USER_ROLES.SESSION_LEADER:
+      return {
+        navItems: [
+          { to: ROUTES.ADMIN_DASHBOARD, label: t('navigation.adminDashboard') },
+          { to: ROUTES.ADMIN_REVIEW, label: t('navigation.reviewApplications') },
+        ],
+        greeting: t('roles.sessionLeader'),
+        label: isApprovedLeader
+          ? t('roles.sessionLeader')
+          : t('roles.sessionLeader') + ' (Pending)',
+      };
+    case USER_ROLES.BISHOP:
+      return {
+        navItems: isApprovedLeader
+          ? [
+              { to: ROUTES.LEADER_DASHBOARD, label: t('navigation.leaderDashboard') },
+              { to: ROUTES.LEADER_RECOMMENDATIONS, label: t('navigation.recommendations') },
+            ]
+          : [
+              { to: ROUTES.LEADER_PENDING, label: t('navigation.leaderAccess') },
+              { to: ROUTES.LEADER_RECOMMENDATIONS, label: t('navigation.recommendations') },
+            ],
+        greeting: t('roles.bishop'),
+        label: isApprovedLeader
+          ? t('roles.bishop')
+          : t('roles.bishop') + ' (Pending)',
+      };
+    case USER_ROLES.STAKE_PRESIDENT:
+      return {
+        navItems: isApprovedLeader
+          ? [
+              { to: ROUTES.LEADER_DASHBOARD, label: t('navigation.leaderDashboard') },
+              { to: ROUTES.LEADER_RECOMMENDATIONS, label: t('navigation.recommendations') },
+            ]
+          : [
+              { to: ROUTES.LEADER_PENDING, label: t('navigation.leaderAccess') },
+              { to: ROUTES.LEADER_RECOMMENDATIONS, label: t('navigation.recommendations') },
+            ],
+        greeting: t('roles.stakePresident'),
+        label: isApprovedLeader
+          ? t('roles.stakePresident')
+          : t('roles.stakePresident') + ' (Pending)',
+      };
+    case USER_ROLES.APPLICANT:
+      return {
+        navItems: [{ to: ROUTES.APPLICATION, label: t('navigation.application') }],
+        greeting: t('roles.applicant'),
+        label: t('roles.applicant'),
+      };
+    default:
+      return {
+        navItems: [],
+        greeting: t('roles.user'),
+        label: t('roles.user'),
+      };
+  }
 };

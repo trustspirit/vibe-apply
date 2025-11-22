@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Avatar, StatusChip } from '@/components/ui';
@@ -8,6 +9,7 @@ import { getRoleConfig } from '@/utils/roleConfig';
 import styles from './GlobalNav.module.scss';
 
 const GlobalNav = () => {
+  const { t, i18n } = useTranslation();
   const { currentUser, signOut } = useApp();
   const navigate = useNavigate();
   const gnbRef = useRef<HTMLElement>(null);
@@ -17,7 +19,8 @@ const GlobalNav = () => {
 
   const { navItems, greeting: roleGreeting, label: roleLabel } = getRoleConfig(
     currentUser.role,
-    currentUser.leaderStatus
+    currentUser.leaderStatus,
+    t
   );
   const hasNav = navItems.length > 0;
 
@@ -33,6 +36,11 @@ const GlobalNav = () => {
   const handleMenuAction = (action: () => void) => {
     setShowMenu(false);
     action();
+  };
+
+  const handleLanguageChange = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setShowMenu(false);
   };
 
   useEffect(() => {
@@ -100,7 +108,9 @@ const GlobalNav = () => {
         ) : null}
         <div className={styles.profile}>
           <div className={styles.profileInfo}>
-            <span className={styles.greeting}>Hi, {roleGreeting}</span>
+            <span className={styles.greeting}>
+              {t('leader.greeting.' + (currentUser.role === USER_ROLES.ADMIN ? 'admin' : currentUser.role === USER_ROLES.SESSION_LEADER ? 'sessionLeader' : currentUser.role === USER_ROLES.STAKE_PRESIDENT ? 'stakePresident' : currentUser.role === USER_ROLES.BISHOP ? 'bishop' : 'applicant'))}
+            </span>
             <StatusChip
               status={currentUser.role}
               tone={
@@ -131,13 +141,38 @@ const GlobalNav = () => {
                   className={styles.menuItem}
                   onClick={() => handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))}
                 >
-                  Account Settings
+                  {t('navigation.accountSettings')}
                 </button>
+                <div className={styles.menuDivider} />
+                <div className={styles.languageSection}>
+                  <div className={styles.languageLabel}>{t('navigation.language')}</div>
+                  <div className={styles.languageButtons}>
+                    <button
+                      className={clsx(
+                        styles.languageButton,
+                        i18n.language === 'ko' && styles.languageButtonActive
+                      )}
+                      onClick={() => handleLanguageChange('ko')}
+                    >
+                      한국어
+                    </button>
+                    <button
+                      className={clsx(
+                        styles.languageButton,
+                        i18n.language === 'en' && styles.languageButtonActive
+                      )}
+                      onClick={() => handleLanguageChange('en')}
+                    >
+                      English
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.menuDivider} />
                 <button
                   className={styles.menuItem}
                   onClick={() => handleMenuAction(handleSignOut)}
                 >
-                  Logout
+                  {t('navigation.signOut')}
                 </button>
               </div>
             )}

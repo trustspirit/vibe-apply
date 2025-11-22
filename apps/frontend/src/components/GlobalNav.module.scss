@@ -149,6 +149,56 @@
   border-bottom: none;
 }
 
+.menuDivider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--spacing-xs) 0;
+}
+
+.languageSection {
+  padding: 0.4rem var(--spacing-md);
+}
+
+.languageLabel {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.languageButtons {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.languageButton {
+  flex: 1;
+  padding: 0.25rem 0.4rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.languageButton:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--color-primary-border);
+}
+
+.languageButtonActive {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
 @media (max-width: 1024px) {
   .container {
     padding: 0 var(--spacing-lg);

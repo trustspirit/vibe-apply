@@ -1,0 +1,207 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "empty": "항목이 없습니다",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "submit": "제출",
+    "confirm": "확인",
+    "approve": "승인",
+    "reject": "거부",
+    "close": "닫기",
+    "or": "또는",
+    "from": "변경 전",
+    "to": "변경 후",
+    "name": "이름",
+    "email": "이메일",
+    "phone": "전화번호",
+    "password": "비밀번호",
+    "confirmPassword": "비밀번호 확인",
+    "fullName": "전체 이름",
+    "emailAddress": "이메일 주소",
+    "phoneNumber": "전화번호",
+    "stake": "스테이크",
+    "ward": "와드",
+    "role": "역할",
+    "status": "상태",
+    "actions": "작업",
+    "search": "검색",
+    "filter": "필터",
+    "clear": "지우기",
+    "apply": "적용",
+    "reset": "초기화",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "yes": "예",
+    "no": "아니오"
+  },
+  "auth": {
+    "signIn": {
+      "title": "로그인",
+      "subtitle": "포털에 접근하려면 자격 증명을 입력하세요.",
+      "button": "로그인",
+      "buttonLoading": "로그인 중...",
+      "createAccount": "계정 만들기",
+      "newHere": "처음이신가요?"
+    },
+    "signUp": {
+      "title": "계정 만들기",
+      "subtitle": "신청서 관리를 시작하려면 가입하세요.",
+      "button": "가입",
+      "buttonLoading": "계정 생성 중...",
+      "signIn": "로그인",
+      "alreadyHaveAccount": "이미 계정이 있으신가요?",
+      "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다."
+    },
+    "completeProfile": {
+      "title": "프로필 완성",
+      "subtitle": "프로필을 완성하려면 다음 정보를 제공해주세요.",
+      "button": "프로필 완성",
+      "buttonLoading": "프로필 완성 중..."
+    }
+  },
+  "accountSettings": {
+    "title": "계정 설정",
+    "subtitle": "프로필 정보 및 기본 설정 관리",
+    "tabs": {
+      "settings": "설정",
+      "approvals": "승인",
+      "deleteUsers": "사용자 삭제"
+    },
+    "sections": {
+      "personalInformation": {
+        "title": "개인 정보",
+        "description": "기본 계정 정보입니다. 이름이나 이메일을 변경하려면 관리자에게 문의하세요.",
+        "contactAdminToUpdate": "업데이트하려면 관리자에게 문의"
+      },
+      "churchInformation": {
+        "title": "교회 정보",
+        "description": {
+          "immediate": "현재 스테이크 및 와드 배정입니다. 변경 사항은 즉시 반영됩니다.",
+          "requiresApproval": "현재 스테이크 및 와드 배정입니다. 변경 사항은 스테이크 회장이나 감독의 승인이 필요합니다."
+        },
+        "pendingAlert": "스테이크/와드 변경 요청이 대기 중입니다: {{stake}} / {{ward}}. 승인될 때까지 현재 배정이 유지됩니다."
+      },
+      "accountRole": {
+        "title": "계정 역할",
+        "description": "시스템에서의 현재 역할 및 권한입니다.",
+        "currentRole": "현재 역할",
+        "pendingApproval": "리더 액세스가 관리자의 승인을 기다리고 있습니다."
+      }
+    },
+    "approvals": {
+      "title": "스테이크/와드 변경 승인",
+      "description": "대기 중인 스테이크/와드 변경 요청을 검토하고 승인하세요.",
+      "loading": "요청 로딩 중...",
+      "empty": "대기 중인 변경 요청이 없습니다",
+      "approve": "승인",
+      "reject": "거부",
+      "approved": "변경 요청이 승인되었습니다",
+      "rejected": "변경 요청이 거부되었습니다"
+    },
+    "deleteUsers": {
+      "title": "사용자 계정 삭제",
+      "description": "사용자 계정을 영구적으로 삭제합니다. 이 작업은 취소할 수 없습니다.",
+      "loading": "사용자 로딩 중...",
+      "empty": "삭제할 사용자가 없습니다",
+      "confirmDelete": "삭제 확인",
+      "deleted": "사용자가 성공적으로 삭제되었습니다",
+      "searchPlaceholder": "이름 또는 이메일로 검색...",
+      "selected": "개 선택됨",
+      "deleteSelected": "선택한 항목 삭제",
+      "noResults": "검색 결과가 없습니다"
+    },
+    "messages": {
+      "profileUpdated": "프로필이 성공적으로 업데이트되었습니다!",
+      "stakeWardChangeRequested": "스테이크/와드 변경 요청이 제출되었습니다. 승인을 기다리는 중입니다.",
+      "noChanges": "저장할 변경 사항이 없습니다",
+      "saving": "변경 사항 저장 중...",
+      "saveChanges": "변경 사항 저장"
+    }
+  },
+  "roles": {
+    "admin": "관리자",
+    "administrator": "관리자",
+    "sessionLeader": "대회 지도자",
+    "stakePresident": "스테이크 회장",
+    "stakePresidentApproved": "스테이크 회장 (승인됨)",
+    "stakePresidentPending": "스테이크 회장 (승인 대기 중)",
+    "bishop": "감독",
+    "bishopApproved": "감독 (승인됨)",
+    "bishopPending": "감독 (승인 대기 중)",
+    "applicant": "지원자",
+    "user": "사용자"
+  },
+  "navigation": {
+    "dashboard": "대시보드",
+    "adminDashboard": "대시보드",
+    "reviewApplications": "신청서 검토",
+    "manageRoles": "역할 관리",
+    "leaderDashboard": "리더 대시보드",
+    "recommendations": "추천서",
+    "leaderAccess": "리더 액세스",
+    "application": "신청서",
+    "accountSettings": "계정 설정",
+    "language": "언어",
+    "signOut": "로그아웃"
+  },
+  "admin": {
+    "roles": {
+      "title": "역할 관리",
+      "subtitle": "사용자 역할 및 권한을 관리합니다. 준비되면 감독 및 스테이크 회장 요청을 승인하세요.",
+      "columns": {
+        "name": "이름",
+        "email": "이메일",
+        "role": "역할",
+        "leaderApproval": "리더 승인"
+      },
+      "cannotChangeRole": "자신의 역할을 변경할 수 없습니다",
+      "nA": "해당 없음",
+      "approved": "승인됨",
+      "pending": "대기 중",
+      "approveLeader": "이 리더 계정을 승인하시겠습니까?"
+    },
+    "dashboard": {
+      "title": "관리자 대시보드",
+      "overview": {
+        "totalSubmissions": "전체 제출",
+        "awaitingReview": "검토 대기 중",
+        "approved": "승인됨",
+        "today": "오늘"
+      }
+    }
+  },
+  "leader": {
+    "greeting": {
+      "admin": "안녕하세요, 관리자",
+      "sessionLeader": "안녕하세요, 대회 지도자",
+      "stakePresident": "안녕하세요, 스테이크 회장",
+      "bishop": "안녕하세요, 감독",
+      "applicant": "안녕하세요, 지원자"
+    }
+  },
+  "status": {
+    "draft": "초안",
+    "awaiting": "대기 중",
+    "approved": "승인됨",
+    "rejected": "거부됨",
+    "reviewed": "검토됨",
+    "submitted": "제출됨"
+  },
+  "validation": {
+    "required": "이 필드는 필수입니다",
+    "invalidEmail": "유효하지 않은 이메일 주소",
+    "passwordTooShort": "비밀번호는 최소 {{min}}자 이상이어야 합니다",
+    "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다"
+  },
+  "errors": {
+    "generic": "오류가 발생했습니다. 다시 시도해주세요.",
+    "network": "네트워크 오류입니다. 연결을 확인해주세요.",
+    "unauthorized": "이 작업을 수행할 권한이 없습니다.",
+    "notFound": "요청한 리소스를 찾을 수 없습니다."
+  }
+}
+

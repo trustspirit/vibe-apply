@@ -1,5 +1,6 @@
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { UserRole } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { Button, ComboBox, StakeWardSelector } from '@/components/ui';
@@ -15,6 +16,7 @@ interface ProfileForm {
 }
 
 const CompleteProfile = () => {
+  const { t } = useTranslation();
   const { currentUser, setUser } = useApp();
   const navigate = useNavigate();
 
@@ -26,12 +28,15 @@ const CompleteProfile = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const roleOptions = [
-    { value: USER_ROLES.APPLICANT, label: 'Applicant' },
-    { value: USER_ROLES.SESSION_LEADER, label: 'Session Leader' },
-    { value: USER_ROLES.BISHOP, label: 'Bishop' },
-    { value: USER_ROLES.STAKE_PRESIDENT, label: 'Stake President' },
-  ];
+  const roleOptions = useMemo(
+    () => [
+      { value: USER_ROLES.APPLICANT, label: t('roles.applicant') },
+      { value: USER_ROLES.SESSION_LEADER, label: t('roles.sessionLeader') },
+      { value: USER_ROLES.BISHOP, label: t('roles.bishop') },
+      { value: USER_ROLES.STAKE_PRESIDENT, label: t('roles.stakePresident') },
+    ],
+    [t]
+  );
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;

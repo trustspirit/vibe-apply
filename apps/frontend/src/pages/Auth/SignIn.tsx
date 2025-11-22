@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '@/context/AppContext';
 import { Alert, Button, GoogleButton } from '@/components/ui';
 import { AuthLayout } from '@/components';
@@ -14,6 +15,7 @@ interface SignInForm {
 }
 
 const SignIn = () => {
+  const { t } = useTranslation();
   const { signIn, isInitializing } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,13 +54,13 @@ const SignIn = () => {
 
   return (
     <AuthLayout>
-      <h1 className={styles.title}>Sign In</h1>
+      <h1 className={styles.title}>{t('auth.signIn.title')}</h1>
       <p className={styles.subtitle}>
-        Enter your credentials to access the portal.
+        {t('auth.signIn.subtitle')}
       </p>
       <form className={styles.form} onSubmit={handleSubmit}>
         <label className={styles.label}>
-          Email
+          {t('common.email')}
           <input
             type='email'
             name='email'
@@ -69,7 +71,7 @@ const SignIn = () => {
           />
         </label>
         <label className={styles.label}>
-          Password
+          {t('common.password')}
           <input
             type='password'
             name='password'
@@ -86,18 +88,18 @@ const SignIn = () => {
           className={styles.submit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Signing In...' : 'Sign In'}
+          {isSubmitting ? t('auth.signIn.buttonLoading') : t('auth.signIn.button')}
         </Button>
       </form>
 
       <div className={styles.divider}>
-        <span>or</span>
+        <span>{t('common.or')}</span>
       </div>
 
       <GoogleButton onClick={handleGoogleSignIn} />
 
       <p className={styles.footer}>
-        New here? <Link to={ROUTES.SIGN_UP}>Create an account</Link>
+        {t('auth.signIn.newHere')} <Link to={ROUTES.SIGN_UP}>{t('auth.signIn.createAccount')}</Link>
       </p>
     </AuthLayout>
   );

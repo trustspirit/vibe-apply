@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '@/context/AppContext';
 import { Alert, Button } from '@/components/ui';
 import { AuthLayout } from '@/components';
@@ -16,6 +17,7 @@ interface SignUpForm {
 }
 
 const SignUp = () => {
+  const { t } = useTranslation();
   const { signUp } = useApp();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -34,7 +36,7 @@ const SignUp = () => {
     setError('');
 
     if (values.password !== values.confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('auth.signUp.passwordsDoNotMatch'));
       return;
     }
 
@@ -55,13 +57,13 @@ const SignUp = () => {
 
   return (
     <AuthLayout>
-      <h1 className={styles.title}>Create Account</h1>
+      <h1 className={styles.title}>{t('auth.signUp.title')}</h1>
       <p className={styles.subtitle}>
-        Sign up to start managing applications.
+        {t('auth.signUp.subtitle')}
       </p>
       <form className={styles.form} onSubmit={handleSubmit}>
         <label className={styles.label}>
-          Name
+          {t('common.name')}
           <input
             type='text'
             name='name'
@@ -72,7 +74,7 @@ const SignUp = () => {
           />
         </label>
         <label className={styles.label}>
-          Email
+          {t('common.email')}
           <input
             type='email'
             name='email'
@@ -83,7 +85,7 @@ const SignUp = () => {
           />
         </label>
         <label className={styles.label}>
-          Password
+          {t('common.password')}
           <input
             type='password'
             name='password'
@@ -95,7 +97,7 @@ const SignUp = () => {
           />
         </label>
         <label className={styles.label}>
-          Confirm Password
+          {t('common.confirmPassword')}
           <input
             type='password'
             name='confirmPassword'
@@ -113,11 +115,11 @@ const SignUp = () => {
           className={styles.submit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+          {isSubmitting ? t('auth.signUp.buttonLoading') : t('auth.signUp.button')}
         </Button>
       </form>
       <p className={styles.footer}>
-        Already have an account? <Link to={ROUTES.SIGN_IN}>Sign in</Link>
+        {t('auth.signUp.alreadyHaveAccount')} <Link to={ROUTES.SIGN_IN}>{t('auth.signUp.signIn')}</Link>
       </p>
     </AuthLayout>
   );

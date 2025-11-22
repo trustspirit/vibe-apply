@@ -1,20 +1,25 @@
 import { type ChangeEvent, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { ComboBox, StatusChip, ToggleButton } from '@/components/ui';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import styles from './AdminRoles.module.scss';
 
-const ROLE_OPTIONS = [
-  { value: USER_ROLES.ADMIN, label: 'Admin' },
-  { value: USER_ROLES.SESSION_LEADER, label: 'Session Leader' },
-  { value: USER_ROLES.STAKE_PRESIDENT, label: 'Stake President' },
-  { value: USER_ROLES.BISHOP, label: 'Bishop' },
-  { value: USER_ROLES.APPLICANT, label: 'Applicant' },
-];
-
 const AdminRoles = () => {
+  const { t } = useTranslation();
   const { users, currentUser, updateUserRole, updateLeaderStatus, refetchUsers } = useApp();
+
+  const ROLE_OPTIONS = useMemo(
+    () => [
+      { value: USER_ROLES.ADMIN, label: t('roles.admin') },
+      { value: USER_ROLES.SESSION_LEADER, label: t('roles.sessionLeader') },
+      { value: USER_ROLES.STAKE_PRESIDENT, label: t('roles.stakePresident') },
+      { value: USER_ROLES.BISHOP, label: t('roles.bishop') },
+      { value: USER_ROLES.APPLICANT, label: t('roles.applicant') },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     refetchUsers();
@@ -52,20 +57,18 @@ const AdminRoles = () => {
   return (
     <section className={styles.roles}>
       <header className={styles.header}>
-        <h1>Manage Roles</h1>
-        <p>
-          Manage user roles and permissions. Approve bishop and stake president requests when ready.
-        </p>
+        <h1>{t('admin.roles.title')}</h1>
+        <p>{t('admin.roles.subtitle')}</p>
       </header>
 
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th scope='col'>Name</th>
-              <th scope='col'>Email</th>
-              <th scope='col'>Role</th>
-              <th scope='col'>Leader Approval</th>
+              <th scope='col'>{t('admin.roles.columns.name')}</th>
+              <th scope='col'>{t('admin.roles.columns.email')}</th>
+              <th scope='col'>{t('admin.roles.columns.role')}</th>
+              <th scope='col'>{t('admin.roles.columns.leaderApproval')}</th>
             </tr>
           </thead>
           <tbody>
@@ -98,7 +101,7 @@ const AdminRoles = () => {
                   />
                   {user.id === currentUser?.id && (
                     <span className={styles.selfHint}>
-                      Cannot change your role
+                      {t('admin.roles.cannotChangeRole')}
                     </span>
                   )}
                 </td>
@@ -107,13 +110,13 @@ const AdminRoles = () => {
                     <ToggleButton
                       checked={user.leaderStatus === LEADER_STATUS.APPROVED}
                       onChange={(next: boolean) => handleLeaderToggle(user.id, next)}
-                      labelOn='Approved'
-                      labelOff='Pending'
-                      confirmOnMessage='Approve this leader account?'
+                      labelOn={t('admin.roles.approved')}
+                      labelOff={t('admin.roles.pending')}
+                      confirmOnMessage={t('admin.roles.approveLeader')}
                       className={styles.toggle}
                     />
                   ) : (
-                    <span className={styles.statusHint}>N/A</span>
+                    <span className={styles.statusHint}>{t('admin.roles.nA')}</span>
                   )}
                 </td>
               </tr>
@@ -130,7 +133,7 @@ const AdminRoles = () => {
             </div>
             <div className={styles.cardEmail}>{user.email}</div>
             <div className={styles.cardSection}>
-              <label className={styles.cardLabel}>Role</label>
+              <label className={styles.cardLabel}>{t('admin.roles.columns.role')}</label>
               <ComboBox
                 name={`role-${user.id}`}
                 value={user.role}
@@ -151,23 +154,23 @@ const AdminRoles = () => {
               />
               {user.id === currentUser?.id && (
                 <span className={styles.selfHint}>
-                  Cannot change your role
+                  {t('admin.roles.cannotChangeRole')}
                 </span>
               )}
             </div>
             <div className={styles.cardSection}>
-              <label className={styles.cardLabel}>Leader Approval</label>
+              <label className={styles.cardLabel}>{t('admin.roles.columns.leaderApproval')}</label>
               {user.role === USER_ROLES.SESSION_LEADER || user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
                 <ToggleButton
                   checked={user.leaderStatus === LEADER_STATUS.APPROVED}
                   onChange={(next: boolean) => handleLeaderToggle(user.id, next)}
-                  labelOn='Approved'
-                  labelOff='Pending'
-                  confirmOnMessage='Approve this leader account?'
+                  labelOn={t('admin.roles.approved')}
+                  labelOff={t('admin.roles.pending')}
+                  confirmOnMessage={t('admin.roles.approveLeader')}
                   className={styles.toggle}
                 />
               ) : (
-                <span className={styles.statusHint}>N/A</span>
+                <span className={styles.statusHint}>{t('admin.roles.nA')}</span>
               )}
             </div>
           </div>

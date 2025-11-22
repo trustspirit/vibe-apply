@@ -1,0 +1,207 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "empty": "No items found",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "approve": "Approve",
+    "reject": "Reject",
+    "close": "Close",
+    "or": "or",
+    "from": "From",
+    "to": "To",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "phoneNumber": "Phone Number",
+    "stake": "Stake",
+    "ward": "Ward",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "apply": "Apply",
+    "reset": "Reset",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Enter your credentials to access the portal.",
+      "button": "Sign In",
+      "buttonLoading": "Signing In...",
+      "createAccount": "Create an account",
+      "newHere": "New here?"
+    },
+    "signUp": {
+      "title": "Create Account",
+      "subtitle": "Sign up to start managing applications.",
+      "button": "Sign Up",
+      "buttonLoading": "Creating Account...",
+      "signIn": "Sign in",
+      "alreadyHaveAccount": "Already have an account?",
+      "passwordsDoNotMatch": "Passwords do not match."
+    },
+    "completeProfile": {
+      "title": "Complete Your Profile",
+      "subtitle": "Please provide the following information to complete your profile.",
+      "button": "Complete Profile",
+      "buttonLoading": "Completing Profile..."
+    }
+  },
+  "accountSettings": {
+    "title": "Account Settings",
+    "subtitle": "Manage your profile information and preferences",
+    "tabs": {
+      "settings": "Settings",
+      "approvals": "Approvals",
+      "deleteUsers": "Delete Users"
+    },
+    "sections": {
+      "personalInformation": {
+        "title": "Personal Information",
+        "description": "Your basic account information. Contact an administrator to change your name or email.",
+        "contactAdminToUpdate": "Contact admin to update"
+      },
+      "churchInformation": {
+        "title": "Church Information",
+        "description": {
+          "immediate": "Your current stake and ward assignment. Changes will be reflected immediately.",
+          "requiresApproval": "Your current stake and ward assignment. Changes require approval from your stake president or bishop."
+        },
+        "pendingAlert": "You have a pending stake/ward change request: {{stake}} / {{ward}}. Your current assignment will remain until approved."
+      },
+      "accountRole": {
+        "title": "Account Role",
+        "description": "Your current role and permissions in the system.",
+        "currentRole": "Current Role",
+        "pendingApproval": "Your leader access is pending approval by an administrator."
+      }
+    },
+    "approvals": {
+      "title": "Stake/Ward Change Approvals",
+      "description": "Review and approve pending stake/ward change requests.",
+      "loading": "Loading requests...",
+      "empty": "No pending change requests",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Change request approved",
+      "rejected": "Change request rejected"
+    },
+    "deleteUsers": {
+      "title": "Delete User Accounts",
+      "description": "Permanently delete user accounts. This action cannot be undone.",
+      "loading": "Loading users...",
+      "empty": "No users to delete",
+      "confirmDelete": "Confirm Delete",
+      "deleted": "User deleted successfully",
+      "searchPlaceholder": "Search by name or email...",
+      "selected": "selected",
+      "deleteSelected": "Delete Selected",
+      "noResults": "No users found matching your search"
+    },
+    "messages": {
+      "profileUpdated": "Profile updated successfully!",
+      "stakeWardChangeRequested": "Stake/Ward change request submitted. Awaiting approval.",
+      "noChanges": "No changes to save",
+      "saving": "Saving Changes...",
+      "saveChanges": "Save Changes"
+    }
+  },
+  "roles": {
+    "admin": "Admin",
+    "administrator": "Administrator",
+    "sessionLeader": "Session Leader",
+    "stakePresident": "Stake President",
+    "stakePresidentApproved": "Stake President (Approved)",
+    "stakePresidentPending": "Stake President (Pending Approval)",
+    "bishop": "Bishop",
+    "bishopApproved": "Bishop (Approved)",
+    "bishopPending": "Bishop (Pending Approval)",
+    "applicant": "Applicant",
+    "user": "User"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "adminDashboard": "Dashboard",
+    "reviewApplications": "Review Applications",
+    "manageRoles": "Manage Roles",
+    "leaderDashboard": "Leader Dashboard",
+    "recommendations": "Recommendations",
+    "leaderAccess": "Leader Access",
+    "application": "Application",
+    "accountSettings": "Account Settings",
+    "language": "Language",
+    "signOut": "Sign Out"
+  },
+  "admin": {
+    "roles": {
+      "title": "Manage Roles",
+      "subtitle": "Manage user roles and permissions. Approve bishop and stake president requests when ready.",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "leaderApproval": "Leader Approval"
+      },
+      "cannotChangeRole": "Cannot change your role",
+      "nA": "N/A",
+      "approved": "Approved",
+      "pending": "Pending",
+      "approveLeader": "Approve this leader account?"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "overview": {
+        "totalSubmissions": "Total Submissions",
+        "awaitingReview": "Awaiting Review",
+        "approved": "Approved",
+        "today": "Today"
+      }
+    }
+  },
+  "leader": {
+    "greeting": {
+      "admin": "Hi, Admin",
+      "sessionLeader": "Hi, Session Leader",
+      "stakePresident": "Hi, Stake President",
+      "bishop": "Hi, Bishop",
+      "applicant": "Hi, Applicant"
+    }
+  },
+  "status": {
+    "draft": "Draft",
+    "awaiting": "Awaiting",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "reviewed": "Reviewed",
+    "submitted": "Submitted"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "passwordTooShort": "Password must be at least {{min}} characters",
+    "passwordsDoNotMatch": "Passwords do not match"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found."
+  }
+}
+
