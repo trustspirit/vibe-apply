@@ -66,6 +66,8 @@ const AccountSettings = () => {
   const canApprove = isAdmin || isSessionLeader || isStakePresident || isBishop;
 
   useEffect(() => {
+    setError('');
+    setSuccess('');
     if (activeTab === 'approvals' && canApprove) {
       loadChangeRequests();
     }
@@ -549,6 +551,17 @@ const AccountSettings = () => {
               <p className={styles.sectionDescription}>
                 {t('accountSettings.deleteUsers.description')}
               </p>
+
+              {error && (
+                <div className={`${styles.message} ${styles.messageError}`}>
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className={`${styles.message} ${styles.messageSuccess}`}>
+                  {success}
+                </div>
+              )}
 
               <div className={styles.deleteControls}>
                 <TextField
