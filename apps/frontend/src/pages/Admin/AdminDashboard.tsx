@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, SummaryCard } from '@/compone
 import { ROUTES } from '@/utils/constants';
 import { GENDER_COLORS } from '@/utils/chartConstants';
 import { resetTimeToMidnight } from '@/utils/validationConstants';
+import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import type { Application } from '@vibe-apply/shared';
 import styles from './AdminDashboard.module.scss';
 
@@ -129,12 +130,18 @@ const AdminDashboard = () => {
     }, {} as Record<string, { applications: number; recommendations: number }>);
 
     const stakeWardData: StakeWardData[] = Object.entries(stakeWardMap).map(([key, counts]) => {
-      const [stake, ward] = key.split(' | ');
-      const shortStake = stake.replace(' Stake', '');
-      const shortWard = ward.replace(' Ward', '');
+      const [stakeKey, wardKey] = key.split(' | ');
+      const stakeLabel = stakeKey && stakeKey !== 'Unknown Stake' 
+        ? getStakeLabel(stakeKey) || stakeKey 
+        : 'Unknown Stake';
+      const wardLabel = stakeKey && wardKey && wardKey !== 'Unknown Ward'
+        ? getWardLabel(stakeKey, wardKey) || wardKey
+        : 'Unknown Ward';
+      const shortStake = stakeLabel.replace(' 스테이크', '').replace(' 지방부', '');
+      const shortWard = wardLabel.replace(' 와드', '').replace(' 지부', '');
       return { 
         label: `${shortStake}\n${shortWard}`, 
-        fullLabel: `${stake} - ${ward}`,
+        fullLabel: `${stakeLabel} - ${wardLabel}`,
         applications: counts.applications,
         recommendations: counts.recommendations,
       };

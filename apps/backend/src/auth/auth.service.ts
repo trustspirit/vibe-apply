@@ -156,17 +156,19 @@ export class AuthService {
   }
 
   async signIn(signInDto: SignInDto): Promise<TokenResponse> {
-    const { email } = signInDto;
+    const { email, password } = signInDto;
 
     try {
-      const userRecord = await this.firebaseService
-        .getAuth()
-        .getUserByEmail(email);
+      // Verify password using Firebase Auth REST API
+      const decodedToken = await this.firebaseService.verifyPassword(
+        email,
+        password,
+      );
 
       const userDoc = await this.firebaseService
         .getFirestore()
         .collection('users')
-        .doc(userRecord.uid)
+        .doc(decodedToken.uid)
         .get();
 
       if (!userDoc.exists) {
@@ -178,7 +180,7 @@ export class AuthService {
         throw new UnauthorizedException('User data not found');
       }
 
-      const user = this.mapFirestoreDataToUser(userRecord.uid, userData);
+      const user = this.mapFirestoreDataToUser(decodedToken.uid, userData);
       const tokens = this.generateTokens(user);
 
       return {
@@ -186,7 +188,13 @@ export class AuthService {
         ...tokens,
         user: this.omitPassword(user),
       };
-    } catch {
+    } catch (error: any) {
+      if (error.message === 'Invalid password' || error.message === 'Email not found') {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid credentials');
     }
   }
@@ -472,6 +480,25 @@ export class AuthService {
       throw new ConflictException('Stake and ward are already set to these values');
     }
 
+    // Cancel any existing pending requests for this user
+    const existingPendingRequests = await this.firebaseService
+      .getFirestore()
+      .collection('stakeWardChangeRequests')
+      .where('userId', '==', uid)
+      .where('status', '==', 'pending')
+      .get();
+
+    const cancelPromises = existingPendingRequests.docs.map((doc) =>
+      doc.ref.update({
+        status: 'rejected',
+        approvedAt: new Date().toISOString(),
+        approvedBy: uid,
+        approvedByName: user.name,
+      })
+    );
+
+    await Promise.all(cancelPromises);
+
     const requestData = {
       userId: uid,
       userName: user.name,
@@ -510,8 +537,8 @@ export class AuthService {
   ): Promise<StakeWardChangeRequest[]> {
     const approver = await this.getUser(approverId);
     const approverRole = approver.role;
-    const approverStake = approver.stake;
-    const approverWard = approver.ward;
+    const approverStake = approver.stake?.trim().toLowerCase() || '';
+    const approverWard = approver.ward?.trim().toLowerCase() || '';
 
     const query = this.firebaseService
       .getFirestore()
@@ -531,11 +558,11 @@ export class AuthService {
     const finalRequests: StakeWardChangeRequest[] = [];
     for (const request of allRequests) {
       if (approverRole === UserRole.STAKE_PRESIDENT) {
-        if (request.userRole === UserRole.BISHOP && request.requestedStake === approverStake) {
+        if (request.userRole === UserRole.BISHOP && request.requestedStake?.trim().toLowerCase() === approverStake) {
           finalRequests.push(request);
         }
       } else if (approverRole === UserRole.BISHOP) {
-        if (request.userRole === UserRole.APPLICANT && request.requestedWard === approverWard) {
+        if (request.userRole === UserRole.APPLICANT && request.requestedWard?.trim().toLowerCase() === approverWard) {
           finalRequests.push(request);
         }
       }
@@ -550,8 +577,8 @@ export class AuthService {
   ): Promise<{ message: string }> {
     const approver = await this.getUser(approverId);
     const approverRole = approver.role;
-    const approverStake = approver.stake;
-    const approverWard = approver.ward;
+    const approverStake = approver.stake?.trim().toLowerCase() || '';
+    const approverWard = approver.ward?.trim().toLowerCase() || '';
 
     const requestDoc = await this.firebaseService
       .getFirestore()
@@ -572,11 +599,11 @@ export class AuthService {
       let hasPermission = false;
       
       if (approverRole === UserRole.STAKE_PRESIDENT) {
-        if (request.userRole === UserRole.BISHOP && request.requestedStake === approverStake) {
+        if (request.userRole === UserRole.BISHOP && request.requestedStake?.trim().toLowerCase() === approverStake) {
           hasPermission = true;
         }
       } else if (approverRole === UserRole.BISHOP) {
-        if (request.userRole === UserRole.APPLICANT && request.requestedWard === approverWard) {
+        if (request.userRole === UserRole.APPLICANT && request.requestedWard?.trim().toLowerCase() === approverWard) {
           hasPermission = true;
         }
       }

@@ -63,4 +63,45 @@ export class FirebaseService {
   async deleteUser(uid: string): Promise<void> {
     return this.auth.deleteUser(uid);
   }
+
+  async verifyPassword(
+    email: string,
+    password: string,
+  ): Promise<admin.auth.DecodedIdToken> {
+    const apiKey = this.configService.get<string>('FIREBASE_WEB_API_KEY');
+    if (!apiKey) {
+      throw new Error('FIREBASE_WEB_API_KEY is not configured');
+    }
+
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      if (error.error?.message === 'INVALID_PASSWORD') {
+        throw new Error('Invalid password');
+      }
+      if (error.error?.message === 'EMAIL_NOT_FOUND') {
+        throw new Error('Email not found');
+      }
+      throw new Error(error.error?.message || 'Authentication failed');
+    }
+
+    const data = await response.json();
+    const idToken = data.idToken;
+
+    return this.auth.verifyIdToken(idToken);
+  }
 }

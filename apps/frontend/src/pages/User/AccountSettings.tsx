@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { authApi, usersApi } from '@/services/api';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
+import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import styles from './AccountSettings.module.scss';
 
 interface AccountForm {
@@ -392,8 +393,15 @@ const AccountSettings = () => {
                   {t(
                     'accountSettings.sections.churchInformation.pendingAlert',
                     {
-                      stake: pendingStake,
-                      ward: pendingWard,
+                      stake:
+                        pendingStake
+                          ? getStakeLabel(pendingStake) || pendingStake
+                          : '',
+                      ward:
+                        pendingStake && pendingWard
+                          ? getWardLabel(pendingStake, pendingWard) ||
+                            pendingWard
+                          : pendingWard || '',
                     }
                   )}
                 </Alert>
@@ -485,7 +493,13 @@ const AccountSettings = () => {
                             {t('common.from')}:
                           </span>
                           <span>
-                            {request.currentStake} / {request.currentWard}
+                            {getStakeLabel(request.currentStake) ||
+                              request.currentStake}{' '}
+                            /{' '}
+                            {getWardLabel(
+                              request.currentStake,
+                              request.currentWard
+                            ) || request.currentWard}
                           </span>
                         </div>
                         <div className={styles.changeArrow}>→</div>
@@ -494,7 +508,13 @@ const AccountSettings = () => {
                             {t('common.to')}:
                           </span>
                           <span>
-                            {request.requestedStake} / {request.requestedWard}
+                            {getStakeLabel(request.requestedStake) ||
+                              request.requestedStake}{' '}
+                            /{' '}
+                            {getWardLabel(
+                              request.requestedStake,
+                              request.requestedWard
+                            ) || request.requestedWard}
                           </span>
                         </div>
                       </div>
@@ -641,10 +661,15 @@ const AccountSettings = () => {
                             <td>{user.name}</td>
                             <td>{user.email}</td>
                             <td className={styles.stakeWardCell}>
-                              {user.stake || '-'}
+                              {user.stake
+                                ? getStakeLabel(user.stake) || user.stake
+                                : '-'}
                             </td>
                             <td className={styles.stakeWardCell}>
-                              {user.ward || '-'}
+                              {user.stake && user.ward
+                                ? getWardLabel(user.stake, user.ward) ||
+                                  user.ward
+                                : user.ward || '-'}
                             </td>
                             <td>
                               <StatusChip
@@ -761,7 +786,9 @@ const AccountSettings = () => {
                             {t('common.stake')}
                           </label>
                           <div className={styles.cardValue}>
-                            {user.stake || '-'}
+                            {user.stake
+                              ? getStakeLabel(user.stake) || user.stake
+                              : '-'}
                           </div>
                         </div>
                         <div className={styles.cardSection}>
@@ -769,7 +796,9 @@ const AccountSettings = () => {
                             {t('common.ward')}
                           </label>
                           <div className={styles.cardValue}>
-                            {user.ward || '-'}
+                            {user.stake && user.ward
+                              ? getWardLabel(user.stake, user.ward) || user.ward
+                              : user.ward || '-'}
                           </div>
                         </div>
                         <div className={styles.cardActions}>

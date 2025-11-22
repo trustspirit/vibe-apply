@@ -18,6 +18,7 @@ import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui';
 import { ROUTES } from '@/utils/constants';
 import { CHART_COLORS } from '@/utils/chartConstants';
+import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import styles from './LeaderDashboard.module.scss';
 
 interface LocationData {
@@ -139,9 +140,9 @@ const LeaderDashboard = () => {
 
   const locationCounts = useMemo(() => {
     const groups = combinedItems.reduce<Record<string, { recommendations: number; applications: number }>>((acc, item) => {
-      const stake = item.stake || 'Unknown Stake';
-      const ward = item.ward || 'Unknown Ward';
-      const key = `${stake} • ${ward}`;
+      const stakeKey = item.stake || 'Unknown Stake';
+      const wardKey = item.ward || 'Unknown Ward';
+      const key = `${stakeKey} • ${wardKey}`;
       if (!acc[key]) {
         acc[key] = { recommendations: 0, applications: 0 };
       }
@@ -152,11 +153,20 @@ const LeaderDashboard = () => {
       }
       return acc;
     }, {});
-    return Object.entries(groups).map(([name, counts]): LocationData => ({ 
-      name, 
-      Recommendations: counts.recommendations,
-      Applications: counts.applications
-    }));
+    return Object.entries(groups).map(([key, counts]): LocationData => {
+      const [stakeKey, wardKey] = key.split(' • ');
+      const stakeLabel = stakeKey && stakeKey !== 'Unknown Stake'
+        ? getStakeLabel(stakeKey) || stakeKey
+        : 'Unknown Stake';
+      const wardLabel = stakeKey && wardKey && wardKey !== 'Unknown Ward'
+        ? getWardLabel(stakeKey, wardKey) || wardKey
+        : 'Unknown Ward';
+      return {
+        name: `${stakeLabel} • ${wardLabel}`,
+        Recommendations: counts.recommendations,
+        Applications: counts.applications
+      };
+    });
   }, [combinedItems]);
 
   const genderCounts = useMemo(() => {
