@@ -90,9 +90,9 @@ const CompleteProfile = () => {
   return (
     <div className={`${styles.auth} ${styles.authCentered}`}>
       <div className={styles.panel}>
-        <h1 className={styles.title}>Complete Your Profile</h1>
+        <h1 className={styles.title}>{t('auth.completeProfile.title')}</h1>
         <p className={styles.subtitle}>
-          Welcome {currentUser.name}! Please select your role to continue.
+          {t('auth.completeProfile.welcome', { name: currentUser.name })}
         </p>
 
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -106,14 +106,14 @@ const CompleteProfile = () => {
           </div>
 
           <div className={styles.label}>
-            <span>Account Type</span>
+            <span>{t('auth.completeProfile.accountType')}</span>
             <ComboBox
               options={roleOptions}
               value={form.role}
               onChange={handleRoleChange}
             />
             <p className={styles.choiceHint}>
-              Session Leader, Bishop and Stake President access requires admin approval before activation.
+              {t('auth.completeProfile.approvalHint')}
             </p>
           </div>
 
@@ -125,7 +125,7 @@ const CompleteProfile = () => {
             className={styles.submit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Completing Profile...' : 'Complete Profile'}
+            {isSubmitting ? t('auth.completeProfile.buttonLoading') : t('auth.completeProfile.button')}
           </Button>
         </form>
       </div>

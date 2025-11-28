@@ -60,7 +60,10 @@
       "title": "Complete Your Profile",
       "subtitle": "Please provide the following information to complete your profile.",
       "button": "Complete Profile",
-      "buttonLoading": "Completing Profile..."
+      "buttonLoading": "Completing Profile...",
+      "welcome": "Welcome {{name}}! Please select your role to continue.",
+      "accountType": "Account Type",
+      "approvalHint": "Session Leader, Bishop and Stake President access requires admin approval before activation."
     }
   },
   "accountSettings": {
@@ -178,11 +181,106 @@
   },
   "leader": {
     "greeting": {
-      "admin": "Hi, Admin",
-      "sessionLeader": "Hi, Session Leader",
-      "stakePresident": "Hi, Stake President",
-      "bishop": "Hi, Bishop",
-      "applicant": "Hi, Applicant"
+      "hi": "Hi",
+      "admin": "Admin",
+      "sessionLeader": "Session Leader",
+      "stakePresident": "Stake President",
+      "bishop": "Bishop",
+      "applicant": "Applicant"
+    },
+    "dashboard": {
+      "title": "Leader Dashboard",
+      "subtitle": "Monitor your recommendations and see where your applicants are coming from.",
+      "createRecommendation": "Create Recommendation",
+      "stats": {
+        "draftRecommendations": "Draft Recommendations",
+        "awaitingReview": "Awaiting Review",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "applicationsInStake": "Applications in Stake",
+        "newRecommendationsToday": "New Recommendations Today",
+        "newApplicationsToday": "New Applications Today"
+      },
+      "charts": {
+        "stakeWardDistribution": "Stake & Ward Distribution",
+        "genderBreakdown": "Gender Breakdown",
+        "noData": "No data yet to show location distribution."
+      }
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "subtitle": "Manage drafts and submitted recommendations. Update details and resubmit when ready.",
+      "createRecommendation": "Create Recommendation",
+      "tabs": {
+        "all": "All",
+        "draft": "Draft",
+        "submitted": "Awaiting Review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "form": {
+        "applicantName": "Applicant Name",
+        "age": "Age",
+        "email": "Email",
+        "phone": "Phone",
+        "stake": "Stake",
+        "ward": "Ward",
+        "gender": "Gender (optional)",
+        "additionalInfo": "Additional Information",
+        "additionalInfoPlaceholder": "Share any context or strengths that make this applicant a great fit.",
+        "submitRecommendation": "Submit Recommendation",
+        "saveDraft": "Save Draft",
+        "cancel": "Cancel",
+        "editingAlert": "This recommendation is currently submitted. Save as draft or resubmit after making updates."
+      },
+      "validation": {
+        "nameRequired": "Name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address.",
+        "phoneRequired": "Phone number is required.",
+        "stakeRequired": "Stake is required.",
+        "wardRequired": "Ward is required.",
+        "resolveFields": "Please resolve the highlighted fields before submitting."
+      },
+      "tags": {
+        "recommended": "Recommended",
+        "applied": "Applied"
+      },
+      "details": {
+        "applicationSubmitted": "Application submitted",
+        "updated": "Updated",
+        "additionalInfo": "Additional Information",
+        "noAdditionalInfo": "No additional information provided.",
+        "selectRecommendation": "Select a recommendation to review its details.",
+        "lockedMessage": "This recommendation has been reviewed and is now locked. You can no longer modify or delete it."
+      },
+      "actions": {
+        "recommend": "Recommend",
+        "modify": "Modify",
+        "submit": "Submit",
+        "cancelSubmission": "Cancel Submission",
+        "delete": "Delete"
+      },
+      "messages": {
+        "recommended": "{{name}} has been recommended for review.",
+        "submitted": "Recommendation submitted for review.",
+        "draftSaved": "Draft saved successfully.",
+        "removed": "Recommendation removed.",
+        "movedToDraft": "Recommendation moved back to draft.",
+        "failedToRecommend": "Failed to recommend applicant.",
+        "failedToSave": "Failed to save recommendation.",
+        "failedToDelete": "Failed to delete recommendation.",
+        "failedToSubmit": "Failed to submit recommendation.",
+        "failedToCancel": "Failed to cancel submission."
+      },
+      "empty": "No recommendations in this view yet.",
+      "mobileEditingNote": "Editing this recommendation above. Submit or save your changes when ready."
+    },
+    "pending": {
+      "title": "Leader Access Pending",
+      "message": "Thanks for volunteering to serve as a leader. An administrator is reviewing your request and will approve it soon. You will receive access to the leader tools once approved.",
+      "hint": "You can sign out for now or return later to check the status of your request.",
+      "signOut": "Sign Out"
     }
   },
   "status": {
@@ -195,9 +293,65 @@
   },
   "validation": {
     "required": "This field is required",
+    "requiredWithField": "{{field}} is required.",
     "invalidEmail": "Invalid email address",
+    "invalidAge": "Enter a valid age.",
     "passwordTooShort": "Password must be at least {{min}} characters",
     "passwordsDoNotMatch": "Passwords do not match"
+  },
+  "application": {
+    "title": "Application",
+    "subtitle": {
+      "hasRecommendation": "You have already been recommended by your leader.",
+      "draftSaved": "Your draft is saved. Complete the required fields and submit when you are ready.",
+      "canUpdate": "You can update your submission while it is being reviewed.",
+      "locked": "Your submission is locked while a decision is finalized.",
+      "start": "Start your application to be considered."
+    },
+    "recommendationAlert": {
+      "title": "Already Recommended",
+      "message": "You have already been recommended by your leader. Please contact your bishop or stake president if you have questions."
+    },
+    "overview": {
+      "title": "Submission Overview",
+      "draftWarning": "This application is saved as a draft. Submit it when the required fields are complete.",
+      "status": "Status",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "age": "Age",
+      "stake": "Stake",
+      "ward": "Ward",
+      "additionalInfo": "Additional Information",
+      "noAdditionalInfo": "No additional details provided."
+    },
+    "form": {
+      "name": "Name",
+      "age": "Age",
+      "email": "Email",
+      "phone": "Phone",
+      "gender": "Gender (optional)",
+      "genderSelect": "Select gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "additionalInfo": "Additional Information",
+      "additionalInfoPlaceholder": "Share any relevant experience or context."
+    },
+    "actions": {
+      "submit": "Submit Application",
+      "saveDraft": "Save Draft",
+      "cancel": "Cancel",
+      "edit": "Edit Submission",
+      "start": "Start Application"
+    },
+    "messages": {
+      "submitted": "Your application has been submitted and is awaiting review.",
+      "draftSaved": "Draft saved. You can return anytime to complete and submit your application.",
+      "fixFields": "Please fix the highlighted fields before submitting.",
+      "failedToSubmit": "Failed to submit application.",
+      "failedToSave": "Failed to save draft.",
+      "lockedMessage": "Edits are unavailable because your submission is being finalized."
+    }
   },
   "errors": {
     "generic": "An error occurred. Please try again.",

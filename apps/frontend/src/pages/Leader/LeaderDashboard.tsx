@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Bar,
   BarChart,
@@ -53,6 +54,7 @@ interface CombinedItem {
 }
 
 const LeaderDashboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, applications, leaderRecommendations, refetchApplications, refetchRecommendations } = useApp();
 
@@ -205,10 +207,9 @@ const LeaderDashboard = () => {
     <section className={styles.leaderDashboard}>
       <header className={styles.header}>
         <div className={styles.intro}>
-          <h1 className={styles.title}>Leader Dashboard</h1>
+          <h1 className={styles.title}>{t('leader.dashboard.title')}</h1>
           <p className={styles.subtitle}>
-            Monitor your recommendations and see where your applicants are
-            coming from.
+            {t('leader.dashboard.subtitle')}
           </p>
         </div>
         <Button
@@ -216,14 +217,14 @@ const LeaderDashboard = () => {
           variant='primary'
           onClick={handleCreateRecommendation}
         >
-          Create Recommendation
+          {t('leader.dashboard.createRecommendation')}
         </Button>
       </header>
 
       <div className={styles.stats}>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            Draft Recommendations
+            {t('leader.dashboard.stats.draftRecommendations')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.draft}
@@ -231,7 +232,7 @@ const LeaderDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            Awaiting Review
+            {t('leader.dashboard.stats.awaitingReview')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.submitted}
@@ -239,7 +240,7 @@ const LeaderDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            Approved
+            {t('leader.dashboard.stats.approved')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.approved}
@@ -247,7 +248,7 @@ const LeaderDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            Rejected
+            {t('leader.dashboard.stats.rejected')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.rejected}
@@ -255,7 +256,7 @@ const LeaderDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            Applications in Stake
+            {t('leader.dashboard.stats.applicationsInStake')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.applications}
@@ -263,7 +264,7 @@ const LeaderDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            New Recommendations Today
+            {t('leader.dashboard.stats.newRecommendationsToday')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.newRecommendationsToday}
@@ -271,7 +272,7 @@ const LeaderDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>
-            New Applications Today
+            {t('leader.dashboard.stats.newApplicationsToday')}
           </span>
           <span className={styles.statValue}>
             {statusCounts.newApplicationsToday}
@@ -282,7 +283,7 @@ const LeaderDashboard = () => {
       <div className={styles.charts}>
         <div className={styles.chart}>
           <h2 className={styles.chartTitle}>
-            Stake &amp; Ward Distribution
+            {t('leader.dashboard.charts.stakeWardDistribution')}
           </h2>
           {locationCounts.length ? (
             <ResponsiveContainer width='100%' height={260}>
@@ -306,12 +307,12 @@ const LeaderDashboard = () => {
             </ResponsiveContainer>
           ) : (
             <p className={styles.empty}>
-              No data yet to show location distribution.
+              {t('leader.dashboard.charts.noData')}
             </p>
           )}
         </div>
         <div className={styles.chart}>
-          <h2 className={styles.chartTitle}>Gender Breakdown</h2>
+          <h2 className={styles.chartTitle}>{t('leader.dashboard.charts.genderBreakdown')}</h2>
           <ResponsiveContainer width='100%' height={260}>
             <PieChart>
               <Pie

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Avatar, StatusChip } from '@/components/ui';
-import { ROUTES, USER_ROLES } from '@/utils/constants';
+import { ROUTES, USER_ROLES, ROLE_KEYS } from '@/utils/constants';
 import { getRoleConfig } from '@/utils/roleConfig';
 import styles from './GlobalNav.module.scss';
 
@@ -17,7 +17,7 @@ const GlobalNav = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
-  const { navItems, greeting: roleGreeting, label: roleLabel } = getRoleConfig(
+  const { navItems, label: roleLabel } = getRoleConfig(
     currentUser.role,
     currentUser.leaderStatus,
     t
@@ -68,16 +68,19 @@ const GlobalNav = () => {
     const updateGnbHeight = () => {
       if (gnbRef.current) {
         const height = gnbRef.current.offsetHeight;
-        document.documentElement.style.setProperty('--gnb-height', `${height}px`);
+        document.documentElement.style.setProperty(
+          '--gnb-height',
+          `${height}px`
+        );
       }
     };
 
     updateGnbHeight();
-    
+
     const handleResize = () => {
       setTimeout(updateGnbHeight, 100);
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [currentUser]);
@@ -90,7 +93,11 @@ const GlobalNav = () => {
     <header className={styles.nav} ref={gnbRef}>
       <div className={styles.container}>
         <div
-          className={hasNav ? clsx(styles.placeholder, styles.placeholderActive) : styles.placeholder}
+          className={
+            hasNav
+              ? clsx(styles.placeholder, styles.placeholderActive)
+              : styles.placeholder
+          }
           aria-hidden
         />
         {hasNav ? (
@@ -99,7 +106,9 @@ const GlobalNav = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => clsx(styles.link, isActive && styles.linkActive)}
+                className={({ isActive }) =>
+                  clsx(styles.link, isActive && styles.linkActive)
+                }
               >
                 {item.label}
               </NavLink>
@@ -109,20 +118,39 @@ const GlobalNav = () => {
         <div className={styles.profile}>
           <div className={styles.profileInfo}>
             <span className={styles.greeting}>
-              {t('leader.greeting.' + (currentUser.role === USER_ROLES.ADMIN ? 'admin' : currentUser.role === USER_ROLES.SESSION_LEADER ? 'sessionLeader' : currentUser.role === USER_ROLES.STAKE_PRESIDENT ? 'stakePresident' : currentUser.role === USER_ROLES.BISHOP ? 'bishop' : 'applicant'))}
+              {(() => {
+                const hi = t('leader.greeting.hi');
+                let displayName =
+                  currentUser.name?.trim() ||
+                  (() => {
+                    const roleKey =
+                      currentUser.role === USER_ROLES.ADMIN
+                        ? ROLE_KEYS.ADMIN
+                        : currentUser.role === USER_ROLES.SESSION_LEADER
+                          ? ROLE_KEYS.SESSION_LEADER
+                          : currentUser.role === USER_ROLES.STAKE_PRESIDENT
+                            ? ROLE_KEYS.STAKE_PRESIDENT
+                            : currentUser.role === USER_ROLES.BISHOP
+                              ? ROLE_KEYS.BISHOP
+                              : ROLE_KEYS.APPLICANT;
+                    return t(`leader.greeting.${roleKey}`);
+                  })();
+                displayName = displayName.replace(/\s*\([^)]*\)/g, '').trim();
+                return `${hi}, ${displayName}`;
+              })()}
             </span>
             <StatusChip
               status={currentUser.role}
               tone={
                 currentUser.role === USER_ROLES.ADMIN
-                  ? 'admin'
+                  ? ROLE_KEYS.ADMIN
                   : currentUser.role === USER_ROLES.STAKE_PRESIDENT
-                    ? 'stakePresident'
+                    ? ROLE_KEYS.STAKE_PRESIDENT
                     : currentUser.role === USER_ROLES.BISHOP
-                      ? 'bishop'
+                      ? ROLE_KEYS.BISHOP
                       : currentUser.role === USER_ROLES.SESSION_LEADER
-                        ? 'sessionLeader'
-                        : 'applicant'
+                        ? ROLE_KEYS.SESSION_LEADER
+                        : ROLE_KEYS.APPLICANT
               }
               label={roleLabel}
               className={styles.roleChip}
@@ -139,13 +167,17 @@ const GlobalNav = () => {
               <div className={styles.menu} ref={menuRef}>
                 <button
                   className={styles.menuItem}
-                  onClick={() => handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))}
+                  onClick={() =>
+                    handleMenuAction(() => navigate(ROUTES.ACCOUNT_SETTINGS))
+                  }
                 >
                   {t('navigation.accountSettings')}
                 </button>
                 <div className={styles.menuDivider} />
                 <div className={styles.languageSection}>
-                  <div className={styles.languageLabel}>{t('navigation.language')}</div>
+                  <div className={styles.languageLabel}>
+                    {t('navigation.language')}
+                  </div>
                   <div className={styles.languageButtons}>
                     <button
                       className={clsx(

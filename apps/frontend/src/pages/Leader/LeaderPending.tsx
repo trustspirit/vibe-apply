@@ -1,10 +1,12 @@
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui';
 import { useApp } from '@/context/AppContext';
 import { ROUTES, USER_ROLES } from '@/utils/constants';
 import styles from './LeaderPending.module.scss';
 
 const LeaderPending = () => {
+  const { t } = useTranslation();
   const { currentUser, signOut } = useApp();
 
   if (currentUser?.leaderStatus === 'approved') {
@@ -17,18 +19,15 @@ const LeaderPending = () => {
   return (
     <section className={styles.leaderPending}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Leader Access Pending</h1>
+        <h1 className={styles.title}>{t('leader.pending.title')}</h1>
         <p className={styles.message}>
-          Thanks for volunteering to serve as a leader. An administrator is
-          reviewing your request and will approve it soon. You will receive
-          access to the leader tools once approved.
+          {t('leader.pending.message')}
         </p>
         <p className={styles.hint}>
-          You can sign out for now or return later to check the status of your
-          request.
+          {t('leader.pending.hint')}
         </p>
         <Button type='button' onClick={signOut}>
-          Sign Out
+          {t('leader.pending.signOut')}
         </Button>
       </div>
     </section>

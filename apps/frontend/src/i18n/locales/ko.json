@@ -60,7 +60,10 @@
       "title": "프로필 완성",
       "subtitle": "프로필을 완성하려면 다음 정보를 제공해주세요.",
       "button": "프로필 완성",
-      "buttonLoading": "프로필 완성 중..."
+      "buttonLoading": "프로필 완성 중...",
+      "welcome": "{{name}}님, 환영합니다! 계속하려면 역할을 선택하세요.",
+      "accountType": "계정 유형",
+      "approvalHint": "대회 지도자, 감독 및 스테이크 회장 액세스는 활성화 전에 관리자 승인이 필요합니다."
     }
   },
   "accountSettings": {
@@ -178,11 +181,106 @@
   },
   "leader": {
     "greeting": {
-      "admin": "안녕하세요, 관리자",
-      "sessionLeader": "안녕하세요, 대회 지도자",
-      "stakePresident": "안녕하세요, 스테이크 회장",
-      "bishop": "안녕하세요, 감독",
-      "applicant": "안녕하세요, 지원자"
+      "hi": "안녕하세요",
+      "admin": "관리자",
+      "sessionLeader": "대회 지도자",
+      "stakePresident": "스테이크 회장",
+      "bishop": "감독",
+      "applicant": "지원자"
+    },
+    "dashboard": {
+      "title": "리더 대시보드",
+      "subtitle": "추천서를 모니터링하고 지원자가 어디서 오는지 확인하세요.",
+      "createRecommendation": "추천서 작성",
+      "stats": {
+        "draftRecommendations": "초안 추천서",
+        "awaitingReview": "검토 대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨",
+        "applicationsInStake": "스테이크 내 신청서",
+        "newRecommendationsToday": "오늘 새 추천서",
+        "newApplicationsToday": "오늘 새 신청서"
+      },
+      "charts": {
+        "stakeWardDistribution": "스테이크 및 와드 분포",
+        "genderBreakdown": "성별 구성",
+        "noData": "위치 분포를 표시할 데이터가 아직 없습니다."
+      }
+    },
+    "recommendations": {
+      "title": "추천서",
+      "subtitle": "초안 및 제출된 추천서를 관리하세요. 준비되면 세부 정보를 업데이트하고 다시 제출하세요.",
+      "createRecommendation": "추천서 작성",
+      "tabs": {
+        "all": "전체",
+        "draft": "초안",
+        "submitted": "검토 대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨"
+      },
+      "form": {
+        "applicantName": "지원자 이름",
+        "age": "나이",
+        "email": "이메일",
+        "phone": "전화번호",
+        "stake": "스테이크",
+        "ward": "와드",
+        "gender": "성별 (선택사항)",
+        "additionalInfo": "추가 정보",
+        "additionalInfoPlaceholder": "이 지원자가 적합한 이유에 대한 맥락이나 강점을 공유해주세요.",
+        "submitRecommendation": "추천서 제출",
+        "saveDraft": "초안 저장",
+        "cancel": "취소",
+        "editingAlert": "이 추천서는 현재 제출된 상태입니다. 업데이트 후 초안으로 저장하거나 다시 제출하세요."
+      },
+      "validation": {
+        "nameRequired": "이름은 필수입니다.",
+        "emailRequired": "이메일은 필수입니다.",
+        "emailInvalid": "유효한 이메일 주소를 입력하세요.",
+        "phoneRequired": "전화번호는 필수입니다.",
+        "stakeRequired": "스테이크는 필수입니다.",
+        "wardRequired": "와드는 필수입니다.",
+        "resolveFields": "제출하기 전에 강조 표시된 필드를 해결해주세요."
+      },
+      "tags": {
+        "recommended": "추천됨",
+        "applied": "신청됨"
+      },
+      "details": {
+        "applicationSubmitted": "신청서 제출됨",
+        "updated": "업데이트됨",
+        "additionalInfo": "추가 정보",
+        "noAdditionalInfo": "추가 정보가 제공되지 않았습니다.",
+        "selectRecommendation": "세부 정보를 검토하려면 추천서를 선택하세요.",
+        "lockedMessage": "이 추천서는 검토되었으며 이제 잠겨 있습니다. 더 이상 수정하거나 삭제할 수 없습니다."
+      },
+      "actions": {
+        "recommend": "추천",
+        "modify": "수정",
+        "submit": "제출",
+        "cancelSubmission": "제출 취소",
+        "delete": "삭제"
+      },
+      "messages": {
+        "recommended": "{{name}}이(가) 검토를 위해 추천되었습니다.",
+        "submitted": "추천서가 검토를 위해 제출되었습니다.",
+        "draftSaved": "초안이 성공적으로 저장되었습니다.",
+        "removed": "추천서가 제거되었습니다.",
+        "movedToDraft": "추천서가 초안으로 다시 이동되었습니다.",
+        "failedToRecommend": "지원자 추천에 실패했습니다.",
+        "failedToSave": "추천서 저장에 실패했습니다.",
+        "failedToDelete": "추천서 삭제에 실패했습니다.",
+        "failedToSubmit": "추천서 제출에 실패했습니다.",
+        "failedToCancel": "제출 취소에 실패했습니다."
+      },
+      "empty": "이 보기에 추천서가 아직 없습니다.",
+      "mobileEditingNote": "위에서 이 추천서를 편집 중입니다. 준비되면 변경 사항을 제출하거나 저장하세요."
+    },
+    "pending": {
+      "title": "리더 액세스 대기 중",
+      "message": "리더로 봉사하기 위해 지원해주셔서 감사합니다. 관리자가 요청을 검토 중이며 곧 승인할 예정입니다. 승인되면 리더 도구에 액세스할 수 있습니다.",
+      "hint": "지금은 로그아웃하거나 나중에 다시 돌아와 요청 상태를 확인할 수 있습니다.",
+      "signOut": "로그아웃"
     }
   },
   "status": {
@@ -195,9 +293,65 @@
   },
   "validation": {
     "required": "이 필드는 필수입니다",
+    "requiredWithField": "{{field}}은(는) 필수입니다.",
     "invalidEmail": "유효하지 않은 이메일 주소",
+    "invalidAge": "유효한 나이를 입력하세요.",
     "passwordTooShort": "비밀번호는 최소 {{min}}자 이상이어야 합니다",
     "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다"
+  },
+  "application": {
+    "title": "신청서",
+    "subtitle": {
+      "hasRecommendation": "이미 지도자에 의해 추천되었습니다.",
+      "draftSaved": "초안이 저장되었습니다. 필수 필드를 완성하고 준비되면 제출하세요.",
+      "canUpdate": "검토 중인 동안 제출 내용을 업데이트할 수 있습니다.",
+      "locked": "결정이 확정되는 동안 제출 내용이 잠겨 있습니다.",
+      "start": "고려되도록 신청서를 시작하세요."
+    },
+    "recommendationAlert": {
+      "title": "이미 추천됨",
+      "message": "이미 지도자에 의해 추천되었습니다. 질문이 있으시면 감독이나 스테이크 회장에게 문의하세요."
+    },
+    "overview": {
+      "title": "제출 개요",
+      "draftWarning": "이 신청서는 초안으로 저장되었습니다. 필수 필드가 완성되면 제출하세요.",
+      "status": "상태",
+      "name": "이름",
+      "email": "이메일",
+      "phone": "전화번호",
+      "age": "나이",
+      "stake": "스테이크",
+      "ward": "와드",
+      "additionalInfo": "추가 정보",
+      "noAdditionalInfo": "추가 세부 정보가 제공되지 않았습니다."
+    },
+    "form": {
+      "name": "이름",
+      "age": "나이",
+      "email": "이메일",
+      "phone": "전화번호",
+      "gender": "성별 (선택사항)",
+      "genderSelect": "성별 선택",
+      "genderMale": "남성",
+      "genderFemale": "여성",
+      "additionalInfo": "추가 정보",
+      "additionalInfoPlaceholder": "관련 경험이나 맥락을 공유해주세요."
+    },
+    "actions": {
+      "submit": "신청서 제출",
+      "saveDraft": "초안 저장",
+      "cancel": "취소",
+      "edit": "제출 내용 편집",
+      "start": "신청서 시작"
+    },
+    "messages": {
+      "submitted": "신청서가 제출되었으며 검토를 기다리고 있습니다.",
+      "draftSaved": "초안이 저장되었습니다. 언제든지 돌아와서 신청서를 완성하고 제출할 수 있습니다.",
+      "fixFields": "제출하기 전에 강조 표시된 필드를 수정해주세요.",
+      "failedToSubmit": "신청서 제출에 실패했습니다.",
+      "failedToSave": "초안 저장에 실패했습니다.",
+      "lockedMessage": "제출 내용이 확정 중이므로 편집할 수 없습니다."
+    }
   },
   "errors": {
     "generic": "오류가 발생했습니다. 다시 시도해주세요.",

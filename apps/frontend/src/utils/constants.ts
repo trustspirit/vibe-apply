@@ -6,6 +6,14 @@ export const USER_ROLES = {
   APPLICANT: 'applicant',
 } as const;
 
+export const ROLE_KEYS = {
+  ADMIN: 'admin',
+  SESSION_LEADER: 'sessionLeader',
+  STAKE_PRESIDENT: 'stakePresident',
+  BISHOP: 'bishop',
+  APPLICANT: 'applicant',
+} as const;
+
 export const LEADER_STATUS = {
   PENDING: 'pending',
   APPROVED: 'approved',

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import type { Application, LeaderRecommendation, RecommendationStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
@@ -56,15 +57,8 @@ const emptyForm: RecommendationForm = {
   moreInfo: '',
 };
 
-const TAB_DEFS: TabItem[] = [
-  { id: 'all', label: 'All' },
-  { id: 'draft', label: 'Draft' },
-  { id: 'submitted', label: 'Awaiting Review' },
-  { id: 'approved', label: 'Approved' },
-  { id: 'rejected', label: 'Rejected' },
-];
-
 const LeaderRecommendations = () => {
+  const { t } = useTranslation();
   const { state } = useLocation();
   const {
     currentUser,
@@ -76,6 +70,14 @@ const LeaderRecommendations = () => {
     refetchRecommendations,
   } = useApp();
   const leaderId = currentUser?.id ?? null;
+
+  const TAB_DEFS: TabItem[] = [
+    { id: 'all', label: t('leader.recommendations.tabs.all') },
+    { id: 'draft', label: t('leader.recommendations.tabs.draft') },
+    { id: 'submitted', label: t('leader.recommendations.tabs.submitted') },
+    { id: 'approved', label: t('leader.recommendations.tabs.approved') },
+    { id: 'rejected', label: t('leader.recommendations.tabs.rejected') },
+  ];
 
   useEffect(() => {
     refetchApplications();
@@ -264,10 +266,10 @@ const LeaderRecommendations = () => {
       moreInfo: application.moreInfo ?? '',
     })
       .then(() => {
-        setFeedback(`${application.name} has been recommended for review.`);
+        setFeedback(t('leader.recommendations.messages.recommended', { name: application.name }));
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to recommend applicant.');
+        setFormError((error as Error).message || t('leader.recommendations.messages.failedToRecommend'));
       });
   };
 
@@ -302,7 +304,7 @@ const LeaderRecommendations = () => {
       form.gender === 'male' || form.gender === 'female' ? form.gender : '';
 
     if (!trimmedName) {
-      nextErrors.name = 'Name is required.';
+      nextErrors.name = t('leader.recommendations.validation.nameRequired');
     }
     if (
       Number.isNaN(normalizedAge) ||
@@ -312,18 +314,18 @@ const LeaderRecommendations = () => {
       nextErrors.age = AGE_ERROR_MESSAGE;
     }
     if (!trimmedEmail) {
-      nextErrors.email = 'Email is required.';
+      nextErrors.email = t('leader.recommendations.validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      nextErrors.email = 'Enter a valid email address.';
+      nextErrors.email = t('leader.recommendations.validation.emailInvalid');
     }
     if (!trimmedPhone) {
-      nextErrors.phone = 'Phone number is required.';
+      nextErrors.phone = t('leader.recommendations.validation.phoneRequired');
     }
     if (!trimmedStake) {
-      nextErrors.stake = 'Stake is required.';
+      nextErrors.stake = t('leader.recommendations.validation.stakeRequired');
     }
     if (!trimmedWard) {
-      nextErrors.ward = 'Ward is required.';
+      nextErrors.ward = t('leader.recommendations.validation.wardRequired');
     }
 
     return {
@@ -356,7 +358,7 @@ const LeaderRecommendations = () => {
 
     if (status === 'submitted' && Object.keys(nextErrors).length) {
       setErrors(nextErrors);
-      setFormError('Please resolve the highlighted fields before submitting.');
+      setFormError(t('leader.recommendations.validation.resolveFields'));
       return;
     }
 
@@ -375,13 +377,13 @@ const LeaderRecommendations = () => {
       .then(() => {
         setFeedback(
           status === 'submitted'
-            ? 'Recommendation submitted for review.'
-            : 'Draft saved successfully.'
+            ? t('leader.recommendations.messages.submitted')
+            : t('leader.recommendations.messages.draftSaved')
         );
         setCurrentFormId(undefined);
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to save recommendation.');
+        setFormError((error as Error).message || t('leader.recommendations.messages.failedToSave'));
       });
   };
 
@@ -407,7 +409,7 @@ const LeaderRecommendations = () => {
     }
     deleteLeaderRecommendation(leaderId, recommendationId)
       .then(() => {
-        setFeedback('Recommendation removed.');
+        setFeedback(t('leader.recommendations.messages.removed'));
         if (currentFormId === recommendationId) {
           setCurrentFormId(undefined);
         }
@@ -416,7 +418,7 @@ const LeaderRecommendations = () => {
         }
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to delete recommendation.');
+        setFormError((error as Error).message || t('leader.recommendations.messages.failedToDelete'));
       });
   };
 
@@ -443,11 +445,11 @@ const LeaderRecommendations = () => {
       status: 'submitted' as RecommendationStatus,
     })
       .then(() => {
-        setFeedback('Recommendation submitted for review.');
+        setFeedback(t('leader.recommendations.messages.submitted'));
         setSelectedId(recommendationId);
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to submit recommendation.');
+        setFormError((error as Error).message || t('leader.recommendations.messages.failedToSubmit'));
       });
   };
 
@@ -484,11 +486,11 @@ const LeaderRecommendations = () => {
       status: 'draft' as RecommendationStatus,
     })
       .then(() => {
-        setFeedback('Recommendation moved back to draft.');
+        setFeedback(t('leader.recommendations.messages.movedToDraft'));
         setSelectedId(recommendationId);
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to cancel submission.');
+        setFormError((error as Error).message || t('leader.recommendations.messages.failedToCancel'));
       });
   };
 
@@ -551,17 +553,17 @@ const LeaderRecommendations = () => {
           <div className={styles.listTags}>
             {!('isApplication' in item && item.isApplication) && (
               <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
-                Recommended
+                {t('leader.recommendations.tags.recommended')}
               </span>
             )}
             {'isApplication' in item && item.isApplication && (
               <span className={clsx(styles.listTag, styles.listTagApplication)}>
-                Applied
+                {t('leader.recommendations.tags.applied')}
               </span>
             )}
             {!('isApplication' in item && item.isApplication) && 'hasApplication' in item && item.hasApplication && (
               <span className={clsx(styles.listTag, styles.listTagApplication)}>
-                Applied
+                {t('leader.recommendations.tags.applied')}
               </span>
             )}
           </div>
@@ -583,8 +585,7 @@ const LeaderRecommendations = () => {
     >
       {editingOriginStatus === 'submitted' && (
         <p className={styles.alert}>
-          This recommendation is currently submitted. Save as draft or resubmit
-          after making updates.
+          {t('leader.recommendations.form.editingAlert')}
         </p>
       )}
       {formError && (
@@ -595,7 +596,7 @@ const LeaderRecommendations = () => {
       <div className={styles.grid}>
         <TextField
           name='name'
-          label='Applicant Name'
+          label={t('leader.recommendations.form.applicantName')}
           value={form.name}
           onChange={handleFormChange}
           required
@@ -603,7 +604,7 @@ const LeaderRecommendations = () => {
         />
         <TextField
           name='age'
-          label='Age'
+          label={t('leader.recommendations.form.age')}
           type='number'
           value={form.age}
           onChange={handleFormChange}
@@ -614,7 +615,7 @@ const LeaderRecommendations = () => {
         />
         <TextField
           name='email'
-          label='Email'
+          label={t('leader.recommendations.form.email')}
           type='email'
           value={form.email}
           onChange={handleFormChange}
@@ -623,7 +624,7 @@ const LeaderRecommendations = () => {
         />
         <TextField
           name='phone'
-          label='Phone'
+          label={t('leader.recommendations.form.phone')}
           type='tel'
           value={form.phone}
           onChange={handleFormChange}
@@ -632,7 +633,7 @@ const LeaderRecommendations = () => {
         />
         <TextField
           name='stake'
-          label='Stake'
+          label={t('leader.recommendations.form.stake')}
           value={form.stake}
           onChange={handleFormChange}
           required
@@ -641,7 +642,7 @@ const LeaderRecommendations = () => {
         />
         <TextField
           name='ward'
-          label='Ward'
+          label={t('leader.recommendations.form.ward')}
           value={form.ward}
           onChange={handleFormChange}
           required
@@ -650,7 +651,7 @@ const LeaderRecommendations = () => {
         />
         <ComboBox
           name='gender'
-          label='Gender (optional)'
+          label={t('leader.recommendations.form.gender')}
           value={form.gender}
           onChange={handleFormChange}
           showRequiredIndicator={false}
@@ -661,10 +662,10 @@ const LeaderRecommendations = () => {
       </div>
       <TextField
         name='moreInfo'
-        label='Additional Information'
+        label={t('leader.recommendations.form.additionalInfo')}
         value={form.moreInfo}
         onChange={handleFormChange}
-        placeholder='Share any context or strengths that make this applicant a great fit.'
+        placeholder={t('leader.recommendations.form.additionalInfoPlaceholder')}
         multiline
         rows={4}
         wrapperClassName='leader-recommendations__form-full'
@@ -681,14 +682,14 @@ const LeaderRecommendations = () => {
           variant='primary'
           className={styles.btn}
         >
-          Submit Recommendation
+          {t('leader.recommendations.form.submitRecommendation')}
         </Button>
         <Button
           type='button'
           onClick={() => handleSubmitDraft('draft' as RecommendationStatus)}
           className={styles.btn}
         >
-          Save Draft
+          {t('leader.recommendations.form.saveDraft')}
         </Button>
         <Button
           type='button'
@@ -696,7 +697,7 @@ const LeaderRecommendations = () => {
           onClick={handleCancelEdit}
           className={styles.btn}
         >
-          Cancel
+          {t('leader.recommendations.form.cancel')}
         </Button>
       </div>
     </form>
@@ -721,7 +722,7 @@ const LeaderRecommendations = () => {
                   <h2>{selectedItem.name}</h2>
                 </div>
                 <p className={styles.detailsMeta}>
-                  Application submitted{' '}
+                  {t('leader.recommendations.details.applicationSubmitted')}{' '}
                   {new Date(selectedItem.createdAt).toLocaleString()}
                 </p>
               </div>
@@ -729,28 +730,28 @@ const LeaderRecommendations = () => {
             </header>
             <dl className={styles.detailsGrid}>
               <div>
-                <dt>Email</dt>
+                <dt>{t('common.email')}</dt>
                 <dd>{selectedItem.email}</dd>
               </div>
               <div>
-                <dt>Phone</dt>
+                <dt>{t('common.phone')}</dt>
                 <dd>{selectedItem.phone}</dd>
               </div>
               <div>
-                <dt>Age</dt>
-                <dd>{selectedItem.age ?? 'N/A'}</dd>
+                <dt>{t('leader.recommendations.form.age')}</dt>
+                <dd>{selectedItem.age ?? t('admin.roles.nA')}</dd>
               </div>
               <div>
-                <dt>Stake</dt>
+                <dt>{t('common.stake')}</dt>
                 <dd>{selectedItem.stake}</dd>
               </div>
               <div>
-                <dt>Ward</dt>
+                <dt>{t('common.ward')}</dt>
                 <dd>{selectedItem.ward}</dd>
               </div>
               <div>
-                <dt>Gender</dt>
-                <dd>{selectedItem.gender ?? 'N/A'}</dd>
+                <dt>{t('leader.recommendations.form.gender')}</dt>
+                <dd>{selectedItem.gender ?? t('admin.roles.nA')}</dd>
               </div>
             </dl>
             {selectedItem.status !== 'approved' && (
@@ -761,7 +762,7 @@ const LeaderRecommendations = () => {
                   onClick={() => handleRecommendApplicant(selectedItem as Application)}
                   className={styles.btn}
                 >
-                  Recommend
+                  {t('leader.recommendations.actions.recommend')}
                 </Button>
               </div>
             )}
@@ -769,7 +770,7 @@ const LeaderRecommendations = () => {
         );
       }
 
-      const updatedLabel = `Updated ${new Date(selectedItem.updatedAt).toLocaleString()}`;
+      const updatedLabel = `${t('leader.recommendations.details.updated')} ${new Date(selectedItem.updatedAt).toLocaleString()}`;
       const canModify = 'canEdit' in selectedItem && selectedItem.canEdit && 'canDelete' in selectedItem && selectedItem.canDelete;
 
       return (
@@ -780,11 +781,11 @@ const LeaderRecommendations = () => {
                 <h2>{selectedItem.name}</h2>
                 <div className={styles.detailsTags}>
                   <span className={clsx(styles.detailsTag, styles.detailsTagRecommendation)}>
-                    Recommended
+                    {t('leader.recommendations.tags.recommended')}
                   </span>
                   {'hasApplication' in selectedItem && selectedItem.hasApplication && (
                     <span className={clsx(styles.detailsTag, styles.detailsTagApplication)}>
-                      Applied
+                      {t('leader.recommendations.tags.applied')}
                     </span>
                   )}
                 </div>
@@ -795,34 +796,34 @@ const LeaderRecommendations = () => {
           </header>
           <dl className={styles.detailsGrid}>
             <div>
-              <dt>Email</dt>
+              <dt>{t('common.email')}</dt>
               <dd>{selectedItem.email}</dd>
             </div>
             <div>
-              <dt>Phone</dt>
+              <dt>{t('common.phone')}</dt>
               <dd>{selectedItem.phone}</dd>
             </div>
             <div>
-              <dt>Age</dt>
-              <dd>{selectedItem.age ?? 'N/A'}</dd>
+              <dt>{t('leader.recommendations.form.age')}</dt>
+              <dd>{selectedItem.age ?? t('admin.roles.nA')}</dd>
             </div>
             <div>
-              <dt>Stake</dt>
+              <dt>{t('common.stake')}</dt>
               <dd>{selectedItem.stake}</dd>
             </div>
             <div>
-              <dt>Ward</dt>
+              <dt>{t('common.ward')}</dt>
               <dd>{selectedItem.ward}</dd>
             </div>
             <div>
-              <dt>Gender</dt>
-              <dd>{selectedItem.gender ?? 'N/A'}</dd>
+              <dt>{t('leader.recommendations.form.gender')}</dt>
+              <dd>{selectedItem.gender ?? t('admin.roles.nA')}</dd>
             </div>
           </dl>
           <div className={styles.detailsNotes}>
-            <h3>Additional Information</h3>
+            <h3>{t('leader.recommendations.details.additionalInfo')}</h3>
             <p>
-              {selectedItem.moreInfo || 'No additional information provided.'}
+              {selectedItem.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
             </p>
           </div>
           <div className={styles.detailActions}>
@@ -833,7 +834,7 @@ const LeaderRecommendations = () => {
                   onClick={() => handleModify(selectedItem.id)}
                   className={styles.btn}
                 >
-                  Modify
+                  {t('leader.recommendations.actions.modify')}
                 </Button>
                 {'status' in selectedItem && selectedItem.status === 'draft' ? (
                   <Button
@@ -842,7 +843,7 @@ const LeaderRecommendations = () => {
                     onClick={() => handleQuickSubmit(selectedItem.id)}
                     className={styles.btn}
                   >
-                    Submit
+                    {t('leader.recommendations.actions.submit')}
                   </Button>
                 ) : (
                   <Button
@@ -850,7 +851,7 @@ const LeaderRecommendations = () => {
                     onClick={() => handleCancelSubmission(selectedItem.id)}
                     className={styles.btn}
                   >
-                    Cancel Submission
+                    {t('leader.recommendations.actions.cancelSubmission')}
                   </Button>
                 )}
                 <Button
@@ -859,14 +860,13 @@ const LeaderRecommendations = () => {
                   onClick={() => handleDelete(selectedItem.id)}
                   className={styles.btn}
                 >
-                  Delete
+                  {t('leader.recommendations.actions.delete')}
                 </Button>
               </>
             )}
             {!canModify && (
               <p className={styles.lockedMessage}>
-                This recommendation has been reviewed and is now locked. You can
-                no longer modify or delete it.
+                {t('leader.recommendations.details.lockedMessage')}
               </p>
             )}
           </div>
@@ -876,7 +876,7 @@ const LeaderRecommendations = () => {
 
     return (
       <div className={styles.placeholder}>
-        Select a recommendation to review its details.
+        {t('leader.recommendations.details.selectRecommendation')}
       </div>
     );
   };
@@ -892,35 +892,35 @@ const LeaderRecommendations = () => {
             <div>
               <h2>{item.name}</h2>
               <p className={styles.reviewCardMeta}>
-                Submitted {new Date(item.createdAt).toLocaleString()}
+                {t('leader.recommendations.details.applicationSubmitted')} {new Date(item.createdAt).toLocaleString()}
               </p>
             </div>
             <StatusChip status={'status' in item ? item.status : 'awaiting'} />
           </div>
           <dl className={styles.reviewCardGrid}>
             <div>
-              <dt>Email</dt>
+              <dt>{t('common.email')}</dt>
               <dd>{item.email}</dd>
             </div>
             <div>
-              <dt>Phone</dt>
+              <dt>{t('common.phone')}</dt>
               <dd>{item.phone}</dd>
             </div>
             <div>
-              <dt>Age</dt>
-              <dd>{item.age ?? 'N/A'}</dd>
+              <dt>{t('leader.recommendations.form.age')}</dt>
+              <dd>{item.age ?? t('admin.roles.nA')}</dd>
             </div>
             <div>
-              <dt>Stake</dt>
+              <dt>{t('common.stake')}</dt>
               <dd>{item.stake}</dd>
             </div>
             <div>
-              <dt>Ward</dt>
+              <dt>{t('common.ward')}</dt>
               <dd>{item.ward}</dd>
             </div>
             <div>
-              <dt>Gender</dt>
-              <dd>{item.gender ?? 'N/A'}</dd>
+              <dt>{t('leader.recommendations.form.gender')}</dt>
+              <dd>{item.gender ?? t('admin.roles.nA')}</dd>
             </div>
           </dl>
           {item.status !== 'approved' && (
@@ -931,7 +931,7 @@ const LeaderRecommendations = () => {
                   onClick={() => handleRecommendApplicant(item as Application)}
                   className={styles.btn}
                 >
-                  Recommend
+                  {t('leader.recommendations.actions.recommend')}
                 </Button>
             </div>
           )}
@@ -954,50 +954,50 @@ const LeaderRecommendations = () => {
           <div>
             <h2>{item.name}</h2>
             <p className={styles.reviewCardMeta}>
-              Updated {new Date(item.updatedAt).toLocaleString()}
+              {t('leader.recommendations.details.updated')} {new Date(item.updatedAt).toLocaleString()}
             </p>
           </div>
           {'status' in item && <StatusChip status={item.status} />}
         </div>
         <div className={styles.reviewCardTags}>
           <span className={clsx(styles.reviewCardTag, styles.reviewCardTagRecommendation)}>
-            Recommended
+            {t('leader.recommendations.tags.recommended')}
           </span>
           {'hasApplication' in item && item.hasApplication && (
             <span className={clsx(styles.reviewCardTag, styles.reviewCardTagApplication)}>
-              Applied
+              {t('leader.recommendations.tags.applied')}
             </span>
           )}
         </div>
         <dl className={styles.reviewCardGrid}>
           <div>
-            <dt>Email</dt>
+            <dt>{t('common.email')}</dt>
             <dd>{item.email}</dd>
           </div>
           <div>
-            <dt>Phone</dt>
+            <dt>{t('common.phone')}</dt>
             <dd>{item.phone}</dd>
           </div>
           <div>
-            <dt>Age</dt>
-            <dd>{item.age ?? 'N/A'}</dd>
+            <dt>{t('leader.recommendations.form.age')}</dt>
+            <dd>{item.age ?? t('admin.roles.nA')}</dd>
           </div>
           <div>
-            <dt>Stake</dt>
+            <dt>{t('common.stake')}</dt>
             <dd>{item.stake}</dd>
           </div>
           <div>
-            <dt>Ward</dt>
+            <dt>{t('common.ward')}</dt>
             <dd>{item.ward}</dd>
           </div>
           <div>
-            <dt>Gender</dt>
-            <dd>{item.gender ?? 'N/A'}</dd>
+            <dt>{t('leader.recommendations.form.gender')}</dt>
+            <dd>{item.gender ?? t('admin.roles.nA')}</dd>
           </div>
         </dl>
         <div className={styles.reviewCardNotes}>
-          <h3>Additional Information</h3>
-          <p>{item.moreInfo || 'No additional information provided.'}</p>
+          <h3>{t('leader.recommendations.details.additionalInfo')}</h3>
+          <p>{item.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}</p>
         </div>
         <div className={styles.cardActions}>
           {'canEdit' in item && item.canEdit && 'canDelete' in item && item.canDelete ? (
@@ -1007,7 +1007,7 @@ const LeaderRecommendations = () => {
                 onClick={() => handleModify(item.id)}
                 className={styles.btn}
               >
-                Modify
+                {t('leader.recommendations.actions.modify')}
               </Button>
               {'status' in item && item.status === 'draft' ? (
                 <Button
@@ -1016,7 +1016,7 @@ const LeaderRecommendations = () => {
                   onClick={() => handleQuickSubmit(item.id)}
                   className={styles.btn}
                 >
-                  Submit
+                  {t('leader.recommendations.actions.submit')}
                 </Button>
               ) : (
                 <Button
@@ -1024,7 +1024,7 @@ const LeaderRecommendations = () => {
                   onClick={() => handleCancelSubmission(item.id)}
                   className={styles.btn}
                 >
-                  Cancel Submission
+                  {t('leader.recommendations.actions.cancelSubmission')}
                 </Button>
               )}
               <Button
@@ -1033,20 +1033,18 @@ const LeaderRecommendations = () => {
                 onClick={() => handleDelete(item.id)}
                 className={styles.btn}
               >
-                Delete
+                {t('leader.recommendations.actions.delete')}
               </Button>
             </>
           ) : (
             <p className={styles.lockedMessage}>
-              This recommendation has been reviewed and is now locked. You can
-              no longer modify or delete it.
+              {t('leader.recommendations.details.lockedMessage')}
             </p>
           )}
         </div>
         {isEditingThis && (
           <p className={styles.mobileEditingNote}>
-            Editing this recommendation above. Submit or save your changes when
-            ready.
+            {t('leader.recommendations.mobileEditingNote')}
           </p>
         )}
       </article>
@@ -1057,14 +1055,13 @@ const LeaderRecommendations = () => {
     <section className={`${styles.review} ${styles.leaderRecommendations}`}>
       <div className={styles.header}>
         <div className={styles.headerCopy}>
-          <h1 className={styles.title}>Recommendations</h1>
+          <h1 className={styles.title}>{t('leader.recommendations.title')}</h1>
           <p className={styles.subtitle}>
-            Manage drafts and submitted recommendations. Update details and
-            resubmit when ready.
+            {t('leader.recommendations.subtitle')}
           </p>
         </div>
         <Button type='button' variant='primary' onClick={handleCreate}>
-          Create Recommendation
+          {t('leader.recommendations.createRecommendation')}
         </Button>
       </div>
 
@@ -1106,7 +1103,7 @@ const LeaderRecommendations = () => {
             </ul>
           ) : (
             <p className={styles.empty}>
-              No recommendations in this view yet.
+              {t('leader.recommendations.empty')}
             </p>
           )}
         </aside>
@@ -1128,7 +1125,7 @@ const LeaderRecommendations = () => {
         {filteredRecommendations.length ? (
           filteredRecommendations.map((item) => renderMobileCard(item))
         ) : (
-          <p className={styles.empty}>No recommendations in this view yet.</p>
+          <p className={styles.empty}>{t('leader.recommendations.empty')}</p>
         )}
       </div>
     </section>

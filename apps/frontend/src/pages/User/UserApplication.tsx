@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '@/context/AppContext';
 import { applicationsApi } from '@/services/api';
 import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StakeWardSelector, StatusChip, TextField } from '@/components/ui';
@@ -33,6 +34,7 @@ const emptyForm: ApplicationForm = {
 };
 
 const UserApplication = () => {
+  const { t } = useTranslation();
   const { applications, currentUser, submitApplication, isInitializing, isLoadingApplications, refetchApplications } = useApp();
   const existingApplication = useMemo(
     () =>
@@ -139,12 +141,12 @@ const UserApplication = () => {
       form.gender === 'male' || form.gender === 'female' ? form.gender : '';
     const normalizedAge = Number.parseInt(form.age, 10);
 
-    const nameError = validateRequired(form.name, 'Name');
+    const nameError = validateRequired(form.name, t('application.form.name'), t);
     if (nameError) {
       validationErrors.name = nameError;
     }
 
-    const ageError = validateAge(form.age);
+    const ageError = validateAge(form.age, t);
     if (ageError) {
       validationErrors.age = ageError;
     }
@@ -159,12 +161,12 @@ const UserApplication = () => {
       validationErrors.phone = phoneError;
     }
 
-    const stakeError = validateRequired(form.stake, 'Stake');
+    const stakeError = validateRequired(form.stake, t('common.stake'), t);
     if (stakeError) {
       validationErrors.stake = stakeError;
     }
 
-    const wardError = validateRequired(form.ward, 'Ward');
+    const wardError = validateRequired(form.ward, t('common.ward'), t);
     if (wardError) {
       validationErrors.ward = wardError;
     }
@@ -208,7 +210,7 @@ const UserApplication = () => {
 
     if (Object.keys(validationErrors).length) {
       setErrors(validationErrors as ValidationErrors);
-      setFormError('Please fix the highlighted fields before submitting.');
+      setFormError(t('application.messages.fixFields'));
       return;
     }
 
@@ -224,11 +226,11 @@ const UserApplication = () => {
     })
       .then(() => {
         setErrors({});
-        setFeedback('Your application has been submitted and is awaiting review.');
+        setFeedback(t('application.messages.submitted'));
         setIsEditing(false);
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to submit application.');
+        setFormError((error as Error).message || t('application.messages.failedToSubmit'));
       });
   };
 
@@ -255,12 +257,10 @@ const UserApplication = () => {
       moreInfo: form.moreInfo.trim(),
     })
       .then(() => {
-        setFeedback(
-          'Draft saved. You can return anytime to complete and submit your application.'
-        );
+        setFeedback(t('application.messages.draftSaved'));
       })
       .catch((error) => {
-        setFormError((error as Error).message || 'Failed to save draft.');
+        setFormError((error as Error).message || t('application.messages.failedToSave'));
       });
   };
 
@@ -269,17 +269,17 @@ const UserApplication = () => {
       {(isInitializing || isLoadingApplications || isCheckingRecommendation) ? null : (
         <>
           <header className={styles.header}>
-            <h1 className={styles.title}>Application</h1>
+            <h1 className={styles.title}>{t('application.title')}</h1>
             <p className={styles.subtitle}>
               {hasRecommendation
-                ? 'You have already been recommended by your leader.'
+                ? t('application.subtitle.hasRecommendation')
                 : existingApplication
                   ? existingApplication.status === 'draft'
-                    ? 'Your draft is saved. Complete the required fields and submit when you are ready.'
+                    ? t('application.subtitle.draftSaved')
                     : isEditable
-                      ? 'You can update your submission while it is being reviewed.'
-                      : 'Your submission is locked while a decision is finalized.'
-                  : 'Start your application to be considered.'}
+                      ? t('application.subtitle.canUpdate')
+                      : t('application.subtitle.locked')
+                  : t('application.subtitle.start')}
             </p>
           </header>
 
@@ -287,7 +287,7 @@ const UserApplication = () => {
         <Card>
           <CardContent>
             <Alert variant='info'>
-              You have already been recommended by your leader. Please contact your bishop or stake president if you have questions.
+              {t('application.recommendationAlert.message')}
             </Alert>
           </CardContent>
         </Card>
@@ -299,11 +299,10 @@ const UserApplication = () => {
       {existingApplication && !isEditing && (
         <Card>
           <CardHeader>
-            <CardTitle>Submission Overview</CardTitle>
+            <CardTitle>{t('application.overview.title')}</CardTitle>
             {existingApplication.status === 'draft' && (
               <Alert variant='warning'>
-                This application is saved as a draft. Submit it when the required
-                fields are complete.
+                {t('application.overview.draftWarning')}
               </Alert>
             )}
           </CardHeader>
@@ -311,15 +310,16 @@ const UserApplication = () => {
             <div className={styles.summaryGrid}>
               {existingApplication.status && (
                 <div className={styles.summaryItem}>
-                  <dt className={styles.summaryLabel}>Status</dt>
+                  <dt className={styles.summaryLabel}>{t('application.overview.status')}</dt>
                   <dd className={styles.summaryValue}>
                     {(() => {
                       const display = getStatusDisplay(existingApplication.status);
+                      const statusLabel = t(`status.${existingApplication.status}`);
                       return (
                         <StatusChip
                           status={existingApplication.status}
                           tone={display.tone}
-                          label={display.label}
+                          label={statusLabel}
                         />
                       );
                     })()}
@@ -327,34 +327,34 @@ const UserApplication = () => {
                 </div>
               )}
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Name</dt>
+                <dt className={styles.summaryLabel}>{t('application.overview.name')}</dt>
                 <dd className={styles.summaryValue}>{existingApplication.name}</dd>
               </div>
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Email</dt>
+                <dt className={styles.summaryLabel}>{t('application.overview.email')}</dt>
                 <dd className={styles.summaryValue}>{existingApplication.email}</dd>
               </div>
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Phone</dt>
+                <dt className={styles.summaryLabel}>{t('application.overview.phone')}</dt>
                 <dd className={styles.summaryValue}>{existingApplication.phone}</dd>
               </div>
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Age</dt>
-                <dd className={styles.summaryValue}>{existingApplication.age ?? 'N/A'}</dd>
+                <dt className={styles.summaryLabel}>{t('application.overview.age')}</dt>
+                <dd className={styles.summaryValue}>{existingApplication.age ?? t('admin.roles.nA')}</dd>
               </div>
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Stake</dt>
+                <dt className={styles.summaryLabel}>{t('application.overview.stake')}</dt>
                 <dd className={styles.summaryValue}>{existingApplication.stake}</dd>
               </div>
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Ward</dt>
+                <dt className={styles.summaryLabel}>{t('application.overview.ward')}</dt>
                 <dd className={styles.summaryValue}>{existingApplication.ward}</dd>
               </div>
               <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>Additional Information</dt>
+                <dt className={styles.summaryLabel}>{t('application.overview.additionalInfo')}</dt>
                 <dd className={styles.summaryValue}>
                   {existingApplication.moreInfo ||
-                    'No additional details provided.'}
+                    t('application.overview.noAdditionalInfo')}
                 </dd>
               </div>
             </div>
@@ -366,11 +366,11 @@ const UserApplication = () => {
                 variant='primary'
                 onClick={() => setIsEditing(true)}
               >
-                Edit Submission
+                {t('application.actions.edit')}
               </Button>
             ) : (
               <p className={styles.lockedMessage}>
-                Edits are unavailable because your submission is being finalized.
+                {t('application.messages.lockedMessage')}
               </p>
             )}
           </CardFooter>
@@ -384,7 +384,7 @@ const UserApplication = () => {
               <div className={styles.formGrid}>
                 <TextField
                   name='name'
-                  label='Name'
+                  label={t('application.form.name')}
                   value={form.name}
                   onChange={handleChange}
                   required
@@ -392,7 +392,7 @@ const UserApplication = () => {
                 />
                 <TextField
                   name='age'
-                  label='Age'
+                  label={t('application.form.age')}
                   type='number'
                   value={form.age}
                   onChange={handleChange}
@@ -403,7 +403,7 @@ const UserApplication = () => {
                 />
                 <TextField
                   name='email'
-                  label='Email'
+                  label={t('application.form.email')}
                   type='email'
                   value={form.email}
                   onChange={handleChange}
@@ -412,7 +412,7 @@ const UserApplication = () => {
                 />
                 <TextField
                   name='phone'
-                  label='Phone'
+                  label={t('application.form.phone')}
                   type='tel'
                   value={form.phone}
                   onChange={handleChange}
@@ -431,25 +431,25 @@ const UserApplication = () => {
                 />
                 <ComboBox
                   name='gender'
-                  label='Gender (optional)'
+                  label={t('application.form.gender')}
                   value={form.gender}
                   onChange={handleChange}
                   showRequiredIndicator={false}
                   error={errors.gender}
                   variant='default'
                   options={[
-                    { value: '', label: 'Select gender', disabled: true },
-                    { value: 'male', label: 'Male' },
-                    { value: 'female', label: 'Female' },
+                    { value: '', label: t('application.form.genderSelect'), disabled: true },
+                    { value: 'male', label: t('application.form.genderMale') },
+                    { value: 'female', label: t('application.form.genderFemale') },
                   ]}
                 />
               </div>
               <TextField
                 name='moreInfo'
-                label='Additional Information'
+                label={t('application.form.additionalInfo')}
                 value={form.moreInfo}
                 onChange={handleChange}
-                placeholder='Share any relevant experience or context.'
+                placeholder={t('application.form.additionalInfoPlaceholder')}
                 multiline
                 rows={4}
                 wrapperClassName={styles.formFull}
@@ -457,10 +457,10 @@ const UserApplication = () => {
               />
               <div className={styles.actions}>
                 <Button type='submit' variant='primary'>
-                  Submit Application
+                  {t('application.actions.submit')}
                 </Button>
                 <Button type='button' onClick={handleSaveDraft}>
-                  Save Draft
+                  {t('application.actions.saveDraft')}
                 </Button>
                 {existingApplication && (
                   <Button
@@ -468,7 +468,7 @@ const UserApplication = () => {
                     variant='danger'
                     onClick={() => setIsEditing(false)}
                   >
-                    Cancel
+                    {t('application.actions.cancel')}
                   </Button>
                 )}
               </div>
@@ -484,7 +484,7 @@ const UserApplication = () => {
             variant='primary'
             onClick={() => setIsEditing(true)}
           >
-            Start Application
+            {t('application.actions.start')}
           </Button>
         </div>
       )}

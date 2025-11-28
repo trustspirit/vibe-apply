@@ -22,10 +22,10 @@ export const validateEmail = (email: string): string => {
   return '';
 };
 
-export const validateAge = (age: string | number): string => {
+export const validateAge = (age: string | number, t?: (key: string) => string): string => {
   const normalizedAge = Number.parseInt(String(age), 10);
   if (Number.isNaN(normalizedAge)) {
-    return 'Enter a valid age.';
+    return t ? t('validation.invalidAge') : 'Enter a valid age.';
   }
   if (normalizedAge < AGE_MIN || normalizedAge > AGE_MAX) {
     return AGE_ERROR_MESSAGE;
@@ -33,9 +33,9 @@ export const validateAge = (age: string | number): string => {
   return '';
 };
 
-export const validateRequired = (value: string, fieldName: string): string => {
+export const validateRequired = (value: string, fieldName: string, t?: (key: string) => string): string => {
   if (!value.trim()) {
-    return `${fieldName} is required.`;
+    return t ? t('validation.required', { field: fieldName }) : `${fieldName} is required.`;
   }
   return '';
 };
