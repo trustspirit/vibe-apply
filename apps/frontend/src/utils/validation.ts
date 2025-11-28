@@ -33,9 +33,9 @@ export const validateAge = (age: string | number, t?: (key: string) => string): 
   return '';
 };
 
-export const validateRequired = (value: string, fieldName: string, t?: (key: string) => string): string => {
+export const validateRequired = (value: string, fieldName: string, t?: (key: string, options?: { field?: string }) => string): string => {
   if (!value.trim()) {
-    return t ? t('validation.required', { field: fieldName }) : `${fieldName} is required.`;
+    return t ? t('validation.requiredWithField', { field: fieldName }) : `${fieldName} is required.`;
   }
   return '';
 };
