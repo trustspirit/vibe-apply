@@ -3,8 +3,27 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '@/context/AppContext';
 import { applicationsApi } from '@/services/api';
-import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, ComboBox, StakeWardSelector, StatusChip, TextField } from '@/components/ui';
-import { validateEmail, validateAge, validateRequired, validateGender, validatePhone, getStatusDisplay } from '@/utils/validation';
+import {
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  ComboBox,
+  StakeWardSelector,
+  StatusChip,
+  TextField,
+} from '@/components/ui';
+import {
+  validateEmail,
+  validateAge,
+  validateRequired,
+  validateGender,
+  validatePhone,
+  getStatusDisplay,
+} from '@/utils/validation';
 import styles from './UserApplication.module.scss';
 
 interface ApplicationForm {
@@ -37,7 +56,14 @@ const emptyForm: ApplicationForm = {
 
 const UserApplication = () => {
   const { t } = useTranslation();
-  const { applications, currentUser, submitApplication, isInitializing, isLoadingApplications, refetchApplications } = useApp();
+  const {
+    applications,
+    currentUser,
+    submitApplication,
+    isInitializing,
+    isLoadingApplications,
+    refetchApplications,
+  } = useApp();
   const existingApplication = useMemo(
     () =>
       applications.find(
@@ -46,7 +72,10 @@ const UserApplication = () => {
     [applications, currentUser?.id]
   );
 
-  const isEditable = !existingApplication || existingApplication.status === 'draft' || existingApplication.status === 'awaiting';
+  const isEditable =
+    !existingApplication ||
+    existingApplication.status === 'draft' ||
+    existingApplication.status === 'awaiting';
 
   const [form, setForm] = useState(emptyForm);
   const [isEditing, setIsEditing] = useState(false);
@@ -54,7 +83,8 @@ const UserApplication = () => {
   const [formError, setFormError] = useState('');
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [hasRecommendation, setHasRecommendation] = useState(false);
-  const [isCheckingRecommendation, setIsCheckingRecommendation] = useState(true);
+  const [isCheckingRecommendation, setIsCheckingRecommendation] =
+    useState(true);
 
   useEffect(() => {
     refetchApplications();
@@ -99,9 +129,12 @@ const UserApplication = () => {
         stake: existingApplication.stake,
         ward: existingApplication.ward,
         moreInfo: existingApplication.moreInfo ?? '',
-        servedMission: existingApplication.servedMission !== undefined 
-          ? existingApplication.servedMission ? 'yes' : 'no'
-          : '',
+        servedMission:
+          existingApplication.servedMission !== undefined
+            ? existingApplication.servedMission
+              ? 'yes'
+              : 'no'
+            : '',
       });
       setIsEditing(existingApplication.status === 'draft');
     } else if (currentUser) {
@@ -116,7 +149,11 @@ const UserApplication = () => {
     }
   }, [existingApplication, currentUser, isInitializing]);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => {
@@ -146,7 +183,11 @@ const UserApplication = () => {
       form.gender === 'male' || form.gender === 'female' ? form.gender : '';
     const normalizedAge = Number.parseInt(form.age, 10);
 
-    const nameError = validateRequired(form.name, t('application.form.name'), t);
+    const nameError = validateRequired(
+      form.name,
+      t('application.form.name'),
+      t
+    );
     if (nameError) {
       validationErrors.name = nameError;
     }
@@ -228,7 +269,12 @@ const UserApplication = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
-      servedMission: form.servedMission === 'yes' ? true : form.servedMission === 'no' ? false : undefined,
+      servedMission:
+        form.servedMission === 'yes'
+          ? true
+          : form.servedMission === 'no'
+            ? false
+            : undefined,
     })
       .then(() => {
         setErrors({});
@@ -236,7 +282,9 @@ const UserApplication = () => {
         setIsEditing(false);
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('application.messages.failedToSubmit'));
+        setFormError(
+          (error as Error).message || t('application.messages.failedToSubmit')
+        );
       });
   };
 
@@ -261,19 +309,28 @@ const UserApplication = () => {
       stake: form.stake.trim(),
       ward: form.ward.trim(),
       moreInfo: form.moreInfo.trim(),
-      servedMission: form.servedMission === 'yes' ? true : form.servedMission === 'no' ? false : undefined,
+      servedMission:
+        form.servedMission === 'yes'
+          ? true
+          : form.servedMission === 'no'
+            ? false
+            : undefined,
     })
       .then(() => {
         setFeedback(t('application.messages.draftSaved'));
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('application.messages.failedToSave'));
+        setFormError(
+          (error as Error).message || t('application.messages.failedToSave')
+        );
       });
   };
 
   return (
     <section className={styles.page}>
-      {(isInitializing || isLoadingApplications || isCheckingRecommendation) ? null : (
+      {isInitializing ||
+      isLoadingApplications ||
+      isCheckingRecommendation ? null : (
         <>
           <header className={styles.header}>
             <h1 className={styles.title}>{t('application.title')}</h1>
@@ -290,235 +347,291 @@ const UserApplication = () => {
             </p>
           </header>
 
-      {hasRecommendation ? (
-        <Card>
-          <CardContent>
-            <Alert variant='info'>
-              {t('application.recommendationAlert.message')}
-            </Alert>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-      {formError && <Alert variant='error'>{formError}</Alert>}
-      {feedback && <Alert variant='success'>{feedback}</Alert>}
+          {hasRecommendation ? (
+            <Card>
+              <CardContent>
+                <Alert variant='info'>
+                  {t('application.recommendationAlert.message')}
+                </Alert>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {formError && <Alert variant='error'>{formError}</Alert>}
+              {feedback && <Alert variant='success'>{feedback}</Alert>}
 
-      {existingApplication && !isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('application.overview.title')}</CardTitle>
-            {existingApplication.status === 'draft' && (
-              <Alert variant='warning'>
-                {t('application.overview.draftWarning')}
-              </Alert>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className={styles.summaryGrid}>
-              {existingApplication.status && (
-                <div className={styles.summaryItem}>
-                  <dt className={styles.summaryLabel}>{t('application.overview.status')}</dt>
-                  <dd className={styles.summaryValue}>
-                    {(() => {
-                      const display = getStatusDisplay(existingApplication.status);
-                      const statusLabel = t(`status.${existingApplication.status}`);
-                      return (
-                        <StatusChip
-                          status={existingApplication.status}
-                          tone={display.tone}
-                          label={statusLabel}
+              {existingApplication && !isEditing && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('application.overview.title')}</CardTitle>
+                    {existingApplication.status === 'draft' && (
+                      <Alert variant='warning'>
+                        {t('application.overview.draftWarning')}
+                      </Alert>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className={styles.summaryGrid}>
+                      {existingApplication.status && (
+                        <div className={styles.summaryItem}>
+                          <dt className={styles.summaryLabel}>
+                            {t('application.overview.status')}
+                          </dt>
+                          <dd className={styles.summaryValue}>
+                            {(() => {
+                              const display = getStatusDisplay(
+                                existingApplication.status
+                              );
+                              const statusLabel = t(
+                                `status.${existingApplication.status}`
+                              );
+                              return (
+                                <StatusChip
+                                  status={existingApplication.status}
+                                  tone={display.tone}
+                                  label={statusLabel}
+                                />
+                              );
+                            })()}
+                          </dd>
+                        </div>
+                      )}
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.name')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.name}
+                        </dd>
+                      </div>
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.email')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.email}
+                        </dd>
+                      </div>
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.phone')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.phone}
+                        </dd>
+                      </div>
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.age')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.age ?? t('admin.roles.nA')}
+                        </dd>
+                      </div>
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.stake')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.stake}
+                        </dd>
+                      </div>
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.ward')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.ward}
+                        </dd>
+                      </div>
+                      {existingApplication.servedMission !== undefined && (
+                        <div className={styles.summaryItem}>
+                          <dt className={styles.summaryLabel}>
+                            {t('application.overview.servedMission')}
+                          </dt>
+                          <dd className={styles.summaryValue}>
+                            {existingApplication.servedMission
+                              ? t('common.yes')
+                              : t('common.no')}
+                          </dd>
+                        </div>
+                      )}
+                      <div className={styles.summaryItem}>
+                        <dt className={styles.summaryLabel}>
+                          {t('application.overview.additionalInfo')}
+                        </dt>
+                        <dd className={styles.summaryValue}>
+                          {existingApplication.moreInfo ||
+                            t('application.overview.noAdditionalInfo')}
+                        </dd>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    {isEditable ? (
+                      <Button
+                        type='button'
+                        variant='primary'
+                        onClick={() => setIsEditing(true)}
+                      >
+                        {t('application.actions.edit')}
+                      </Button>
+                    ) : (
+                      <p className={styles.lockedMessage}>
+                        {t('application.messages.lockedMessage')}
+                      </p>
+                    )}
+                  </CardFooter>
+                </Card>
+              )}
+
+              {isEditing && isEditable && (
+                <Card>
+                  <CardContent>
+                    <form onSubmit={handleSubmitApplication}>
+                      <div className={styles.formGrid}>
+                        <TextField
+                          name='name'
+                          label={t('application.form.name')}
+                          value={form.name}
+                          onChange={handleChange}
+                          required
+                          error={errors.name}
                         />
-                      );
-                    })()}
-                  </dd>
-                </div>
+                        <TextField
+                          name='age'
+                          label={t('application.form.age')}
+                          type='number'
+                          value={form.age}
+                          onChange={handleChange}
+                          required
+                          error={errors.age}
+                          min={16}
+                          max={120}
+                        />
+                        <TextField
+                          name='email'
+                          label={t('application.form.email')}
+                          type='email'
+                          value={form.email}
+                          onChange={handleChange}
+                          required
+                          error={errors.email}
+                        />
+                        <TextField
+                          name='phone'
+                          label={t('application.form.phone')}
+                          type='tel'
+                          value={form.phone}
+                          onChange={handleChange}
+                          required
+                          error={errors.phone}
+                        />
+                        <StakeWardSelector
+                          stake={form.stake}
+                          ward={form.ward}
+                          onStakeChange={(stake) =>
+                            setForm((prev) => ({ ...prev, stake }))
+                          }
+                          onWardChange={(ward) =>
+                            setForm((prev) => ({ ...prev, ward }))
+                          }
+                          stakeError={errors.stake}
+                          wardError={errors.ward}
+                          stakeDisabled
+                          wardDisabled
+                        />
+                        <ComboBox
+                          name='gender'
+                          label={t('application.form.gender')}
+                          value={form.gender}
+                          onChange={handleChange}
+                          showRequiredIndicator={false}
+                          error={errors.gender}
+                          variant='default'
+                          options={[
+                            {
+                              value: '',
+                              label: t('application.form.genderSelect'),
+                              disabled: true,
+                            },
+                            {
+                              value: 'male',
+                              label: t('application.form.genderMale'),
+                            },
+                            {
+                              value: 'female',
+                              label: t('application.form.genderFemale'),
+                            },
+                          ]}
+                        />
+                        <ComboBox
+                          name='servedMission'
+                          label={t('application.form.servedMission')}
+                          value={form.servedMission}
+                          onChange={handleChange}
+                          showRequiredIndicator={false}
+                          error={errors.servedMission}
+                          variant='default'
+                          options={[
+                            {
+                              value: '',
+                              label: t('application.form.servedMissionSelect'),
+                              disabled: true,
+                            },
+                            { value: 'yes', label: t('common.yes') },
+                            { value: 'no', label: t('common.no') },
+                          ]}
+                        />
+                      </div>
+                      <TextField
+                        name='moreInfo'
+                        label={t('application.form.additionalInfo')}
+                        value={form.moreInfo}
+                        onChange={handleChange}
+                        placeholder={t(
+                          'application.form.additionalInfoPlaceholder'
+                        )}
+                        multiline
+                        rows={4}
+                        wrapperClassName={styles.formFull}
+                        showRequiredIndicator={false}
+                      />
+                      <div className={styles.actions}>
+                        <Button type='submit' variant='primary'>
+                          {t('application.actions.submit')}
+                        </Button>
+                        <Button type='button' onClick={handleSaveDraft}>
+                          {t('application.actions.saveDraft')}
+                        </Button>
+                        {existingApplication && (
+                          <Button
+                            type='button'
+                            variant='danger'
+                            onClick={() => setIsEditing(false)}
+                          >
+                            {t('application.actions.cancel')}
+                          </Button>
+                        )}
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
               )}
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.name')}</dt>
-                <dd className={styles.summaryValue}>{existingApplication.name}</dd>
-              </div>
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.email')}</dt>
-                <dd className={styles.summaryValue}>{existingApplication.email}</dd>
-              </div>
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.phone')}</dt>
-                <dd className={styles.summaryValue}>{existingApplication.phone}</dd>
-              </div>
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.age')}</dt>
-                <dd className={styles.summaryValue}>{existingApplication.age ?? t('admin.roles.nA')}</dd>
-              </div>
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.stake')}</dt>
-                <dd className={styles.summaryValue}>{existingApplication.stake}</dd>
-              </div>
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.ward')}</dt>
-                <dd className={styles.summaryValue}>{existingApplication.ward}</dd>
-              </div>
-              {existingApplication.servedMission !== undefined && (
-                <div className={styles.summaryItem}>
-                  <dt className={styles.summaryLabel}>{t('application.overview.servedMission')}</dt>
-                  <dd className={styles.summaryValue}>
-                    {existingApplication.servedMission ? t('common.yes') : t('common.no')}
-                  </dd>
-                </div>
-              )}
-              <div className={styles.summaryItem}>
-                <dt className={styles.summaryLabel}>{t('application.overview.additionalInfo')}</dt>
-                <dd className={styles.summaryValue}>
-                  {existingApplication.moreInfo ||
-                    t('application.overview.noAdditionalInfo')}
-                </dd>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            {isEditable ? (
-              <Button
-                type='button'
-                variant='primary'
-                onClick={() => setIsEditing(true)}
-              >
-                {t('application.actions.edit')}
-              </Button>
-            ) : (
-              <p className={styles.lockedMessage}>
-                {t('application.messages.lockedMessage')}
-              </p>
-            )}
-          </CardFooter>
-        </Card>
-      )}
 
-      {isEditing && isEditable && (
-        <Card>
-          <CardContent>
-            <form onSubmit={handleSubmitApplication}>
-              <div className={styles.formGrid}>
-                <TextField
-                  name='name'
-                  label={t('application.form.name')}
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  error={errors.name}
-                />
-                <TextField
-                  name='age'
-                  label={t('application.form.age')}
-                  type='number'
-                  value={form.age}
-                  onChange={handleChange}
-                  required
-                  error={errors.age}
-                  min={16}
-                  max={120}
-                />
-                <TextField
-                  name='email'
-                  label={t('application.form.email')}
-                  type='email'
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  error={errors.email}
-                />
-                <TextField
-                  name='phone'
-                  label={t('application.form.phone')}
-                  type='tel'
-                  value={form.phone}
-                  onChange={handleChange}
-                  required
-                  error={errors.phone}
-                />
-                <StakeWardSelector
-                  stake={form.stake}
-                  ward={form.ward}
-                  onStakeChange={(stake) => setForm((prev) => ({ ...prev, stake }))}
-                  onWardChange={(ward) => setForm((prev) => ({ ...prev, ward }))}
-                  stakeError={errors.stake}
-                  wardError={errors.ward}
-                  stakeDisabled
-                  wardDisabled
-                />
-                <ComboBox
-                  name='gender'
-                  label={t('application.form.gender')}
-                  value={form.gender}
-                  onChange={handleChange}
-                  showRequiredIndicator={false}
-                  error={errors.gender}
-                  variant='default'
-                  options={[
-                    { value: '', label: t('application.form.genderSelect'), disabled: true },
-                    { value: 'male', label: t('application.form.genderMale') },
-                    { value: 'female', label: t('application.form.genderFemale') },
-                  ]}
-                />
-                <ComboBox
-                  name='servedMission'
-                  label={t('application.form.servedMission')}
-                  value={form.servedMission}
-                  onChange={handleChange}
-                  showRequiredIndicator={false}
-                  error={errors.servedMission}
-                  variant='default'
-                  options={[
-                    { value: '', label: t('application.form.servedMissionSelect'), disabled: true },
-                    { value: 'yes', label: t('common.yes') },
-                    { value: 'no', label: t('common.no') },
-                  ]}
-                />
-              </div>
-              <TextField
-                name='moreInfo'
-                label={t('application.form.additionalInfo')}
-                value={form.moreInfo}
-                onChange={handleChange}
-                placeholder={t('application.form.additionalInfoPlaceholder')}
-                multiline
-                rows={4}
-                wrapperClassName={styles.formFull}
-                showRequiredIndicator={false}
-              />
-              <div className={styles.actions}>
-                <Button type='submit' variant='primary'>
-                  {t('application.actions.submit')}
-                </Button>
-                <Button type='button' onClick={handleSaveDraft}>
-                  {t('application.actions.saveDraft')}
-                </Button>
-                {existingApplication && (
+              {!existingApplication && !isEditing && (
+                <div className={styles.startButton}>
                   <Button
                     type='button'
-                    variant='danger'
-                    onClick={() => setIsEditing(false)}
+                    variant='primary'
+                    onClick={() => setIsEditing(true)}
                   >
-                    {t('application.actions.cancel')}
+                    {t('application.actions.start')}
                   </Button>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {!existingApplication && !isEditing && (
-        <div className={styles.startButton}>
-          <Button
-            type='button'
-            variant='primary'
-            onClick={() => setIsEditing(true)}
-          >
-            {t('application.actions.start')}
-          </Button>
-        </div>
-      )}
-        </>
-      )}
+                </div>
+              )}
+            </>
+          )}
         </>
       )}
     </section>

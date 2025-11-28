@@ -13,7 +13,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
-import { GENDER_OPTIONS, CONFIRMATION_MESSAGES, type GenderOption } from '@/utils/formConstants';
+import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
 import type { ValidationErrors, TabItem } from '@/types';
 import styles from './LeaderRecommendations.module.scss';
 
@@ -665,7 +665,11 @@ const LeaderRecommendations = () => {
           onChange={handleFormChange}
           showRequiredIndicator={false}
           error={errors.gender}
-          options={GENDER_OPTIONS}
+          options={[
+            { value: '', label: t('leader.recommendations.form.genderSelect'), disabled: true },
+            { value: 'male', label: t('leader.recommendations.form.genderMale') },
+            { value: 'female', label: t('leader.recommendations.form.genderFemale') },
+          ]}
           variant='default'
         />
         <ComboBox
