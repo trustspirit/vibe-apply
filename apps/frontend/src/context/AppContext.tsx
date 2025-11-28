@@ -43,6 +43,7 @@ interface ApplicationPayload {
   ward: string;
   gender: string;
   moreInfo: string;
+  servedMission?: boolean;
 }
 
 interface RecommendationPayload {
@@ -56,6 +57,7 @@ interface RecommendationPayload {
   ward: string;
   gender: string;
   moreInfo: string;
+  servedMission?: boolean;
   status?: RecommendationStatus;
 }
 

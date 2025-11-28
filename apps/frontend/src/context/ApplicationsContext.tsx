@@ -28,6 +28,7 @@ interface ApplicationPayload {
   ward: string;
   gender: string;
   moreInfo: string;
+  servedMission?: boolean;
 }
 
 interface ApplicationsContextValue {

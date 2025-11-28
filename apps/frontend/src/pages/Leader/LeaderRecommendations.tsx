@@ -27,6 +27,7 @@ interface RecommendationForm {
   stake: string;
   ward: string;
   moreInfo: string;
+  servedMission: string;
 }
 
 interface LocationState {
@@ -55,6 +56,7 @@ const emptyForm: RecommendationForm = {
   stake: '',
   ward: '',
   moreInfo: '',
+  servedMission: '',
 };
 
 const LeaderRecommendations = () => {
@@ -232,6 +234,9 @@ const LeaderRecommendations = () => {
         stake: recommendation.stake,
         ward: recommendation.ward,
         moreInfo: recommendation.moreInfo ?? '',
+        servedMission: recommendation.servedMission !== undefined
+          ? recommendation.servedMission ? 'yes' : 'no'
+          : '',
       });
       setErrors({});
       setFormError('');
@@ -264,6 +269,7 @@ const LeaderRecommendations = () => {
       stake: application.stake,
       ward: application.ward,
       moreInfo: application.moreInfo ?? '',
+      servedMission: application.servedMission,
     })
       .then(() => {
         setFeedback(t('leader.recommendations.messages.recommended', { name: application.name }));
@@ -372,6 +378,7 @@ const LeaderRecommendations = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
+      servedMission: form.servedMission === 'yes' ? true : form.servedMission === 'no' ? false : undefined,
       status,
     })
       .then(() => {
@@ -442,6 +449,7 @@ const LeaderRecommendations = () => {
       stake: recommendation.stake,
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
+      servedMission: recommendation.servedMission,
       status: 'submitted' as RecommendationStatus,
     })
       .then(() => {
@@ -483,6 +491,7 @@ const LeaderRecommendations = () => {
       stake: recommendation.stake,
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
+      servedMission: recommendation.servedMission,
       status: 'draft' as RecommendationStatus,
     })
       .then(() => {
@@ -659,6 +668,20 @@ const LeaderRecommendations = () => {
           options={GENDER_OPTIONS}
           variant='default'
         />
+        <ComboBox
+          name='servedMission'
+          label={t('leader.recommendations.form.servedMission')}
+          value={form.servedMission}
+          onChange={handleFormChange}
+          showRequiredIndicator={false}
+          error={errors.servedMission}
+          variant='default'
+          options={[
+            { value: '', label: t('leader.recommendations.form.servedMissionSelect'), disabled: true },
+            { value: 'yes', label: t('common.yes') },
+            { value: 'no', label: t('common.no') },
+          ]}
+        />
       </div>
       <TextField
         name='moreInfo'
@@ -753,6 +776,12 @@ const LeaderRecommendations = () => {
                 <dt>{t('leader.recommendations.form.gender')}</dt>
                 <dd>{selectedItem.gender ?? t('admin.roles.nA')}</dd>
               </div>
+              {'servedMission' in selectedItem && selectedItem.servedMission !== undefined && (
+                <div>
+                  <dt>{t('leader.recommendations.form.servedMission')}</dt>
+                  <dd>{selectedItem.servedMission ? t('common.yes') : t('common.no')}</dd>
+                </div>
+              )}
             </dl>
             {selectedItem.status !== 'approved' && (
               <div className={styles.detailActions}>
@@ -819,6 +848,12 @@ const LeaderRecommendations = () => {
               <dt>{t('leader.recommendations.form.gender')}</dt>
               <dd>{selectedItem.gender ?? t('admin.roles.nA')}</dd>
             </div>
+            {'servedMission' in selectedItem && selectedItem.servedMission !== undefined && (
+              <div>
+                <dt>{t('leader.recommendations.form.servedMission')}</dt>
+                <dd>{selectedItem.servedMission ? t('common.yes') : t('common.no')}</dd>
+              </div>
+            )}
           </dl>
           <div className={styles.detailsNotes}>
             <h3>{t('leader.recommendations.details.additionalInfo')}</h3>
@@ -922,6 +957,12 @@ const LeaderRecommendations = () => {
               <dt>{t('leader.recommendations.form.gender')}</dt>
               <dd>{item.gender ?? t('admin.roles.nA')}</dd>
             </div>
+            {'servedMission' in item && item.servedMission !== undefined && (
+              <div>
+                <dt>{t('leader.recommendations.form.servedMission')}</dt>
+                <dd>{item.servedMission ? t('common.yes') : t('common.no')}</dd>
+              </div>
+            )}
           </dl>
           {item.status !== 'approved' && (
             <div className={styles.cardActions}>
@@ -994,6 +1035,12 @@ const LeaderRecommendations = () => {
             <dt>{t('leader.recommendations.form.gender')}</dt>
             <dd>{item.gender ?? t('admin.roles.nA')}</dd>
           </div>
+          {'servedMission' in item && item.servedMission !== undefined && (
+            <div>
+              <dt>{t('leader.recommendations.form.servedMission')}</dt>
+              <dd>{item.servedMission ? t('common.yes') : t('common.no')}</dd>
+            </div>
+          )}
         </dl>
         <div className={styles.reviewCardNotes}>
           <h3>{t('leader.recommendations.details.additionalInfo')}</h3>

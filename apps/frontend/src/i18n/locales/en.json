@@ -226,6 +226,8 @@
         "stake": "Stake",
         "ward": "Ward",
         "gender": "Gender (optional)",
+        "servedMission": "Served a Mission (optional)",
+        "servedMissionSelect": "Select",
         "additionalInfo": "Additional Information",
         "additionalInfoPlaceholder": "Share any context or strengths that make this applicant a great fit.",
         "submitRecommendation": "Submit Recommendation",
@@ -312,19 +314,20 @@
       "title": "Already Recommended",
       "message": "You have already been recommended by your leader. Please contact your bishop or stake president if you have questions."
     },
-    "overview": {
-      "title": "Submission Overview",
-      "draftWarning": "This application is saved as a draft. Submit it when the required fields are complete.",
-      "status": "Status",
-      "name": "Name",
-      "email": "Email",
-      "phone": "Phone",
-      "age": "Age",
-      "stake": "Stake",
-      "ward": "Ward",
-      "additionalInfo": "Additional Information",
-      "noAdditionalInfo": "No additional details provided."
-    },
+      "overview": {
+        "title": "Submission Overview",
+        "draftWarning": "This application is saved as a draft. Submit it when the required fields are complete.",
+        "status": "Status",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "age": "Age",
+        "stake": "Stake",
+        "ward": "Ward",
+        "servedMission": "Served a Mission",
+        "additionalInfo": "Additional Information",
+        "noAdditionalInfo": "No additional details provided."
+      },
     "form": {
       "name": "Name",
       "age": "Age",

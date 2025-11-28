@@ -16,6 +16,7 @@ interface ApplicationForm {
   stake: string;
   ward: string;
   moreInfo: string;
+  servedMission: string;
 }
 
 interface ValidationErrors {
@@ -31,6 +32,7 @@ const emptyForm: ApplicationForm = {
   stake: '',
   ward: '',
   moreInfo: '',
+  servedMission: '',
 };
 
 const UserApplication = () => {
@@ -97,6 +99,9 @@ const UserApplication = () => {
         stake: existingApplication.stake,
         ward: existingApplication.ward,
         moreInfo: existingApplication.moreInfo ?? '',
+        servedMission: existingApplication.servedMission !== undefined 
+          ? existingApplication.servedMission ? 'yes' : 'no'
+          : '',
       });
       setIsEditing(existingApplication.status === 'draft');
     } else if (currentUser) {
@@ -223,6 +228,7 @@ const UserApplication = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
+      servedMission: form.servedMission === 'yes' ? true : form.servedMission === 'no' ? false : undefined,
     })
       .then(() => {
         setErrors({});
@@ -255,6 +261,7 @@ const UserApplication = () => {
       stake: form.stake.trim(),
       ward: form.ward.trim(),
       moreInfo: form.moreInfo.trim(),
+      servedMission: form.servedMission === 'yes' ? true : form.servedMission === 'no' ? false : undefined,
     })
       .then(() => {
         setFeedback(t('application.messages.draftSaved'));
@@ -350,6 +357,14 @@ const UserApplication = () => {
                 <dt className={styles.summaryLabel}>{t('application.overview.ward')}</dt>
                 <dd className={styles.summaryValue}>{existingApplication.ward}</dd>
               </div>
+              {existingApplication.servedMission !== undefined && (
+                <div className={styles.summaryItem}>
+                  <dt className={styles.summaryLabel}>{t('application.overview.servedMission')}</dt>
+                  <dd className={styles.summaryValue}>
+                    {existingApplication.servedMission ? t('common.yes') : t('common.no')}
+                  </dd>
+                </div>
+              )}
               <div className={styles.summaryItem}>
                 <dt className={styles.summaryLabel}>{t('application.overview.additionalInfo')}</dt>
                 <dd className={styles.summaryValue}>
@@ -441,6 +456,20 @@ const UserApplication = () => {
                     { value: '', label: t('application.form.genderSelect'), disabled: true },
                     { value: 'male', label: t('application.form.genderMale') },
                     { value: 'female', label: t('application.form.genderFemale') },
+                  ]}
+                />
+                <ComboBox
+                  name='servedMission'
+                  label={t('application.form.servedMission')}
+                  value={form.servedMission}
+                  onChange={handleChange}
+                  showRequiredIndicator={false}
+                  error={errors.servedMission}
+                  variant='default'
+                  options={[
+                    { value: '', label: t('application.form.servedMissionSelect'), disabled: true },
+                    { value: 'yes', label: t('common.yes') },
+                    { value: 'no', label: t('common.no') },
                   ]}
                 />
               </div>

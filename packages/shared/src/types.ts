@@ -68,6 +68,7 @@ export interface Application {
   ward: string;
   gender: Gender;
   moreInfo: string;
+  servedMission?: boolean;
   status: ApplicationStatus;
   createdAt: string;
   updatedAt: string;
@@ -86,6 +87,7 @@ export interface LeaderRecommendation {
   ward: string;
   gender: Gender;
   moreInfo: string;
+  servedMission?: boolean;
   status: RecommendationStatus;
   createdAt: string;
   updatedAt: string;
@@ -114,6 +116,7 @@ export interface CreateApplicationDto {
   ward: string;
   gender: Gender;
   moreInfo?: string;
+  servedMission?: boolean;
   status?: ApplicationStatus;
 }
 
@@ -126,6 +129,7 @@ export interface UpdateApplicationDto {
   ward?: string;
   gender?: Gender;
   moreInfo?: string;
+  servedMission?: boolean;
   status?: ApplicationStatus;
 }
 
@@ -138,6 +142,7 @@ export interface CreateRecommendationDto {
   ward: string;
   gender: Gender;
   moreInfo?: string;
+  servedMission?: boolean;
   status?: RecommendationStatus;
 }
 
@@ -150,6 +155,7 @@ export interface UpdateRecommendationDto {
   ward?: string;
   gender?: Gender;
   moreInfo?: string;
+  servedMission?: boolean;
   status?: RecommendationStatus;
 }
 

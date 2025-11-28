@@ -29,6 +29,7 @@ interface RecommendationPayload {
   ward: string;
   gender: string;
   moreInfo: string;
+  servedMission?: boolean;
   status?: RecommendationStatus;
 }
 
