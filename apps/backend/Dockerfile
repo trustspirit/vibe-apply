@@ -24,9 +24,9 @@ COPY packages/shared/package.json ./packages/shared/
 COPY apps/backend ./apps/backend
 COPY packages/shared ./packages/shared
 
-# Build shared package first (use root node_modules for typescript)
-WORKDIR /app
-RUN ./node_modules/.bin/tsc -p packages/shared/tsconfig.json
+# Build shared package first
+WORKDIR /app/packages/shared
+RUN pnpm build
 
 # Build backend
 WORKDIR /app/apps/backend
