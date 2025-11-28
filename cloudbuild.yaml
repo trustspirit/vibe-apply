@@ -9,6 +9,26 @@ steps:
         echo "All files in root:"
         ls -la
         echo ""
+        echo "Checking for apps directory:"
+        if [ ! -d "apps" ]; then
+          echo "ERROR: apps directory not found in build context!"
+          echo "Listing all directories:"
+          find . -maxdepth 1 -type d
+          exit 1
+        fi
+        echo "✓ apps directory found"
+        ls -la apps/
+        echo ""
+        echo "Checking for packages directory:"
+        if [ ! -d "packages" ]; then
+          echo "ERROR: packages directory not found in build context!"
+          echo "Listing all directories:"
+          find . -maxdepth 1 -type d
+          exit 1
+        fi
+        echo "✓ packages directory found"
+        ls -la packages/
+        echo ""
         echo "All .yaml files:"
         find . -maxdepth 1 -name "*.yaml" -type f
         echo ""
