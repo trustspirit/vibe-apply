@@ -1,0 +1,56 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore
+
+# Git files
+.git
+.gitignore
+
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+build
+**/build
+coverage
+**/coverage
+
+# Environment files
+.env
+.env.*
+!.env.example
+cloud-run-env.yaml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files
+test
+**/test
+*.spec.ts
+*.test.ts
+
+# Documentation
+README.md
+**/README.md
+AGENTS.md
+
+# Do NOT ignore pnpm-workspace.yaml - it's needed for the build!
+# pnpm-workspace.yaml
+

@@ -1,0 +1,29 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/backend/Dockerfile'
+      - '-t'
+      - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api:${SHORT_SHA}'
+      - '-t'
+      - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api:latest'
+      - '.'
+    dir: '.'
+    id: 'build'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api'
+    id: 'push'
+
+images:
+  - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api:${SHORT_SHA}'
+  - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api:latest'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
