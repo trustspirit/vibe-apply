@@ -14,6 +14,7 @@ import {
   StatusChip,
   Tabs,
   TextField,
+  ToggleButton,
 } from '@/components/ui';
 import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
@@ -30,7 +31,7 @@ interface RecommendationForm {
   stake: string;
   ward: string;
   moreInfo: string;
-  servedMission: string;
+  servedMission: boolean;
 }
 
 interface LocationState {
@@ -59,7 +60,7 @@ const emptyForm: RecommendationForm = {
   stake: '',
   ward: '',
   moreInfo: '',
-  servedMission: '',
+  servedMission: false,
 };
 
 const LeaderRecommendations = () => {
@@ -237,9 +238,7 @@ const LeaderRecommendations = () => {
         stake: recommendation.stake,
         ward: recommendation.ward,
         moreInfo: recommendation.moreInfo ?? '',
-        servedMission: recommendation.servedMission !== undefined
-          ? recommendation.servedMission ? 'yes' : 'no'
-          : '',
+        servedMission: recommendation.servedMission ?? false,
       });
       setErrors({});
       setFormError('');
@@ -381,7 +380,7 @@ const LeaderRecommendations = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
-      servedMission: form.servedMission === 'yes' ? true : form.servedMission === 'no' ? false : undefined,
+      servedMission: form.servedMission,
       status,
     })
       .then(() => {
@@ -666,7 +665,7 @@ const LeaderRecommendations = () => {
           label={t('leader.recommendations.form.gender')}
           value={form.gender}
           onChange={handleFormChange}
-          showRequiredIndicator={false}
+          required
           error={errors.gender}
           options={[
             { value: '', label: t('leader.recommendations.form.genderSelect'), disabled: true },
@@ -675,20 +674,25 @@ const LeaderRecommendations = () => {
           ]}
           variant='default'
         />
-        <ComboBox
-          name='servedMission'
-          label={t('leader.recommendations.form.servedMission')}
-          value={form.servedMission}
-          onChange={handleFormChange}
-          showRequiredIndicator={false}
-          error={errors.servedMission}
-          variant='default'
-          options={[
-            { value: '', label: t('leader.recommendations.form.servedMissionSelect'), disabled: true },
-            { value: 'yes', label: t('common.yes') },
-            { value: 'no', label: t('common.no') },
-          ]}
-        />
+        <div className={styles.toggleWrapper}>
+          <label className={styles.toggleLabel}>
+            {t('leader.recommendations.form.servedMission')}
+            <span className={styles.requiredIndicator}>*</span>
+          </label>
+          <ToggleButton
+            checked={form.servedMission}
+            onChange={(value) =>
+              setForm((prev) => ({ ...prev, servedMission: value }))
+            }
+            labelOn={t('common.yes')}
+            labelOff={t('common.no')}
+          />
+          {errors.servedMission && (
+            <span className={styles.errorText}>
+              {errors.servedMission}
+            </span>
+          )}
+        </div>
       </div>
       <TextField
         name='moreInfo'

@@ -72,6 +72,31 @@
   color: var(--color-muted);
 }
 
+.toggleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.toggleLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.requiredIndicator {
+  color: var(--color-error);
+}
+
+.errorText {
+  font-size: 0.75rem;
+  color: var(--color-error);
+  margin-top: -0.25rem;
+}
+
 @media (max-width: 768px) {
   .summaryGrid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

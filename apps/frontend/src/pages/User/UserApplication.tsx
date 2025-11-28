@@ -16,6 +16,7 @@ import {
   StatusChip,
   SummaryItem,
   TextField,
+  ToggleButton,
 } from '@/components/ui';
 import {
   validateEmail,
@@ -36,7 +37,7 @@ interface ApplicationForm {
   stake: string;
   ward: string;
   moreInfo: string;
-  servedMission: string;
+  servedMission: boolean;
 }
 
 interface ValidationErrors {
@@ -52,7 +53,7 @@ const emptyForm: ApplicationForm = {
   stake: '',
   ward: '',
   moreInfo: '',
-  servedMission: '',
+  servedMission: false,
 };
 
 const UserApplication = () => {
@@ -130,12 +131,7 @@ const UserApplication = () => {
         stake: existingApplication.stake,
         ward: existingApplication.ward,
         moreInfo: existingApplication.moreInfo ?? '',
-        servedMission:
-          existingApplication.servedMission !== undefined
-            ? existingApplication.servedMission
-              ? 'yes'
-              : 'no'
-            : '',
+        servedMission: existingApplication.servedMission ?? false,
       });
       setIsEditing(existingApplication.status === 'draft');
     } else if (currentUser) {
@@ -270,12 +266,7 @@ const UserApplication = () => {
       stake: trimmedStake,
       ward: trimmedWard,
       moreInfo: form.moreInfo.trim(),
-      servedMission:
-        form.servedMission === 'yes'
-          ? true
-          : form.servedMission === 'no'
-            ? false
-            : undefined,
+      servedMission: form.servedMission,
     })
       .then(() => {
         setErrors({});
@@ -310,12 +301,7 @@ const UserApplication = () => {
       stake: form.stake.trim(),
       ward: form.ward.trim(),
       moreInfo: form.moreInfo.trim(),
-      servedMission:
-        form.servedMission === 'yes'
-          ? true
-          : form.servedMission === 'no'
-            ? false
-            : undefined,
+      servedMission: form.servedMission,
     })
       .then(() => {
         setFeedback(t('application.messages.draftSaved'));
@@ -506,7 +492,7 @@ const UserApplication = () => {
                           label={t('application.form.gender')}
                           value={form.gender}
                           onChange={handleChange}
-                          showRequiredIndicator={false}
+                          required
                           error={errors.gender}
                           variant='default'
                           options={[
@@ -525,24 +511,28 @@ const UserApplication = () => {
                             },
                           ]}
                         />
-                        <ComboBox
-                          name='servedMission'
-                          label={t('application.form.servedMission')}
-                          value={form.servedMission}
-                          onChange={handleChange}
-                          showRequiredIndicator={false}
-                          error={errors.servedMission}
-                          variant='default'
-                          options={[
-                            {
-                              value: '',
-                              label: t('application.form.servedMissionSelect'),
-                              disabled: true,
-                            },
-                            { value: 'yes', label: t('common.yes') },
-                            { value: 'no', label: t('common.no') },
-                          ]}
-                        />
+                        <div className={styles.toggleWrapper}>
+                          <label className={styles.toggleLabel}>
+                            {t('application.form.servedMission')}
+                            <span className={styles.requiredIndicator}>*</span>
+                          </label>
+                          <ToggleButton
+                            checked={form.servedMission}
+                            onChange={(value) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                servedMission: value,
+                              }))
+                            }
+                            labelOn={t('common.yes')}
+                            labelOff={t('common.no')}
+                          />
+                          {errors.servedMission && (
+                            <span className={styles.errorText}>
+                              {errors.servedMission}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <TextField
                         name='moreInfo'
