@@ -13,8 +13,10 @@ COPY pnpm-lock.yaml ./
 RUN echo "packages:" > pnpm-workspace.yaml && \
     echo "  - 'apps/*'" >> pnpm-workspace.yaml && \
     echo "  - 'packages/*'" >> pnpm-workspace.yaml
-COPY apps/backend/package.json ./apps/backend/
-COPY packages/shared/package.json ./packages/shared/
+# Copy apps and packages directories (will fail if not in build context)
+# This ensures we have the package.json files we need
+COPY apps ./apps
+COPY packages ./packages
 RUN pnpm install --frozen-lockfile
 
 # -------------------------
@@ -31,10 +33,9 @@ COPY pnpm-lock.yaml ./
 RUN echo "packages:" > pnpm-workspace.yaml && \
     echo "  - 'apps/*'" >> pnpm-workspace.yaml && \
     echo "  - 'packages/*'" >> pnpm-workspace.yaml
-COPY apps/backend/package.json ./apps/backend/
-COPY packages/shared/package.json ./packages/shared/
-COPY apps/backend ./apps/backend
-COPY packages/shared ./packages/shared
+# Copy apps and packages directories
+COPY apps ./apps
+COPY packages ./packages
 
 # Build shared package first
 WORKDIR /app/packages/shared

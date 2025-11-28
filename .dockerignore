@@ -1,4 +1,4 @@
-# Minimal Docker ignore - explicitly allow pnpm-workspace.yaml
+# Minimal Docker ignore - only exclude what we don't need
 node_modules
 **/node_modules
 dist
@@ -14,9 +14,11 @@ coverage
 .DS_Store
 *.log
 
-# Explicitly allow required files (in case of any pattern matching)
+# Explicitly include required files and directories
 !pnpm-workspace.yaml
 !package.json
 !pnpm-lock.yaml
-!apps/backend/package.json
-!packages/shared/package.json
+!apps/
+!apps/**
+!packages/
+!packages/**
