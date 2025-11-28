@@ -34,6 +34,24 @@ steps:
         fi
         echo "✓ pnpm-lock.yaml found"
         echo ""
+        echo "Checking for apps/backend/package.json:"
+        if [ ! -f "apps/backend/package.json" ]; then
+          echo "ERROR: apps/backend/package.json not found!"
+          echo "Checking apps/backend directory:"
+          ls -la apps/backend/ 2>&1 || echo "apps/backend directory does not exist"
+          exit 1
+        fi
+        echo "✓ apps/backend/package.json found"
+        echo ""
+        echo "Checking for packages/shared/package.json:"
+        if [ ! -f "packages/shared/package.json" ]; then
+          echo "ERROR: packages/shared/package.json not found!"
+          echo "Checking packages/shared directory:"
+          ls -la packages/shared/ 2>&1 || echo "packages/shared directory does not exist"
+          exit 1
+        fi
+        echo "✓ packages/shared/package.json found"
+        echo ""
         echo "=== Build context verified ==="
     id: 'verify-files'
 
@@ -61,6 +79,12 @@ steps:
         echo ""
         echo "Verifying files exist:"
         ls -la pnpm-workspace.yaml package.json pnpm-lock.yaml
+        echo ""
+        echo "Verifying apps/backend/package.json:"
+        ls -la apps/backend/package.json 2>&1 || echo "ERROR: apps/backend/package.json not found!"
+        echo ""
+        echo "Verifying packages/shared/package.json:"
+        ls -la packages/shared/package.json 2>&1 || echo "ERROR: packages/shared/package.json not found!"
         echo ""
         echo "File sizes:"
         wc -l pnpm-workspace.yaml package.json pnpm-lock.yaml

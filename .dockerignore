@@ -18,3 +18,5 @@ coverage
 !pnpm-workspace.yaml
 !package.json
 !pnpm-lock.yaml
+!apps/backend/package.json
+!packages/shared/package.json
