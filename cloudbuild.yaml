@@ -6,27 +6,33 @@ steps:
         echo "=== Verifying build context ==="
         echo "Current directory: $(pwd)"
         echo ""
+        echo "All files in root:"
+        ls -la
+        echo ""
+        echo "All .yaml files:"
+        find . -maxdepth 1 -name "*.yaml" -type f
+        echo ""
         echo "Checking for required files:"
         if [ ! -f "pnpm-workspace.yaml" ]; then
-          echo "ERROR: pnpm-workspace.yaml not found!"
-          echo "Listing all .yaml files:"
-          find . -name "*.yaml" -type f | head -10
+          echo "ERROR: pnpm-workspace.yaml not found in build context!"
+          echo "This file MUST exist for the build to work."
+          echo "Checking if it exists in git:"
+          git ls-files | grep pnpm-workspace || echo "Not in git index"
           exit 1
         fi
+        echo "✓ pnpm-workspace.yaml found"
+        cat pnpm-workspace.yaml
+        echo ""
         if [ ! -f "package.json" ]; then
           echo "ERROR: package.json not found!"
           exit 1
         fi
+        echo "✓ package.json found"
         if [ ! -f "pnpm-lock.yaml" ]; then
           echo "ERROR: pnpm-lock.yaml not found!"
           exit 1
         fi
-        echo "✓ pnpm-workspace.yaml found"
-        echo "✓ package.json found"
         echo "✓ pnpm-lock.yaml found"
-        echo ""
-        echo "File contents check:"
-        cat pnpm-workspace.yaml
         echo ""
         echo "=== Build context verified ==="
     id: 'verify-files'
