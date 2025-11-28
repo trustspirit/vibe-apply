@@ -3,12 +3,32 @@ steps:
     args:
       - '-c'
       - |
-        echo "Checking required files..."
-        ls -la pnpm-workspace.yaml package.json pnpm-lock.yaml || exit 1
-        echo "Files found, proceeding with build..."
+        echo "=== Verifying build context ==="
         echo "Current directory: $(pwd)"
-        echo "Listing files in root:"
-        ls -la | head -20
+        echo ""
+        echo "Checking for required files:"
+        if [ ! -f "pnpm-workspace.yaml" ]; then
+          echo "ERROR: pnpm-workspace.yaml not found!"
+          echo "Listing all .yaml files:"
+          find . -name "*.yaml" -type f | head -10
+          exit 1
+        fi
+        if [ ! -f "package.json" ]; then
+          echo "ERROR: package.json not found!"
+          exit 1
+        fi
+        if [ ! -f "pnpm-lock.yaml" ]; then
+          echo "ERROR: pnpm-lock.yaml not found!"
+          exit 1
+        fi
+        echo "✓ pnpm-workspace.yaml found"
+        echo "✓ package.json found"
+        echo "✓ pnpm-lock.yaml found"
+        echo ""
+        echo "File contents check:"
+        cat pnpm-workspace.yaml
+        echo ""
+        echo "=== Build context verified ==="
     id: 'verify-files'
 
   - name: 'gcr.io/cloud-builders/docker'

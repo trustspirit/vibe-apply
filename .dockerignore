@@ -1,60 +1,17 @@
-# Docker ignore file for root build context
-# IMPORTANT: Do NOT ignore pnpm-workspace.yaml, package.json, or pnpm-lock.yaml
+# Docker ignore file - minimal exclusions
+# Only exclude what we don't need, keep everything else including pnpm-workspace.yaml
 
-# Git files
-.git
-.gitignore
-
-# Dependencies
 node_modules
 **/node_modules
-
-# Build outputs
 dist
 **/dist
 build
 **/build
 coverage
 **/coverage
-
-# Environment files
+.git
 .env
 .env.*
 !.env.example
-cloud-run-env.yaml
-
-# IDE
-.vscode
-.idea
-*.swp
-*.swo
-
-# OS
 .DS_Store
-Thumbs.db
-
-# Logs
 *.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Test files
-test
-**/test
-*.spec.ts
-*.test.ts
-
-# Documentation
-README.md
-**/README.md
-AGENTS.md
-
-# Explicitly include required files
-!pnpm-workspace.yaml
-!package.json
-!pnpm-lock.yaml
-!apps/backend/package.json
-!packages/shared/package.json
-

@@ -1,59 +1,17 @@
-# This file specifies files that are *not* uploaded to Google Cloud
-# IMPORTANT: pnpm-workspace.yaml, package.json, and pnpm-lock.yaml MUST be included
+# Minimal .gcloudignore - only exclude what we really don't need
+# Keep pnpm-workspace.yaml, package.json, pnpm-lock.yaml
 
-# Git files
-.git
-.gitignore
-
-# Dependencies (but keep package files)
 node_modules
 **/node_modules
-
-# Build outputs
 dist
 **/dist
 build
 **/build
 coverage
 **/coverage
-
-# Environment files
+.git
 .env
 .env.*
 !.env.example
-cloud-run-env.yaml
-
-# IDE
-.vscode
-.idea
-*.swp
-*.swo
-
-# OS
 .DS_Store
-Thumbs.db
-
-# Logs
 *.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Test files
-test
-**/test
-*.spec.ts
-*.test.ts
-
-# Documentation
-README.md
-**/README.md
-AGENTS.md
-
-# Explicitly include required files (override any patterns above)
-!pnpm-workspace.yaml
-!package.json
-!pnpm-lock.yaml
-!apps/backend/package.json
-!packages/shared/package.json
