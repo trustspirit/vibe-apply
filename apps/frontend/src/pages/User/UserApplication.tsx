@@ -484,8 +484,10 @@ const UserApplication = () => {
                           }
                           stakeError={errors.stake}
                           wardError={errors.ward}
-                          stakeDisabled
-                          wardDisabled
+                          stakeDisabled={true}
+                          wardDisabled={true}
+                          stakeLabel={t('common.stake')}
+                          wardLabel={t('common.ward')}
                         />
                         <ComboBox
                           name='gender'

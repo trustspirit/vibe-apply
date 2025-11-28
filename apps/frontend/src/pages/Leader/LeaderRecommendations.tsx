@@ -11,6 +11,7 @@ import {
   DetailsGrid,
   DetailsGridItem,
   DetailsNotes,
+  StakeWardSelector,
   StatusChip,
   Tabs,
   TextField,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui';
 import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
+import { USER_ROLES } from '@/utils/constants';
 import type { ValidationErrors, TabItem } from '@/types';
 import styles from './LeaderRecommendations.module.scss';
 
@@ -213,10 +215,15 @@ const LeaderRecommendations = () => {
     }
 
     if (currentFormId === null) {
+      const initialWard =
+        currentUser?.role === USER_ROLES.BISHOP ||
+        currentUser?.role === USER_ROLES.APPLICANT
+          ? currentUser?.ward || ''
+          : '';
       setForm({
         ...emptyForm,
         stake: currentUser?.stake || '',
-        ward: currentUser?.role === 'bishop' ? currentUser?.ward || '' : '',
+        ward: initialWard,
       });
       setErrors({});
       setFormError('');
@@ -642,23 +649,24 @@ const LeaderRecommendations = () => {
           required
           error={errors.phone}
         />
-        <TextField
-          name='stake'
-          label={t('leader.recommendations.form.stake')}
-          value={form.stake}
-          onChange={handleFormChange}
-          required
-          error={errors.stake}
-          disabled
-        />
-        <TextField
-          name='ward'
-          label={t('leader.recommendations.form.ward')}
-          value={form.ward}
-          onChange={handleFormChange}
-          required
-          error={errors.ward}
-          disabled={currentUser?.role === 'bishop'}
+        <StakeWardSelector
+          stake={form.stake}
+          ward={form.ward}
+          onStakeChange={(stake) =>
+            setForm((prev) => ({ ...prev, stake }))
+          }
+          onWardChange={(ward) =>
+            setForm((prev) => ({ ...prev, ward }))
+          }
+          stakeError={errors.stake}
+          wardError={errors.ward}
+          stakeDisabled={true}
+          wardDisabled={
+            currentUser?.role === USER_ROLES.BISHOP ||
+            currentUser?.role === USER_ROLES.APPLICANT
+          }
+          stakeLabel={t('leader.recommendations.form.stake')}
+          wardLabel={t('leader.recommendations.form.ward')}
         />
         <ComboBox
           name='gender'

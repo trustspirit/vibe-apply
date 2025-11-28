@@ -14,3 +14,4 @@ export const DetailsGrid = ({ children, className }: DetailsGridProps) => {
   );
 };
 
+

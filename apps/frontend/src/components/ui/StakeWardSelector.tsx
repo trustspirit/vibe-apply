@@ -38,40 +38,45 @@ const StakeWardSelector = ({
 }: StakeWardSelectorProps) => {
   const stakeOptions = useMemo(() => getStakeOptions(), []);
 
-  const wardOptions = useMemo(() => {
+  const normalizedStake = useMemo(() => {
     if (!stake) {
+      return '';
+    }
+    if (stakeOptions.some((s) => s.value === stake)) {
+      return stake;
+    }
+    const foundStake = findStakeValueByText(stake);
+    return foundStake || stake;
+  }, [stake, stakeOptions]);
+
+  const wardOptions = useMemo(() => {
+    if (!normalizedStake) {
       return [];
     }
-    return getWardOptions(stake);
-  }, [stake]);
+    return getWardOptions(normalizedStake);
+  }, [normalizedStake]);
 
   useEffect(() => {
-    if (stake && !stakeOptions.some((s) => s.value === stake)) {
-      const foundStake = findStakeValueByText(stake);
-      if (foundStake) {
-        onStakeChange(foundStake);
-      }
+    if (normalizedStake && normalizedStake !== stake) {
+      onStakeChange(normalizedStake);
     }
-  }, [stake, stakeOptions, onStakeChange]);
+  }, [normalizedStake, stake, onStakeChange]);
 
   useEffect(() => {
-    if (stake && ward && !wardOptions.some((w) => w.value === ward)) {
-      const foundWard = findWardValueByText(stake, ward);
+    if (normalizedStake && ward && !wardOptions.some((w) => w.value === ward)) {
+      const foundWard = findWardValueByText(normalizedStake, ward);
       if (foundWard) {
         onWardChange(foundWard);
       } else {
         onWardChange('');
       }
     }
-  }, [stake, ward, wardOptions, onWardChange]);
+  }, [normalizedStake, ward, wardOptions, onWardChange]);
 
   const handleStakeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newStake = event.target.value;
     onStakeChange(newStake);
-
-    if (newStake !== stake) {
-      onWardChange('');
-    }
+    onWardChange('');
   };
 
   const handleWardChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -79,20 +84,21 @@ const StakeWardSelector = ({
   };
 
   const currentWardIsValid = useMemo(() => {
-    if (!ward || !stake) {
+    if (!ward || !normalizedStake) {
       return false;
     }
     return wardOptions.some((w) => w.value === ward);
-  }, [ward, stake, wardOptions]);
+  }, [ward, normalizedStake, wardOptions]);
 
   const resolvedWard = currentWardIsValid ? ward : '';
+  const resolvedStake = normalizedStake || stake;
 
   return (
     <>
       <ComboBox
         name='stake'
         label={stakeLabel}
-        value={stake}
+        value={resolvedStake}
         onChange={handleStakeChange}
         options={stakeOptions}
         required={stakeRequired}
@@ -108,9 +114,9 @@ const StakeWardSelector = ({
         options={wardOptions}
         required={wardRequired}
         error={wardError}
-        disabled={wardDisabled || !stake}
+        disabled={wardDisabled || !normalizedStake}
         variant='default'
-        helperText={!stake ? 'Please select a stake first' : undefined}
+        helperText={!normalizedStake ? 'Please select a stake first' : undefined}
       />
     </>
   );
