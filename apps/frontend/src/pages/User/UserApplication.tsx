@@ -14,6 +14,7 @@ import {
   ComboBox,
   StakeWardSelector,
   StatusChip,
+  SummaryItem,
   TextField,
 } from '@/components/ui';
 import {
@@ -373,98 +374,57 @@ const UserApplication = () => {
                   <CardContent>
                     <div className={styles.summaryGrid}>
                       {existingApplication.status && (
-                        <div className={styles.summaryItem}>
-                          <dt className={styles.summaryLabel}>
-                            {t('application.overview.status')}
-                          </dt>
-                          <dd className={styles.summaryValue}>
-                            {(() => {
-                              const display = getStatusDisplay(
-                                existingApplication.status
-                              );
-                              const statusLabel = t(
-                                `status.${existingApplication.status}`
-                              );
-                              return (
-                                <StatusChip
-                                  status={existingApplication.status}
-                                  tone={display.tone}
-                                  label={statusLabel}
-                                />
-                              );
-                            })()}
-                          </dd>
-                        </div>
+                        <SummaryItem label={t('application.overview.status')}>
+                          {(() => {
+                            const display = getStatusDisplay(
+                              existingApplication.status
+                            );
+                            const statusLabel = t(
+                              `status.${existingApplication.status}`
+                            );
+                            return (
+                              <StatusChip
+                                status={existingApplication.status}
+                                tone={display.tone}
+                                label={statusLabel}
+                              />
+                            );
+                          })()}
+                        </SummaryItem>
                       )}
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.name')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.name}
-                        </dd>
-                      </div>
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.email')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.email}
-                        </dd>
-                      </div>
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.phone')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.phone}
-                        </dd>
-                      </div>
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.age')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.age ?? t('admin.roles.nA')}
-                        </dd>
-                      </div>
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.stake')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.stake}
-                        </dd>
-                      </div>
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.ward')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.ward}
-                        </dd>
-                      </div>
+                      <SummaryItem label={t('application.overview.name')}>
+                        {existingApplication.name}
+                      </SummaryItem>
+                      <SummaryItem label={t('application.overview.email')}>
+                        {existingApplication.email}
+                      </SummaryItem>
+                      <SummaryItem label={t('application.overview.phone')}>
+                        {existingApplication.phone}
+                      </SummaryItem>
+                      <SummaryItem label={t('application.overview.age')}>
+                        {existingApplication.age ?? t('admin.roles.nA')}
+                      </SummaryItem>
+                      <SummaryItem label={t('application.overview.stake')}>
+                        {existingApplication.stake}
+                      </SummaryItem>
+                      <SummaryItem label={t('application.overview.ward')}>
+                        {existingApplication.ward}
+                      </SummaryItem>
                       {existingApplication.servedMission !== undefined && (
-                        <div className={styles.summaryItem}>
-                          <dt className={styles.summaryLabel}>
-                            {t('application.overview.servedMission')}
-                          </dt>
-                          <dd className={styles.summaryValue}>
-                            {existingApplication.servedMission
-                              ? t('common.yes')
-                              : t('common.no')}
-                          </dd>
-                        </div>
+                        <SummaryItem
+                          label={t('application.overview.servedMission')}
+                        >
+                          {existingApplication.servedMission
+                            ? t('common.yes')
+                            : t('common.no')}
+                        </SummaryItem>
                       )}
-                      <div className={styles.summaryItem}>
-                        <dt className={styles.summaryLabel}>
-                          {t('application.overview.additionalInfo')}
-                        </dt>
-                        <dd className={styles.summaryValue}>
-                          {existingApplication.moreInfo ||
-                            t('application.overview.noAdditionalInfo')}
-                        </dd>
-                      </div>
+                      <SummaryItem
+                        label={t('application.overview.additionalInfo')}
+                      >
+                        {existingApplication.moreInfo ||
+                          t('application.overview.noAdditionalInfo')}
+                      </SummaryItem>
                     </div>
                   </CardContent>
                   <CardFooter>

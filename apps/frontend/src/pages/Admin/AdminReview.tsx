@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { Application, LeaderRecommendation, ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
-import { Button, ComboBox, StatusChip, Tabs } from '@/components/ui';
+import { Button, ComboBox, DetailsGrid, DetailsGridItem, DetailsNotes, StatusChip, Tabs } from '@/components/ui';
 import { ReviewItemTags } from '@/components';
 import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { normalizeRecommendationStatus, remapStatusForRecommendation } from '@/utils/statusHelpers';
@@ -434,40 +434,31 @@ const AdminReview = () => {
                 </div>
               </header>
 
-              <dl className={styles.grid}>
-                <div>
-                  <dt>Email</dt>
-                  <dd>{selectedItem.email}</dd>
-                </div>
-                <div>
-                  <dt>Phone</dt>
-                  <dd>{selectedItem.phone}</dd>
-                </div>
-                <div>
-                  <dt>Age</dt>
-                  <dd>{selectedItem.age ?? 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt>Stake</dt>
-                  <dd>{selectedItem.stake}</dd>
-                </div>
-                <div>
-                  <dt>Ward</dt>
-                  <dd>{selectedItem.ward}</dd>
-                </div>
-                <div>
-                  <dt>Gender</dt>
-                  <dd>{selectedItem.gender ?? 'N/A'}</dd>
-                </div>
-              </dl>
+              <DetailsGrid className={styles.grid}>
+                <DetailsGridItem label='Email'>
+                  {selectedItem.email}
+                </DetailsGridItem>
+                <DetailsGridItem label='Phone'>
+                  {selectedItem.phone}
+                </DetailsGridItem>
+                <DetailsGridItem label='Age'>
+                  {selectedItem.age ?? 'N/A'}
+                </DetailsGridItem>
+                <DetailsGridItem label='Stake'>
+                  {selectedItem.stake}
+                </DetailsGridItem>
+                <DetailsGridItem label='Ward'>
+                  {selectedItem.ward}
+                </DetailsGridItem>
+                <DetailsGridItem label='Gender'>
+                  {selectedItem.gender ?? 'N/A'}
+                </DetailsGridItem>
+              </DetailsGrid>
 
-              <div className={styles.notes}>
-                <h3>Additional Information</h3>
-                <p>
-                  {selectedItem.moreInfo ||
-                    'No additional information provided.'}
-                </p>
-              </div>
+              <DetailsNotes title='Additional Information' className={styles.notes}>
+                {selectedItem.moreInfo ||
+                  'No additional information provided.'}
+              </DetailsNotes>
             </div>
           ) : (
             <div className={styles.placeholder}>

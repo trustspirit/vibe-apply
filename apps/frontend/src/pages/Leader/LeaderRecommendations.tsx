@@ -8,6 +8,9 @@ import { useApp } from '@/context/AppContext';
 import {
   Button,
   ComboBox,
+  DetailsGrid,
+  DetailsGridItem,
+  DetailsNotes,
   StatusChip,
   Tabs,
   TextField,
@@ -755,38 +758,31 @@ const LeaderRecommendations = () => {
               </div>
               <StatusChip status={'status' in selectedItem ? selectedItem.status : 'awaiting'} />
             </header>
-            <dl className={styles.detailsGrid}>
-              <div>
-                <dt>{t('common.email')}</dt>
-                <dd>{selectedItem.email}</dd>
-              </div>
-              <div>
-                <dt>{t('common.phone')}</dt>
-                <dd>{selectedItem.phone}</dd>
-              </div>
-              <div>
-                <dt>{t('leader.recommendations.form.age')}</dt>
-                <dd>{selectedItem.age ?? t('admin.roles.nA')}</dd>
-              </div>
-              <div>
-                <dt>{t('common.stake')}</dt>
-                <dd>{selectedItem.stake}</dd>
-              </div>
-              <div>
-                <dt>{t('common.ward')}</dt>
-                <dd>{selectedItem.ward}</dd>
-              </div>
-              <div>
-                <dt>{t('leader.recommendations.form.gender')}</dt>
-                <dd>{selectedItem.gender ?? t('admin.roles.nA')}</dd>
-              </div>
+            <DetailsGrid>
+              <DetailsGridItem label={t('common.email')}>
+                {selectedItem.email}
+              </DetailsGridItem>
+              <DetailsGridItem label={t('common.phone')}>
+                {selectedItem.phone}
+              </DetailsGridItem>
+              <DetailsGridItem label={t('leader.recommendations.form.age')}>
+                {selectedItem.age ?? t('admin.roles.nA')}
+              </DetailsGridItem>
+              <DetailsGridItem label={t('common.stake')}>
+                {selectedItem.stake}
+              </DetailsGridItem>
+              <DetailsGridItem label={t('common.ward')}>
+                {selectedItem.ward}
+              </DetailsGridItem>
+              <DetailsGridItem label={t('leader.recommendations.form.gender')}>
+                {selectedItem.gender ?? t('admin.roles.nA')}
+              </DetailsGridItem>
               {'servedMission' in selectedItem && selectedItem.servedMission !== undefined && (
-                <div>
-                  <dt>{t('leader.recommendations.form.servedMission')}</dt>
-                  <dd>{selectedItem.servedMission ? t('common.yes') : t('common.no')}</dd>
-                </div>
+                <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
+                  {selectedItem.servedMission ? t('common.yes') : t('common.no')}
+                </DetailsGridItem>
               )}
-            </dl>
+            </DetailsGrid>
             {selectedItem.status !== 'approved' && (
               <div className={styles.detailActions}>
                 <Button
@@ -827,44 +823,34 @@ const LeaderRecommendations = () => {
             </div>
             {'status' in selectedItem && selectedItem.status && <StatusChip status={selectedItem.status} />}
           </header>
-          <dl className={styles.detailsGrid}>
-            <div>
-              <dt>{t('common.email')}</dt>
-              <dd>{selectedItem.email}</dd>
-            </div>
-            <div>
-              <dt>{t('common.phone')}</dt>
-              <dd>{selectedItem.phone}</dd>
-            </div>
-            <div>
-              <dt>{t('leader.recommendations.form.age')}</dt>
-              <dd>{selectedItem.age ?? t('admin.roles.nA')}</dd>
-            </div>
-            <div>
-              <dt>{t('common.stake')}</dt>
-              <dd>{selectedItem.stake}</dd>
-            </div>
-            <div>
-              <dt>{t('common.ward')}</dt>
-              <dd>{selectedItem.ward}</dd>
-            </div>
-            <div>
-              <dt>{t('leader.recommendations.form.gender')}</dt>
-              <dd>{selectedItem.gender ?? t('admin.roles.nA')}</dd>
-            </div>
+          <DetailsGrid>
+            <DetailsGridItem label={t('common.email')}>
+              {selectedItem.email}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('common.phone')}>
+              {selectedItem.phone}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('leader.recommendations.form.age')}>
+              {selectedItem.age ?? t('admin.roles.nA')}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('common.stake')}>
+              {selectedItem.stake}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('common.ward')}>
+              {selectedItem.ward}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('leader.recommendations.form.gender')}>
+              {selectedItem.gender ?? t('admin.roles.nA')}
+            </DetailsGridItem>
             {'servedMission' in selectedItem && selectedItem.servedMission !== undefined && (
-              <div>
-                <dt>{t('leader.recommendations.form.servedMission')}</dt>
-                <dd>{selectedItem.servedMission ? t('common.yes') : t('common.no')}</dd>
-              </div>
+              <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
+                {selectedItem.servedMission ? t('common.yes') : t('common.no')}
+              </DetailsGridItem>
             )}
-          </dl>
-          <div className={styles.detailsNotes}>
-            <h3>{t('leader.recommendations.details.additionalInfo')}</h3>
-            <p>
-              {selectedItem.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
-            </p>
-          </div>
+          </DetailsGrid>
+          <DetailsNotes title={t('leader.recommendations.details.additionalInfo')}>
+            {selectedItem.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
+          </DetailsNotes>
           <div className={styles.detailActions}>
             {canModify && (
               <>
@@ -936,38 +922,31 @@ const LeaderRecommendations = () => {
             </div>
             <StatusChip status={'status' in item ? item.status : 'awaiting'} />
           </div>
-          <dl className={styles.reviewCardGrid}>
-            <div>
-              <dt>{t('common.email')}</dt>
-              <dd>{item.email}</dd>
-            </div>
-            <div>
-              <dt>{t('common.phone')}</dt>
-              <dd>{item.phone}</dd>
-            </div>
-            <div>
-              <dt>{t('leader.recommendations.form.age')}</dt>
-              <dd>{item.age ?? t('admin.roles.nA')}</dd>
-            </div>
-            <div>
-              <dt>{t('common.stake')}</dt>
-              <dd>{item.stake}</dd>
-            </div>
-            <div>
-              <dt>{t('common.ward')}</dt>
-              <dd>{item.ward}</dd>
-            </div>
-            <div>
-              <dt>{t('leader.recommendations.form.gender')}</dt>
-              <dd>{item.gender ?? t('admin.roles.nA')}</dd>
-            </div>
+          <DetailsGrid className={styles.reviewCardGrid}>
+            <DetailsGridItem label={t('common.email')}>
+              {item.email}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('common.phone')}>
+              {item.phone}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('leader.recommendations.form.age')}>
+              {item.age ?? t('admin.roles.nA')}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('common.stake')}>
+              {item.stake}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('common.ward')}>
+              {item.ward}
+            </DetailsGridItem>
+            <DetailsGridItem label={t('leader.recommendations.form.gender')}>
+              {item.gender ?? t('admin.roles.nA')}
+            </DetailsGridItem>
             {'servedMission' in item && item.servedMission !== undefined && (
-              <div>
-                <dt>{t('leader.recommendations.form.servedMission')}</dt>
-                <dd>{item.servedMission ? t('common.yes') : t('common.no')}</dd>
-              </div>
+              <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
+                {item.servedMission ? t('common.yes') : t('common.no')}
+              </DetailsGridItem>
             )}
-          </dl>
+          </DetailsGrid>
           {item.status !== 'approved' && (
             <div className={styles.cardActions}>
                 <Button
@@ -1014,42 +993,37 @@ const LeaderRecommendations = () => {
             </span>
           )}
         </div>
-        <dl className={styles.reviewCardGrid}>
-          <div>
-            <dt>{t('common.email')}</dt>
-            <dd>{item.email}</dd>
-          </div>
-          <div>
-            <dt>{t('common.phone')}</dt>
-            <dd>{item.phone}</dd>
-          </div>
-          <div>
-            <dt>{t('leader.recommendations.form.age')}</dt>
-            <dd>{item.age ?? t('admin.roles.nA')}</dd>
-          </div>
-          <div>
-            <dt>{t('common.stake')}</dt>
-            <dd>{item.stake}</dd>
-          </div>
-          <div>
-            <dt>{t('common.ward')}</dt>
-            <dd>{item.ward}</dd>
-          </div>
-          <div>
-            <dt>{t('leader.recommendations.form.gender')}</dt>
-            <dd>{item.gender ?? t('admin.roles.nA')}</dd>
-          </div>
+        <DetailsGrid className={styles.reviewCardGrid}>
+          <DetailsGridItem label={t('common.email')}>
+            {item.email}
+          </DetailsGridItem>
+          <DetailsGridItem label={t('common.phone')}>
+            {item.phone}
+          </DetailsGridItem>
+          <DetailsGridItem label={t('leader.recommendations.form.age')}>
+            {item.age ?? t('admin.roles.nA')}
+          </DetailsGridItem>
+          <DetailsGridItem label={t('common.stake')}>
+            {item.stake}
+          </DetailsGridItem>
+          <DetailsGridItem label={t('common.ward')}>
+            {item.ward}
+          </DetailsGridItem>
+          <DetailsGridItem label={t('leader.recommendations.form.gender')}>
+            {item.gender ?? t('admin.roles.nA')}
+          </DetailsGridItem>
           {'servedMission' in item && item.servedMission !== undefined && (
-            <div>
-              <dt>{t('leader.recommendations.form.servedMission')}</dt>
-              <dd>{item.servedMission ? t('common.yes') : t('common.no')}</dd>
-            </div>
+            <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
+              {item.servedMission ? t('common.yes') : t('common.no')}
+            </DetailsGridItem>
           )}
-        </dl>
-        <div className={styles.reviewCardNotes}>
-          <h3>{t('leader.recommendations.details.additionalInfo')}</h3>
-          <p>{item.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}</p>
-        </div>
+        </DetailsGrid>
+        <DetailsNotes
+          title={t('leader.recommendations.details.additionalInfo')}
+          className={styles.reviewCardNotes}
+        >
+          {item.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
+        </DetailsNotes>
         <div className={styles.cardActions}>
           {'canEdit' in item && item.canEdit && 'canDelete' in item && item.canDelete ? (
             <>
