@@ -6,6 +6,9 @@ steps:
         echo "Checking required files..."
         ls -la pnpm-workspace.yaml package.json pnpm-lock.yaml || exit 1
         echo "Files found, proceeding with build..."
+        echo "Current directory: $(pwd)"
+        echo "Listing files in root:"
+        ls -la | head -20
     id: 'verify-files'
 
   - name: 'gcr.io/cloud-builders/docker'
@@ -24,6 +27,7 @@ steps:
     id: 'build'
     env:
       - 'DOCKER_BUILDKIT=1'
+    waitFor: ['verify-files']
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
