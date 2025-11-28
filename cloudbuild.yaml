@@ -1,4 +1,13 @@
 steps:
+  - name: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Checking required files..."
+        ls -la pnpm-workspace.yaml package.json pnpm-lock.yaml || exit 1
+        echo "Files found, proceeding with build..."
+    id: 'verify-files'
+
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -8,9 +17,13 @@ steps:
       - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api:${SHORT_SHA}'
       - '-t'
       - 'asia-northeast3-docker.pkg.dev/${PROJECT_ID}/vibe/vibe-api:latest'
+      - '--build-arg'
+      - 'BUILDKIT_INLINE_CACHE=1'
       - '.'
     dir: '.'
     id: 'build'
+    env:
+      - 'DOCKER_BUILDKIT=1'
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -26,4 +39,3 @@ images:
 options:
   machineType: 'E2_HIGHCPU_8'
   logging: CLOUD_LOGGING_ONLY
-

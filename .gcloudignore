@@ -1,11 +1,11 @@
 # This file specifies files that are *not* uploaded to Google Cloud
-# using gcloud. It follows the same syntax as .gitignore
+# IMPORTANT: pnpm-workspace.yaml, package.json, and pnpm-lock.yaml MUST be included
 
 # Git files
 .git
 .gitignore
 
-# Dependencies
+# Dependencies (but keep package files)
 node_modules
 **/node_modules
 
@@ -51,6 +51,9 @@ README.md
 **/README.md
 AGENTS.md
 
-# Do NOT ignore pnpm-workspace.yaml - it's needed for the build!
-# pnpm-workspace.yaml
-
+# Explicitly include required files (override any patterns above)
+!pnpm-workspace.yaml
+!package.json
+!pnpm-lock.yaml
+!apps/backend/package.json
+!packages/shared/package.json
