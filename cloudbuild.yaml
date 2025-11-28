@@ -37,6 +37,36 @@ steps:
         echo "=== Build context verified ==="
     id: 'verify-files'
 
+  - name: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "=== Pre-build file check ==="
+        echo "Current directory: $(pwd)"
+        echo ""
+        echo "Checking .dockerignore:"
+        if [ -f ".dockerignore" ]; then
+          echo ".dockerignore contents:"
+          cat .dockerignore
+          echo ""
+          echo "Checking if pnpm-workspace.yaml is excluded:"
+          if grep -q "pnpm-workspace.yaml" .dockerignore && ! grep -q "!pnpm-workspace.yaml" .dockerignore; then
+            echo "WARNING: pnpm-workspace.yaml might be excluded!"
+          else
+            echo "✓ pnpm-workspace.yaml should be included"
+          fi
+        else
+          echo ".dockerignore does not exist"
+        fi
+        echo ""
+        echo "Verifying files exist:"
+        ls -la pnpm-workspace.yaml package.json pnpm-lock.yaml
+        echo ""
+        echo "File sizes:"
+        wc -l pnpm-workspace.yaml package.json pnpm-lock.yaml
+    id: 'pre-build-check'
+    waitFor: ['verify-files']
+
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -53,7 +83,7 @@ steps:
     id: 'build'
     env:
       - 'DOCKER_BUILDKIT=1'
-    waitFor: ['verify-files']
+    waitFor: ['pre-build-check']
 
   - name: 'gcr.io/cloud-builders/docker'
     args:

@@ -1,6 +1,4 @@
-# Docker ignore file - minimal exclusions
-# Only exclude what we don't need, keep everything else including pnpm-workspace.yaml
-
+# Minimal Docker ignore - explicitly allow pnpm-workspace.yaml
 node_modules
 **/node_modules
 dist
@@ -15,3 +13,8 @@ coverage
 !.env.example
 .DS_Store
 *.log
+
+# Explicitly allow required files (in case of any pattern matching)
+!pnpm-workspace.yaml
+!package.json
+!pnpm-lock.yaml

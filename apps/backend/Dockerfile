@@ -6,7 +6,9 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # 1) Install dependencies
 # -------------------------
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
 COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile
@@ -18,7 +20,9 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/backend ./apps/backend
@@ -41,7 +45,9 @@ ENV NODE_ENV=production
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy workspace config
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/backend/package.json ./apps/backend/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 
