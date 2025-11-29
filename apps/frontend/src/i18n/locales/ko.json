@@ -197,13 +197,13 @@
         "all": "전체",
         "awaiting": "대기 중",
         "approved": "승인됨",
-        "rejected": "거부됨",
+        "rejected": "다음 기회에",
         "ariaLabel": "신청서 상태 필터"
       },
       "status": {
         "awaiting": "대기 중",
         "approved": "승인됨",
-        "rejected": "거부됨"
+        "rejected": "다음 기회에"
       },
       "tags": {
         "applied": "신청됨",
@@ -228,7 +228,7 @@
         "draftRecommendations": "초안 추천서",
         "awaitingReview": "검토 대기 중",
         "approved": "승인됨",
-        "rejected": "거부됨",
+        "rejected": "다음 기회에",
         "applicationsInStake": "스테이크 내 신청서",
         "newRecommendationsToday": "오늘 새 추천서",
         "newApplicationsToday": "오늘 새 신청서"
@@ -248,7 +248,7 @@
         "draft": "초안",
         "submitted": "검토 대기 중",
         "approved": "승인됨",
-        "rejected": "거부됨"
+        "rejected": "다음 기회에"
       },
       "form": {
         "applicantName": "지원자 이름",
@@ -382,6 +382,11 @@
       "cancel": "취소",
       "edit": "제출 내용 편집",
       "start": "신청서 시작"
+    },
+    "status": {
+      "submitted": "제출됨",
+      "notSubmitted": "미제출됨",
+      "completed": "완료"
     },
     "messages": {
       "submitted": "신청서가 제출되었으며 검토를 기다리고 있습니다.",

@@ -21,6 +21,7 @@ import { ROUTES } from '@/utils/constants';
 import { GENDER_COLORS } from '@/utils/chartConstants';
 import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
+import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import type { Application } from '@vibe-apply/shared';
 import styles from './AdminDashboard.module.scss';
 
@@ -54,15 +55,15 @@ const AdminDashboard = () => {
 
   const { totals, weeklyTrend, genderSplit, stakeWardCounts } = useMemo(() => {
     const submittedRecommendations = leaderRecommendations.filter(
-      (rec) => rec.status === 'submitted' || rec.status === 'approved' || rec.status === 'rejected'
+      (rec) => rec.status === RecommendationStatus.SUBMITTED || rec.status === RecommendationStatus.APPROVED || rec.status === RecommendationStatus.REJECTED
     );
     const totalApplications = applications.length;
     const totalRecommendations = submittedRecommendations.length;
     const totalSubmissions = totalApplications + totalRecommendations;
-    const awaitingApplications = applications.filter((app) => app.status === 'awaiting').length;
-    const awaitingRecommendations = leaderRecommendations.filter((rec) => rec.status === 'submitted').length;
+    const awaitingApplications = applications.filter((app) => app.status === ApplicationStatus.AWAITING).length;
+    const awaitingRecommendations = leaderRecommendations.filter((rec) => rec.status === RecommendationStatus.SUBMITTED).length;
     const awaitingCount = awaitingApplications + awaitingRecommendations;
-    const approvedCount = applications.filter((app) => app.status === 'approved').length;
+    const approvedCount = applications.filter((app) => app.status === ApplicationStatus.APPROVED).length;
     const todayDate = resetTimeToMidnight(new Date());
     const todaysApplications = applications.filter((app) => {
       const created = resetTimeToMidnight(new Date(app.createdAt));

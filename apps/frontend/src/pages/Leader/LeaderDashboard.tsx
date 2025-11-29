@@ -20,6 +20,7 @@ import { Button } from '@/components/ui';
 import { ROUTES } from '@/utils/constants';
 import { CHART_COLORS } from '@/utils/chartConstants';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
+import { RecommendationStatus } from '@vibe-apply/shared';
 import styles from './LeaderDashboard.module.scss';
 
 interface LocationData {
@@ -117,16 +118,16 @@ const LeaderDashboard = () => {
       
       return {
         draft: recommendations.filter(
-          (recommendation) => recommendation.status === 'draft'
+          (recommendation) => recommendation.status === RecommendationStatus.DRAFT
         ).length,
         submitted: recommendations.filter(
-          (recommendation) => recommendation.status === 'submitted'
+          (recommendation) => recommendation.status === RecommendationStatus.SUBMITTED
         ).length,
         approved: recommendations.filter(
-          (recommendation) => recommendation.status === 'approved'
+          (recommendation) => recommendation.status === RecommendationStatus.APPROVED
         ).length,
         rejected: recommendations.filter(
-          (recommendation) => recommendation.status === 'rejected'
+          (recommendation) => recommendation.status === RecommendationStatus.REJECTED
         ).length,
         applications: applicantsInStake.length,
         newRecommendationsToday: recommendations.filter(

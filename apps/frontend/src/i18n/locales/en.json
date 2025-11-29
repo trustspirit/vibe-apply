@@ -197,13 +197,13 @@
         "all": "All",
         "awaiting": "Awaiting",
         "approved": "Approved",
-        "rejected": "Rejected",
+        "rejected": "Next Time",
         "ariaLabel": "Application status filters"
       },
       "status": {
         "awaiting": "Awaiting",
         "approved": "Approved",
-        "rejected": "Rejected"
+        "rejected": "Next Time"
       },
       "tags": {
         "applied": "Applied",
@@ -228,7 +228,7 @@
         "draftRecommendations": "Draft Recommendations",
         "awaitingReview": "Awaiting Review",
         "approved": "Approved",
-        "rejected": "Rejected",
+        "rejected": "Next Time",
         "applicationsInStake": "Applications in Stake",
         "newRecommendationsToday": "New Recommendations Today",
         "newApplicationsToday": "New Applications Today"
@@ -248,7 +248,7 @@
         "draft": "Draft",
         "submitted": "Awaiting Review",
         "approved": "Approved",
-        "rejected": "Rejected"
+        "rejected": "Next Time"
       },
       "form": {
         "applicantName": "Applicant Name",
@@ -382,6 +382,11 @@
       "cancel": "Cancel",
       "edit": "Edit Submission",
       "start": "Start Application"
+    },
+    "status": {
+      "submitted": "Submitted",
+      "notSubmitted": "Not Submitted",
+      "completed": "Completed"
     },
     "messages": {
       "submitted": "Your application has been submitted and is awaiting review.",

@@ -10,6 +10,7 @@ import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { normalizeRecommendationStatus, remapStatusForRecommendation } from '@/utils/statusHelpers';
 import { exportApprovedApplicationsToCSV } from '@/utils/exportData';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
+import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import type { TabItem, StatusOption, ReviewItem } from '@/types';
 import styles from './AdminReview.module.scss';
 
@@ -59,7 +60,7 @@ const AdminReview = () => {
     const requestedTab = (location.state as LocationState)?.initialTab;
     return requestedTab && TABS.some((tab) => tab.id === requestedTab)
       ? requestedTab
-      : 'awaiting';
+      : ApplicationStatus.AWAITING;
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [statusSelection, setStatusSelection] = useState<string | null>(null);
@@ -102,7 +103,7 @@ const AdminReview = () => {
     const recommendationById = new Map<string, LeaderRecommendation>();
     const recommendationsByLinkedAppId = new Map<string, LeaderRecommendation>();
     leaderRecommendations
-      .filter((rec) => rec.status !== 'draft')
+      .filter((rec) => rec.status !== RecommendationStatus.DRAFT)
       .forEach((rec) => {
         recommendationById.set(rec.id, rec);
         if (rec.linkedApplicationId) {
@@ -146,7 +147,7 @@ const AdminReview = () => {
     });
 
     leaderRecommendations
-      .filter((rec) => rec.status !== 'draft')
+      .filter((rec) => rec.status !== RecommendationStatus.DRAFT)
       .forEach((recommendation) => {
         if (processedIds.has(recommendation.id)) {
           return;
@@ -189,7 +190,7 @@ const AdminReview = () => {
   }, [applications, leaderRecommendations]);
 
   const approvedApplications = useMemo(
-    () => applications.filter((app) => app.status === 'approved'),
+    () => applications.filter((app) => app.status === ApplicationStatus.APPROVED),
     [applications]
   );
 
@@ -201,13 +202,13 @@ const AdminReview = () => {
       rejected: 0,
     };
     reviewItems.forEach((item) => {
-      if (item.status === 'awaiting') {
+      if (item.status === ApplicationStatus.AWAITING) {
         counts.awaiting += 1;
       }
-      if (item.status === 'approved') {
+      if (item.status === ApplicationStatus.APPROVED || item.status === RecommendationStatus.APPROVED) {
         counts.approved += 1;
       }
-      if (item.status === 'rejected') {
+      if (item.status === ApplicationStatus.REJECTED || item.status === RecommendationStatus.REJECTED) {
         counts.rejected += 1;
       }
     });
@@ -405,20 +406,30 @@ const AdminReview = () => {
                   <div className={styles.detailsHeading}>
                     <h2>{selectedItem.name}</h2>
                     <div className={styles.detailsTags}>
-                      {selectedItem.type === 'application' && selectedItem.hasRecommendation && (
-                        <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
-                          {t('admin.review.tags.recommended')}
-                        </span>
+                      {selectedItem.type === 'application' && (
+                        <>
+                          {selectedItem.hasRecommendation ? (
+                            <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
+                              {t('admin.review.tags.recommended')}
+                            </span>
+                          ) : (
+                            <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
+                              {t('admin.review.tags.applied')}
+                            </span>
+                          )}
+                        </>
                       )}
                       {selectedItem.type === 'recommendation' && (
-                        <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
-                          {t('admin.review.tags.recommended')}
-                        </span>
-                      )}
-                      {selectedItem.type === 'recommendation' && selectedItem.hasApplication && (
-                        <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
-                          {t('admin.review.tags.applied')}
-                        </span>
+                        <>
+                          <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
+                            {t('admin.review.tags.recommended')}
+                          </span>
+                          {selectedItem.hasApplication && (
+                            <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
+                              {t('admin.review.tags.applied')}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -433,9 +444,9 @@ const AdminReview = () => {
                     id={statusSelectId}
                     name='status'
                     label={t('admin.review.statusLabel')}
-                    value={currentStatus ?? 'awaiting'}
+                    value={currentStatus ?? ApplicationStatus.AWAITING}
                     onChange={handleStatusSelect}
-                    tone={currentStatus ?? 'awaiting'}
+                    tone={currentStatus ?? ApplicationStatus.AWAITING}
                     options={STATUS_OPTIONS}
                     wrapperClassName={styles.statusLabel}
                     labelClassName={styles.statusText}
@@ -507,20 +518,30 @@ const AdminReview = () => {
               </div>
 
               <div className={styles.reviewCardTags}>
-                {item.type === 'application' && item.hasRecommendation && (
-                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
-                    {t('admin.review.tags.recommended')}
-                  </span>
+                {item.type === 'application' && (
+                  <>
+                    {item.hasRecommendation ? (
+                      <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
+                        {t('admin.review.tags.recommended')}
+                      </span>
+                    ) : (
+                      <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
+                        {t('admin.review.tags.applied')}
+                      </span>
+                    )}
+                  </>
                 )}
                 {item.type === 'recommendation' && (
-                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
-                    {t('admin.review.tags.recommended')}
-                  </span>
-                )}
-                {item.type === 'recommendation' && item.hasApplication && (
-                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
-                    {t('admin.review.tags.applied')}
-                  </span>
+                  <>
+                    <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
+                      {t('admin.review.tags.recommended')}
+                    </span>
+                    {item.hasApplication && (
+                      <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
+                        {t('admin.review.tags.applied')}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 

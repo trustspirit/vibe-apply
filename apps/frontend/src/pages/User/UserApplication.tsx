@@ -18,6 +18,7 @@ import {
   TextField,
   ToggleButton,
 } from '@/components/ui';
+import { ApplicationStatus } from '@vibe-apply/shared';
 import {
   validateEmail,
   validateAge,
@@ -78,8 +79,8 @@ const UserApplication = () => {
 
   const isEditable =
     !existingApplication ||
-    existingApplication.status === 'draft' ||
-    existingApplication.status === 'awaiting';
+    existingApplication.status === ApplicationStatus.DRAFT ||
+    existingApplication.status === ApplicationStatus.AWAITING;
 
   const [form, setForm] = useState(emptyForm);
   const [isEditing, setIsEditing] = useState(false);
@@ -135,7 +136,7 @@ const UserApplication = () => {
         moreInfo: existingApplication.moreInfo ?? '',
         servedMission: existingApplication.servedMission ?? false,
       });
-      setIsEditing(existingApplication.status === 'draft');
+      setIsEditing(existingApplication.status === ApplicationStatus.DRAFT);
     } else if (currentUser) {
       setForm((prev) => ({
         ...prev,
@@ -328,7 +329,7 @@ const UserApplication = () => {
               {hasRecommendation
                 ? t('application.subtitle.hasRecommendation')
                 : existingApplication
-                  ? existingApplication.status === 'draft'
+                  ? existingApplication.status === ApplicationStatus.DRAFT
                     ? t('application.subtitle.draftSaved')
                     : isEditable
                       ? t('application.subtitle.canUpdate')
@@ -354,7 +355,7 @@ const UserApplication = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('application.overview.title')}</CardTitle>
-                    {existingApplication.status === 'draft' && (
+                    {existingApplication.status === ApplicationStatus.DRAFT && (
                       <Alert variant='warning'>
                         {t('application.overview.draftWarning')}
                       </Alert>
@@ -362,25 +363,39 @@ const UserApplication = () => {
                   </CardHeader>
                   <CardContent>
                     <div className={styles.summaryGrid}>
-                      {existingApplication.status && (
-                        <SummaryItem label={t('application.overview.status')}>
-                          {(() => {
-                            const display = getStatusDisplay(
-                              existingApplication.status
-                            );
-                            const statusLabel = t(
-                              `status.${existingApplication.status}`
-                            );
-                            return (
-                              <StatusChip
-                                status={existingApplication.status}
-                                tone={display.tone}
-                                label={statusLabel}
-                              />
-                            );
-                          })()}
-                        </SummaryItem>
-                      )}
+                      <SummaryItem label={t('application.overview.status')}>
+                        {(() => {
+                          const status = existingApplication.status;
+                          let statusLabel: string;
+                          let statusValue: string;
+
+                          if (
+                            status === ApplicationStatus.APPROVED ||
+                            status === ApplicationStatus.REJECTED
+                          ) {
+                            statusLabel = t('application.status.completed');
+                            statusValue =
+                              status === ApplicationStatus.APPROVED
+                                ? ApplicationStatus.APPROVED
+                                : ApplicationStatus.REJECTED;
+                          } else if (status === ApplicationStatus.AWAITING) {
+                            statusLabel = t('application.status.submitted');
+                            statusValue = ApplicationStatus.AWAITING;
+                          } else {
+                            statusLabel = t('application.status.notSubmitted');
+                            statusValue = ApplicationStatus.DRAFT;
+                          }
+
+                          const display = getStatusDisplay(statusValue);
+                          return (
+                            <StatusChip
+                              status={statusValue}
+                              tone={display.tone}
+                              label={statusLabel}
+                            />
+                          );
+                        })()}
+                      </SummaryItem>
                       <SummaryItem label={t('application.overview.name')}>
                         {existingApplication.name}
                       </SummaryItem>
@@ -394,10 +409,14 @@ const UserApplication = () => {
                         {existingApplication.age ?? t('admin.roles.nA')}
                       </SummaryItem>
                       <SummaryItem label={t('application.overview.stake')}>
-                        {getStakeLabel(existingApplication.stake) || existingApplication.stake}
+                        {getStakeLabel(existingApplication.stake) ||
+                          existingApplication.stake}
                       </SummaryItem>
                       <SummaryItem label={t('application.overview.ward')}>
-                        {getWardLabel(existingApplication.stake, existingApplication.ward) || existingApplication.ward}
+                        {getWardLabel(
+                          existingApplication.stake,
+                          existingApplication.ward
+                        ) || existingApplication.ward}
                       </SummaryItem>
                       {existingApplication.servedMission !== undefined && (
                         <SummaryItem

@@ -3,7 +3,8 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import type { Application, LeaderRecommendation, RecommendationStatus } from '@vibe-apply/shared';
+import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
+import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import {
   Button,
@@ -144,7 +145,7 @@ const LeaderRecommendations = () => {
       });
 
     const mappedRecommendations: ExtendedRecommendation[] = recommendations.map((rec) => {
-      const canModify = rec.status !== 'approved' && rec.status !== 'rejected';
+      const canModify = rec.status !== RecommendationStatus.APPROVED && rec.status !== RecommendationStatus.REJECTED;
       return {
         ...rec,
         hasApplication: rec.linkedApplicationId ? applicationById.has(rec.linkedApplicationId) : false,
@@ -174,7 +175,7 @@ const LeaderRecommendations = () => {
         if ('isApplication' in item && item.isApplication) {
           return 'status' in item && item.status === 'awaiting';
         }
-        return 'status' in item && item.status === 'submitted';
+        return 'status' in item && item.status === RecommendationStatus.SUBMITTED;
       });
     }
     return combinedItems.filter((item) => !('isApplication' in item && item.isApplication) && 'status' in item && item.status === activeTab);
@@ -374,7 +375,7 @@ const LeaderRecommendations = () => {
       normalizedGender,
     } = validateForm();
 
-    if (status === 'submitted' && Object.keys(nextErrors).length) {
+    if (status === RecommendationStatus.SUBMITTED && Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       setFormError(t('leader.recommendations.validation.resolveFields'));
       return;
@@ -395,7 +396,7 @@ const LeaderRecommendations = () => {
     })
       .then(() => {
         setFeedback(
-          status === 'submitted'
+          status === RecommendationStatus.SUBMITTED
             ? t('leader.recommendations.messages.submitted')
             : t('leader.recommendations.messages.draftSaved')
         );
@@ -417,8 +418,8 @@ const LeaderRecommendations = () => {
       return;
     }
     if (
-      recommendation.status === 'approved' ||
-      recommendation.status === 'rejected'
+      recommendation.status === RecommendationStatus.APPROVED ||
+      recommendation.status === RecommendationStatus.REJECTED
     ) {
       return;
     }
@@ -462,7 +463,7 @@ const LeaderRecommendations = () => {
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
       servedMission: recommendation.servedMission,
-      status: 'submitted' as RecommendationStatus,
+      status: RecommendationStatus.SUBMITTED,
     })
       .then(() => {
         setFeedback(t('leader.recommendations.messages.submitted'));
@@ -484,8 +485,8 @@ const LeaderRecommendations = () => {
       return;
     }
     if (
-      recommendation.status === 'approved' ||
-      recommendation.status === 'rejected'
+      recommendation.status === RecommendationStatus.APPROVED ||
+      recommendation.status === RecommendationStatus.REJECTED
     ) {
       return;
     }
@@ -504,7 +505,7 @@ const LeaderRecommendations = () => {
       ward: recommendation.ward,
       moreInfo: recommendation.moreInfo ?? '',
       servedMission: recommendation.servedMission,
-      status: 'draft' as RecommendationStatus,
+      status: RecommendationStatus.DRAFT,
     })
       .then(() => {
         setFeedback(t('leader.recommendations.messages.movedToDraft'));
@@ -524,8 +525,8 @@ const LeaderRecommendations = () => {
     }
 
     if (
-      recommendation.status === 'approved' ||
-      recommendation.status === 'rejected'
+      recommendation.status === RecommendationStatus.APPROVED ||
+      recommendation.status === RecommendationStatus.REJECTED
     ) {
       return;
     }
@@ -560,9 +561,23 @@ const LeaderRecommendations = () => {
         <div className={styles.listTop}>
           <span className={styles.listName}>{item.name}</span>
           {'isApplication' in item && item.isApplication ? (
-            <StatusChip status={'status' in item ? item.status : 'awaiting'} />
+            <StatusChip 
+              status={'status' in item ? item.status : ApplicationStatus.AWAITING}
+              label={
+                'status' in item && item.status === ApplicationStatus.REJECTED
+                  ? t('leader.recommendations.tabs.rejected')
+                  : undefined
+              }
+            />
           ) : (
-            <StatusChip status={'status' in item ? item.status : 'draft'} />
+            <StatusChip 
+              status={'status' in item ? item.status : RecommendationStatus.DRAFT}
+              label={
+                'status' in item && item.status === RecommendationStatus.REJECTED
+                  ? t('leader.recommendations.tabs.rejected')
+                  : undefined
+              }
+            />
           )}
         </div>
         <div className={styles.listBottom}>
@@ -601,10 +616,10 @@ const LeaderRecommendations = () => {
       )}
       onSubmit={(event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        handleSubmitDraft('submitted' as RecommendationStatus);
+        handleSubmitDraft(RecommendationStatus.SUBMITTED);
       }}
     >
-      {editingOriginStatus === 'submitted' && (
+      {editingOriginStatus === RecommendationStatus.SUBMITTED && (
         <p className={styles.alert}>
           {t('leader.recommendations.form.editingAlert')}
         </p>
@@ -731,7 +746,7 @@ const LeaderRecommendations = () => {
         </Button>
         <Button
           type='button'
-          onClick={() => handleSubmitDraft('draft' as RecommendationStatus)}
+          onClick={() => handleSubmitDraft(RecommendationStatus.DRAFT)}
           className={styles.btn}
         >
           {t('leader.recommendations.form.saveDraft')}
@@ -771,7 +786,14 @@ const LeaderRecommendations = () => {
                   {new Date(selectedItem.createdAt).toLocaleString()}
                 </p>
               </div>
-              <StatusChip status={'status' in selectedItem ? selectedItem.status : 'awaiting'} />
+              <StatusChip 
+                status={'status' in selectedItem ? selectedItem.status : ApplicationStatus.AWAITING}
+                label={
+                  'status' in selectedItem && selectedItem.status === ApplicationStatus.REJECTED
+                    ? t('leader.recommendations.tabs.rejected')
+                    : undefined
+                }
+              />
             </header>
             <DetailsGrid>
               <DetailsGridItem label={t('common.email')}>
@@ -798,7 +820,7 @@ const LeaderRecommendations = () => {
                 </DetailsGridItem>
               )}
             </DetailsGrid>
-            {selectedItem.status !== 'approved' && (
+            {selectedItem.status !== RecommendationStatus.APPROVED && (
               <div className={styles.detailActions}>
                 <Button
                   type='button'
@@ -836,7 +858,16 @@ const LeaderRecommendations = () => {
               </div>
               <p className={styles.detailsMeta}>{updatedLabel}</p>
             </div>
-            {'status' in selectedItem && selectedItem.status && <StatusChip status={selectedItem.status} />}
+            {'status' in selectedItem && selectedItem.status && (
+              <StatusChip 
+                status={selectedItem.status}
+                label={
+                  selectedItem.status === RecommendationStatus.REJECTED
+                    ? t('leader.recommendations.tabs.rejected')
+                    : undefined
+                }
+              />
+            )}
           </header>
           <DetailsGrid>
             <DetailsGridItem label={t('common.email')}>
@@ -876,7 +907,7 @@ const LeaderRecommendations = () => {
                 >
                   {t('leader.recommendations.actions.modify')}
                 </Button>
-                {'status' in selectedItem && selectedItem.status === 'draft' ? (
+                {'status' in selectedItem && selectedItem.status === RecommendationStatus.DRAFT ? (
                   <Button
                     type='button'
                     variant='primary'
@@ -935,7 +966,14 @@ const LeaderRecommendations = () => {
                 {t('leader.recommendations.details.applicationSubmitted')} {new Date(item.createdAt).toLocaleString()}
               </p>
             </div>
-            <StatusChip status={'status' in item ? item.status : 'awaiting'} />
+            <StatusChip 
+              status={'status' in item ? item.status : ApplicationStatus.AWAITING}
+              label={
+                'status' in item && item.status === ApplicationStatus.REJECTED
+                  ? t('leader.recommendations.tabs.rejected')
+                  : undefined
+              }
+            />
           </div>
           <DetailsGrid className={styles.reviewCardGrid}>
             <DetailsGridItem label={t('common.email')}>
@@ -962,7 +1000,7 @@ const LeaderRecommendations = () => {
               </DetailsGridItem>
             )}
           </DetailsGrid>
-          {item.status !== 'approved' && (
+          {item.status !== RecommendationStatus.APPROVED && (
             <div className={styles.cardActions}>
                 <Button
                   type='button'
@@ -996,7 +1034,16 @@ const LeaderRecommendations = () => {
               {t('leader.recommendations.details.updated')} {new Date(item.updatedAt).toLocaleString()}
             </p>
           </div>
-          {'status' in item && <StatusChip status={item.status} />}
+          {'status' in item && (
+            <StatusChip 
+              status={item.status}
+              label={
+                item.status === RecommendationStatus.REJECTED
+                  ? t('leader.recommendations.tabs.rejected')
+                  : undefined
+              }
+            />
+          )}
         </div>
         <div className={styles.reviewCardTags}>
           <span className={clsx(styles.reviewCardTag, styles.reviewCardTagRecommendation)}>
@@ -1049,7 +1096,7 @@ const LeaderRecommendations = () => {
               >
                 {t('leader.recommendations.actions.modify')}
               </Button>
-              {'status' in item && item.status === 'draft' ? (
+              {'status' in item && item.status === RecommendationStatus.DRAFT ? (
                 <Button
                   type='button'
                   variant='primary'
@@ -1122,9 +1169,9 @@ const LeaderRecommendations = () => {
             if (tab.id === 'all') return true;
             if (tab.id === 'submitted') {
               if ('isApplication' in item && item.isApplication) {
-                return 'status' in item && item.status === 'awaiting';
+                return 'status' in item && item.status === ApplicationStatus.AWAITING;
               }
-              return 'status' in item && item.status === 'submitted';
+              return 'status' in item && item.status === RecommendationStatus.SUBMITTED;
             }
             return !('isApplication' in item && item.isApplication) && 'status' in item && item.status === tab.id;
           }).length
