@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as admin from 'firebase-admin';
 import { FirebaseService } from '../firebase/firebase.service';
 import {
   CreateUserDto,
@@ -735,12 +736,121 @@ export class AuthService {
       throw new ConflictException('Cannot delete admin users');
     }
 
+    const firestore = this.firebaseService.getFirestore();
+
+    const applicationsSnapshot = await firestore
+      .collection('applications')
+      .where('userId', '==', userId)
+      .get();
+
+    const applicationMemosPromises: Promise<admin.firestore.QuerySnapshot>[] =
+      [];
+    const linkedRecommendationsPromises: Promise<admin.firestore.QuerySnapshot>[] =
+      [];
+
+    applicationsSnapshot.docs.forEach((doc) => {
+      applicationMemosPromises.push(
+        firestore
+          .collection('memos')
+          .where('applicationId', '==', doc.id)
+          .get(),
+      );
+      linkedRecommendationsPromises.push(
+        firestore
+          .collection('recommendations')
+          .where('linkedApplicationId', '==', doc.id)
+          .get(),
+      );
+    });
+
+    const [
+      recommendationsSnapshot,
+      memosSnapshot,
+      stakeWardChangeRequestsSnapshot,
+      ...applicationMemosSnapshots
+    ] = await Promise.all([
+      firestore
+        .collection('recommendations')
+        .where('leaderId', '==', userId)
+        .get(),
+      firestore.collection('memos').where('authorId', '==', userId).get(),
+      firestore
+        .collection('stakeWardChangeRequests')
+        .where('userId', '==', userId)
+        .get(),
+      ...applicationMemosPromises,
+    ]);
+
+    const linkedRecommendationsSnapshots = await Promise.all(
+      linkedRecommendationsPromises,
+    );
+
+    const batch = firestore.batch();
+    let operationCount = 0;
+    const MAX_BATCH_SIZE = 500;
+
+    const commitBatch = async () => {
+      if (operationCount > 0) {
+        await batch.commit();
+        operationCount = 0;
+      }
+    };
+
+    const addToBatch = (
+      ref: admin.firestore.DocumentReference,
+      operation: 'delete' | 'update',
+      data?: admin.firestore.UpdateData<admin.firestore.DocumentData>,
+    ) => {
+      if (operationCount >= MAX_BATCH_SIZE) {
+        throw new Error(
+          'Batch size limit exceeded. Too many related documents to delete.',
+        );
+      }
+      if (operation === 'delete') {
+        batch.delete(ref);
+      } else if (data) {
+        batch.update(ref, data);
+      }
+      operationCount++;
+    };
+
+    applicationsSnapshot.docs.forEach((doc) => {
+      addToBatch(doc.ref, 'delete');
+    });
+
+    applicationMemosSnapshots.forEach(
+      (memosSnapshot: admin.firestore.QuerySnapshot) => {
+        memosSnapshot.docs.forEach((doc) => {
+          addToBatch(doc.ref, 'delete');
+        });
+      },
+    );
+
+    linkedRecommendationsSnapshots.forEach((recommendationsSnapshot) => {
+      recommendationsSnapshot.docs.forEach((doc) => {
+        addToBatch(doc.ref, 'update', {
+          linkedApplicationId: null,
+          updatedAt: new Date().toISOString(),
+        });
+      });
+    });
+
+    recommendationsSnapshot.docs.forEach((doc) => {
+      addToBatch(doc.ref, 'delete');
+    });
+
+    memosSnapshot.docs.forEach((doc) => {
+      addToBatch(doc.ref, 'delete');
+    });
+
+    stakeWardChangeRequestsSnapshot.docs.forEach((doc) => {
+      addToBatch(doc.ref, 'delete');
+    });
+
+    await commitBatch();
+
     await this.firebaseService.deleteUser(userId);
-    await this.firebaseService
-      .getFirestore()
-      .collection('users')
-      .doc(userId)
-      .delete();
+    await firestore.collection('users').doc(userId).delete();
 
     return { message: 'User deleted successfully' };
   }

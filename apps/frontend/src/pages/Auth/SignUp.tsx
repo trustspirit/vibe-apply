@@ -21,6 +21,7 @@ const SignUp = () => {
   const { signUp } = useApp();
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const { values, handleChange, isSubmitting, setIsSubmitting } = useForm<SignUpForm>({
     initialValues: {
@@ -31,12 +32,33 @@ const SignUp = () => {
     },
   });
 
+  const validatePasswordMatch = (password: string, confirmPassword: string) => {
+    if (confirmPassword && password !== confirmPassword) {
+      setConfirmPasswordError(t('auth.signUp.passwordsDoNotMatch'));
+    } else {
+      setConfirmPasswordError('');
+    }
+  };
+
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange(event);
+    const newPassword = event.target.value;
+    validatePasswordMatch(newPassword, values.confirmPassword);
+  };
+
+  const handleConfirmPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange(event);
+    const newConfirmPassword = event.target.value;
+    validatePasswordMatch(values.password, newConfirmPassword);
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
+    setConfirmPasswordError('');
 
     if (values.password !== values.confirmPassword) {
-      setError(t('auth.signUp.passwordsDoNotMatch'));
+      setConfirmPasswordError(t('auth.signUp.passwordsDoNotMatch'));
       return;
     }
 
@@ -90,7 +112,7 @@ const SignUp = () => {
             type='password'
             name='password'
             value={values.password}
-            onChange={handleChange}
+            onChange={handlePasswordChange}
             className={styles.input}
             required
             minLength={PASSWORD_MIN_LENGTH}
@@ -102,11 +124,14 @@ const SignUp = () => {
             type='password'
             name='confirmPassword'
             value={values.confirmPassword}
-            onChange={handleChange}
+            onChange={handleConfirmPasswordChange}
             className={styles.input}
             required
             minLength={PASSWORD_MIN_LENGTH}
           />
+          {confirmPasswordError && (
+            <span className={styles.error}>{confirmPasswordError}</span>
+          )}
         </label>
         {error && <Alert variant='error'>{error}</Alert>}
         <Button
