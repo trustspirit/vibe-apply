@@ -18,7 +18,11 @@ import {
   TextField,
   ToggleButton,
 } from '@/components/ui';
-import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
+import {
+  AGE_MIN,
+  AGE_MAX,
+  AGE_ERROR_MESSAGE,
+} from '@/utils/validationConstants';
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
 import { USER_ROLES } from '@/utils/constants';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
@@ -96,9 +100,12 @@ const LeaderRecommendations = () => {
   }, [refetchApplications, refetchRecommendations]);
 
   const [activeTab, setActiveTab] = useState('all');
-  const [currentFormId, setCurrentFormId] = useState<string | null | undefined>(undefined);
+  const [currentFormId, setCurrentFormId] = useState<string | null | undefined>(
+    undefined
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editingOriginStatus, setEditingOriginStatus] = useState<RecommendationStatus | null>(null);
+  const [editingOriginStatus, setEditingOriginStatus] =
+    useState<RecommendationStatus | null>(null);
   const [form, setForm] = useState<RecommendationForm>(emptyForm);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [formError, setFormError] = useState('');
@@ -139,25 +146,35 @@ const LeaderRecommendations = () => {
   const combinedItems = useMemo(() => {
     const applicationById = new Map<string, Application>();
     applications
-      .filter((app) => app.stake.toLowerCase() === currentUser?.stake.toLowerCase())
+      .filter(
+        (app) => app.stake.toLowerCase() === currentUser?.stake.toLowerCase()
+      )
       .forEach((app) => {
         applicationById.set(app.id, app);
       });
 
-    const mappedRecommendations: ExtendedRecommendation[] = recommendations.map((rec) => {
-      const canModify = rec.status !== RecommendationStatus.APPROVED && rec.status !== RecommendationStatus.REJECTED;
-      return {
-        ...rec,
-        hasApplication: rec.linkedApplicationId ? applicationById.has(rec.linkedApplicationId) : false,
-        canEdit: canModify,
-        canDelete: canModify,
-      };
-    });
+    const mappedRecommendations: ExtendedRecommendation[] = recommendations.map(
+      (rec) => {
+        const canModify =
+          rec.status !== RecommendationStatus.APPROVED &&
+          rec.status !== RecommendationStatus.REJECTED;
+        return {
+          ...rec,
+          hasApplication: rec.linkedApplicationId
+            ? applicationById.has(rec.linkedApplicationId)
+            : false,
+          canEdit: canModify,
+          canDelete: canModify,
+        };
+      }
+    );
 
-    const mappedApplications: ExtendedApplication[] = applicantsInStake.map((app) => ({
-      ...app,
-      isApplication: true,
-    }));
+    const mappedApplications: ExtendedApplication[] = applicantsInStake.map(
+      (app) => ({
+        ...app,
+        isApplication: true,
+      })
+    );
 
     return [...mappedRecommendations, ...mappedApplications].sort(
       (a, b) =>
@@ -175,10 +192,17 @@ const LeaderRecommendations = () => {
         if ('isApplication' in item && item.isApplication) {
           return 'status' in item && item.status === 'awaiting';
         }
-        return 'status' in item && item.status === RecommendationStatus.SUBMITTED;
+        return (
+          'status' in item && item.status === RecommendationStatus.SUBMITTED
+        );
       });
     }
-    return combinedItems.filter((item) => !('isApplication' in item && item.isApplication) && 'status' in item && item.status === activeTab);
+    return combinedItems.filter(
+      (item) =>
+        !('isApplication' in item && item.isApplication) &&
+        'status' in item &&
+        item.status === activeTab
+    );
   }, [combinedItems, activeTab]);
 
   const listRecommendations = filteredRecommendations;
@@ -284,10 +308,17 @@ const LeaderRecommendations = () => {
       servedMission: application.servedMission,
     })
       .then(() => {
-        setFeedback(t('leader.recommendations.messages.recommended', { name: application.name }));
+        setFeedback(
+          t('leader.recommendations.messages.recommended', {
+            name: application.name,
+          })
+        );
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('leader.recommendations.messages.failedToRecommend'));
+        setFormError(
+          (error as Error).message ||
+            t('leader.recommendations.messages.failedToRecommend')
+        );
       });
   };
 
@@ -295,7 +326,11 @@ const LeaderRecommendations = () => {
     setSelectedId(recommendationId);
   };
 
-  const handleFormChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleFormChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = event.target;
     const formattedValue = name === 'phone' ? formatPhoneNumber(value) : value;
     setForm((prev) => ({ ...prev, [name]: formattedValue }));
@@ -375,7 +410,10 @@ const LeaderRecommendations = () => {
       normalizedGender,
     } = validateForm();
 
-    if (status === RecommendationStatus.SUBMITTED && Object.keys(nextErrors).length) {
+    if (
+      status === RecommendationStatus.SUBMITTED &&
+      Object.keys(nextErrors).length
+    ) {
       setErrors(nextErrors);
       setFormError(t('leader.recommendations.validation.resolveFields'));
       return;
@@ -403,7 +441,10 @@ const LeaderRecommendations = () => {
         setCurrentFormId(undefined);
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('leader.recommendations.messages.failedToSave'));
+        setFormError(
+          (error as Error).message ||
+            t('leader.recommendations.messages.failedToSave')
+        );
       });
   };
 
@@ -423,7 +464,9 @@ const LeaderRecommendations = () => {
     ) {
       return;
     }
-    const confirmed = window.confirm(CONFIRMATION_MESSAGES.DELETE_RECOMMENDATION);
+    const confirmed = window.confirm(
+      CONFIRMATION_MESSAGES.DELETE_RECOMMENDATION
+    );
     if (!confirmed) {
       return;
     }
@@ -438,7 +481,10 @@ const LeaderRecommendations = () => {
         }
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('leader.recommendations.messages.failedToDelete'));
+        setFormError(
+          (error as Error).message ||
+            t('leader.recommendations.messages.failedToDelete')
+        );
       });
   };
 
@@ -470,7 +516,10 @@ const LeaderRecommendations = () => {
         setSelectedId(recommendationId);
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('leader.recommendations.messages.failedToSubmit'));
+        setFormError(
+          (error as Error).message ||
+            t('leader.recommendations.messages.failedToSubmit')
+        );
       });
   };
 
@@ -512,7 +561,10 @@ const LeaderRecommendations = () => {
         setSelectedId(recommendationId);
       })
       .catch((error) => {
-        setFormError((error as Error).message || t('leader.recommendations.messages.failedToCancel'));
+        setFormError(
+          (error as Error).message ||
+            t('leader.recommendations.messages.failedToCancel')
+        );
       });
   };
 
@@ -561,8 +613,10 @@ const LeaderRecommendations = () => {
         <div className={styles.listTop}>
           <span className={styles.listName}>{item.name}</span>
           {'isApplication' in item && item.isApplication ? (
-            <StatusChip 
-              status={'status' in item ? item.status : ApplicationStatus.AWAITING}
+            <StatusChip
+              status={
+                'status' in item ? item.status : ApplicationStatus.AWAITING
+              }
               label={
                 'status' in item && item.status === ApplicationStatus.REJECTED
                   ? t('leader.recommendations.tabs.rejected')
@@ -570,10 +624,13 @@ const LeaderRecommendations = () => {
               }
             />
           ) : (
-            <StatusChip 
-              status={'status' in item ? item.status : RecommendationStatus.DRAFT}
+            <StatusChip
+              status={
+                'status' in item ? item.status : RecommendationStatus.DRAFT
+              }
               label={
-                'status' in item && item.status === RecommendationStatus.REJECTED
+                'status' in item &&
+                item.status === RecommendationStatus.REJECTED
                   ? t('leader.recommendations.tabs.rejected')
                   : undefined
               }
@@ -581,14 +638,20 @@ const LeaderRecommendations = () => {
           )}
         </div>
         <div className={styles.listBottom}>
-          <span className={styles.listMeta}>{getStakeLabel(item.stake) || item.stake}</span>
-          <span className={styles.listMeta}>{getWardLabel(item.stake, item.ward) || item.ward}</span>
+          <span className={styles.listMeta}>
+            {getStakeLabel(item.stake) || item.stake}
+          </span>
+          <span className={styles.listMeta}>
+            {getWardLabel(item.stake, item.ward) || item.ward}
+          </span>
           <span className={clsx(styles.listMeta, styles.listDate)}>
             {new Date(dateToShow).toLocaleDateString()}
           </span>
           <div className={styles.listTags}>
             {!('isApplication' in item && item.isApplication) && (
-              <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
+              <span
+                className={clsx(styles.listTag, styles.listTagRecommendation)}
+              >
                 {t('leader.recommendations.tags.recommended')}
               </span>
             )}
@@ -597,11 +660,15 @@ const LeaderRecommendations = () => {
                 {t('leader.recommendations.tags.applied')}
               </span>
             )}
-            {!('isApplication' in item && item.isApplication) && 'hasApplication' in item && item.hasApplication && (
-              <span className={clsx(styles.listTag, styles.listTagApplication)}>
-                {t('leader.recommendations.tags.applied')}
-              </span>
-            )}
+            {!('isApplication' in item && item.isApplication) &&
+              'hasApplication' in item &&
+              item.hasApplication && (
+                <span
+                  className={clsx(styles.listTag, styles.listTagApplication)}
+                >
+                  {t('leader.recommendations.tags.applied')}
+                </span>
+              )}
           </div>
         </div>
       </button>
@@ -625,9 +692,7 @@ const LeaderRecommendations = () => {
         </p>
       )}
       {formError && (
-        <p className={`${styles.alert} ${styles.alertError}`}>
-          {formError}
-        </p>
+        <p className={`${styles.alert} ${styles.alertError}`}>{formError}</p>
       )}
       <div className={styles.grid}>
         <TextField
@@ -670,12 +735,8 @@ const LeaderRecommendations = () => {
         <StakeWardSelector
           stake={form.stake}
           ward={form.ward}
-          onStakeChange={(stake) =>
-            setForm((prev) => ({ ...prev, stake }))
-          }
-          onWardChange={(ward) =>
-            setForm((prev) => ({ ...prev, ward }))
-          }
+          onStakeChange={(stake) => setForm((prev) => ({ ...prev, stake }))}
+          onWardChange={(ward) => setForm((prev) => ({ ...prev, ward }))}
           stakeError={errors.stake}
           wardError={errors.ward}
           stakeDisabled={true}
@@ -694,9 +755,19 @@ const LeaderRecommendations = () => {
           required
           error={errors.gender}
           options={[
-            { value: '', label: t('leader.recommendations.form.genderSelect'), disabled: true },
-            { value: 'male', label: t('leader.recommendations.form.genderMale') },
-            { value: 'female', label: t('leader.recommendations.form.genderFemale') },
+            {
+              value: '',
+              label: t('leader.recommendations.form.genderSelect'),
+              disabled: true,
+            },
+            {
+              value: 'male',
+              label: t('leader.recommendations.form.genderMale'),
+            },
+            {
+              value: 'female',
+              label: t('leader.recommendations.form.genderFemale'),
+            },
           ]}
           variant='default'
         />
@@ -714,9 +785,7 @@ const LeaderRecommendations = () => {
             labelOff={t('common.no')}
           />
           {errors.servedMission && (
-            <span className={styles.errorText}>
-              {errors.servedMission}
-            </span>
+            <span className={styles.errorText}>{errors.servedMission}</span>
           )}
         </div>
       </div>
@@ -737,11 +806,7 @@ const LeaderRecommendations = () => {
           variant === 'mobile' && 'leader-recommendations__actions--mobile'
         )}
       >
-        <Button
-          type='submit'
-          variant='primary'
-          className={styles.btn}
-        >
+        <Button type='submit' variant='primary' className={styles.btn}>
           {t('leader.recommendations.form.submitRecommendation')}
         </Button>
         <Button
@@ -786,10 +851,15 @@ const LeaderRecommendations = () => {
                   {new Date(selectedItem.createdAt).toLocaleString()}
                 </p>
               </div>
-              <StatusChip 
-                status={'status' in selectedItem ? selectedItem.status : ApplicationStatus.AWAITING}
+              <StatusChip
+                status={
+                  'status' in selectedItem
+                    ? selectedItem.status
+                    : ApplicationStatus.AWAITING
+                }
                 label={
-                  'status' in selectedItem && selectedItem.status === ApplicationStatus.REJECTED
+                  'status' in selectedItem &&
+                  selectedItem.status === ApplicationStatus.REJECTED
                     ? t('leader.recommendations.tabs.rejected')
                     : undefined
                 }
@@ -809,23 +879,44 @@ const LeaderRecommendations = () => {
                 {getStakeLabel(selectedItem.stake) || selectedItem.stake}
               </DetailsGridItem>
               <DetailsGridItem label={t('common.ward')}>
-                {getWardLabel(selectedItem.stake, selectedItem.ward) || selectedItem.ward}
+                {getWardLabel(selectedItem.stake, selectedItem.ward) ||
+                  selectedItem.ward}
               </DetailsGridItem>
               <DetailsGridItem label={t('leader.recommendations.form.gender')}>
                 {selectedItem.gender ?? t('admin.roles.nA')}
               </DetailsGridItem>
-              {'servedMission' in selectedItem && selectedItem.servedMission !== undefined && (
-                <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
-                  {selectedItem.servedMission ? t('common.yes') : t('common.no')}
-                </DetailsGridItem>
-              )}
+              {'servedMission' in selectedItem &&
+                selectedItem.servedMission !== undefined && (
+                  <DetailsGridItem
+                    label={t('leader.recommendations.form.servedMission')}
+                  >
+                    {selectedItem.servedMission
+                      ? t('common.yes')
+                      : t('common.no')}
+                  </DetailsGridItem>
+                )}
             </DetailsGrid>
-            {selectedItem.status !== RecommendationStatus.APPROVED && (
+            {(() => {
+              if (
+                'isApplication' in selectedItem &&
+                selectedItem.isApplication
+              ) {
+                const appStatus =
+                  selectedItem.status as unknown as ApplicationStatus;
+                return appStatus !== ApplicationStatus.APPROVED;
+              } else {
+                const recStatus =
+                  selectedItem.status as unknown as RecommendationStatus;
+                return recStatus !== RecommendationStatus.APPROVED;
+              }
+            })() && (
               <div className={styles.detailActions}>
                 <Button
                   type='button'
                   variant='primary'
-                  onClick={() => handleRecommendApplicant(selectedItem as Application)}
+                  onClick={() =>
+                    handleRecommendApplicant(selectedItem as Application)
+                  }
                   className={styles.btn}
                 >
                   {t('leader.recommendations.actions.recommend')}
@@ -837,7 +928,11 @@ const LeaderRecommendations = () => {
       }
 
       const updatedLabel = `${t('leader.recommendations.details.updated')} ${new Date(selectedItem.updatedAt).toLocaleString()}`;
-      const canModify = 'canEdit' in selectedItem && selectedItem.canEdit && 'canDelete' in selectedItem && selectedItem.canDelete;
+      const canModify =
+        'canEdit' in selectedItem &&
+        selectedItem.canEdit &&
+        'canDelete' in selectedItem &&
+        selectedItem.canDelete;
 
       return (
         <div className={styles.detailsCard}>
@@ -846,20 +941,31 @@ const LeaderRecommendations = () => {
               <div className={styles.detailsHeading}>
                 <h2>{selectedItem.name}</h2>
                 <div className={styles.detailsTags}>
-                  <span className={clsx(styles.detailsTag, styles.detailsTagRecommendation)}>
+                  <span
+                    className={clsx(
+                      styles.detailsTag,
+                      styles.detailsTagRecommendation
+                    )}
+                  >
                     {t('leader.recommendations.tags.recommended')}
                   </span>
-                  {'hasApplication' in selectedItem && selectedItem.hasApplication && (
-                    <span className={clsx(styles.detailsTag, styles.detailsTagApplication)}>
-                      {t('leader.recommendations.tags.applied')}
-                    </span>
-                  )}
+                  {'hasApplication' in selectedItem &&
+                    selectedItem.hasApplication && (
+                      <span
+                        className={clsx(
+                          styles.detailsTag,
+                          styles.detailsTagApplication
+                        )}
+                      >
+                        {t('leader.recommendations.tags.applied')}
+                      </span>
+                    )}
                 </div>
               </div>
               <p className={styles.detailsMeta}>{updatedLabel}</p>
             </div>
             {'status' in selectedItem && selectedItem.status && (
-              <StatusChip 
+              <StatusChip
                 status={selectedItem.status}
                 label={
                   selectedItem.status === RecommendationStatus.REJECTED
@@ -883,19 +989,28 @@ const LeaderRecommendations = () => {
               {getStakeLabel(selectedItem.stake) || selectedItem.stake}
             </DetailsGridItem>
             <DetailsGridItem label={t('common.ward')}>
-              {getWardLabel(selectedItem.stake, selectedItem.ward) || selectedItem.ward}
+              {getWardLabel(selectedItem.stake, selectedItem.ward) ||
+                selectedItem.ward}
             </DetailsGridItem>
             <DetailsGridItem label={t('leader.recommendations.form.gender')}>
               {selectedItem.gender ?? t('admin.roles.nA')}
             </DetailsGridItem>
-            {'servedMission' in selectedItem && selectedItem.servedMission !== undefined && (
-              <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
-                {selectedItem.servedMission ? t('common.yes') : t('common.no')}
-              </DetailsGridItem>
-            )}
+            {'servedMission' in selectedItem &&
+              selectedItem.servedMission !== undefined && (
+                <DetailsGridItem
+                  label={t('leader.recommendations.form.servedMission')}
+                >
+                  {selectedItem.servedMission
+                    ? t('common.yes')
+                    : t('common.no')}
+                </DetailsGridItem>
+              )}
           </DetailsGrid>
-          <DetailsNotes title={t('leader.recommendations.details.additionalInfo')}>
-            {selectedItem.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
+          <DetailsNotes
+            title={t('leader.recommendations.details.additionalInfo')}
+          >
+            {selectedItem.moreInfo ||
+              t('leader.recommendations.details.noAdditionalInfo')}
           </DetailsNotes>
           <div className={styles.detailActions}>
             {canModify && (
@@ -907,7 +1022,8 @@ const LeaderRecommendations = () => {
                 >
                   {t('leader.recommendations.actions.modify')}
                 </Button>
-                {'status' in selectedItem && selectedItem.status === RecommendationStatus.DRAFT ? (
+                {'status' in selectedItem &&
+                selectedItem.status === RecommendationStatus.DRAFT ? (
                   <Button
                     type='button'
                     variant='primary'
@@ -963,11 +1079,14 @@ const LeaderRecommendations = () => {
             <div>
               <h2>{item.name}</h2>
               <p className={styles.reviewCardMeta}>
-                {t('leader.recommendations.details.applicationSubmitted')} {new Date(item.createdAt).toLocaleString()}
+                {t('leader.recommendations.details.applicationSubmitted')}{' '}
+                {new Date(item.createdAt).toLocaleString()}
               </p>
             </div>
-            <StatusChip 
-              status={'status' in item ? item.status : ApplicationStatus.AWAITING}
+            <StatusChip
+              status={
+                'status' in item ? item.status : ApplicationStatus.AWAITING
+              }
               label={
                 'status' in item && item.status === ApplicationStatus.REJECTED
                   ? t('leader.recommendations.tabs.rejected')
@@ -995,21 +1114,31 @@ const LeaderRecommendations = () => {
               {item.gender ?? t('admin.roles.nA')}
             </DetailsGridItem>
             {'servedMission' in item && item.servedMission !== undefined && (
-              <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
+              <DetailsGridItem
+                label={t('leader.recommendations.form.servedMission')}
+              >
                 {item.servedMission ? t('common.yes') : t('common.no')}
               </DetailsGridItem>
             )}
           </DetailsGrid>
-          {item.status !== RecommendationStatus.APPROVED && (
+          {(() => {
+            if ('isApplication' in item && item.isApplication) {
+              const appStatus = item.status as unknown as ApplicationStatus;
+              return appStatus !== ApplicationStatus.APPROVED;
+            } else {
+              const recStatus = item.status as unknown as RecommendationStatus;
+              return recStatus !== RecommendationStatus.APPROVED;
+            }
+          })() && (
             <div className={styles.cardActions}>
-                <Button
-                  type='button'
-                  variant='primary'
-                  onClick={() => handleRecommendApplicant(item as Application)}
-                  className={styles.btn}
-                >
-                  {t('leader.recommendations.actions.recommend')}
-                </Button>
+              <Button
+                type='button'
+                variant='primary'
+                onClick={() => handleRecommendApplicant(item as Application)}
+                className={styles.btn}
+              >
+                {t('leader.recommendations.actions.recommend')}
+              </Button>
             </div>
           )}
         </article>
@@ -1031,11 +1160,12 @@ const LeaderRecommendations = () => {
           <div>
             <h2>{item.name}</h2>
             <p className={styles.reviewCardMeta}>
-              {t('leader.recommendations.details.updated')} {new Date(item.updatedAt).toLocaleString()}
+              {t('leader.recommendations.details.updated')}{' '}
+              {new Date(item.updatedAt).toLocaleString()}
             </p>
           </div>
           {'status' in item && (
-            <StatusChip 
+            <StatusChip
               status={item.status}
               label={
                 item.status === RecommendationStatus.REJECTED
@@ -1046,11 +1176,21 @@ const LeaderRecommendations = () => {
           )}
         </div>
         <div className={styles.reviewCardTags}>
-          <span className={clsx(styles.reviewCardTag, styles.reviewCardTagRecommendation)}>
+          <span
+            className={clsx(
+              styles.reviewCardTag,
+              styles.reviewCardTagRecommendation
+            )}
+          >
             {t('leader.recommendations.tags.recommended')}
           </span>
           {'hasApplication' in item && item.hasApplication && (
-            <span className={clsx(styles.reviewCardTag, styles.reviewCardTagApplication)}>
+            <span
+              className={clsx(
+                styles.reviewCardTag,
+                styles.reviewCardTagApplication
+              )}
+            >
               {t('leader.recommendations.tags.applied')}
             </span>
           )}
@@ -1075,7 +1215,9 @@ const LeaderRecommendations = () => {
             {item.gender ?? t('admin.roles.nA')}
           </DetailsGridItem>
           {'servedMission' in item && item.servedMission !== undefined && (
-            <DetailsGridItem label={t('leader.recommendations.form.servedMission')}>
+            <DetailsGridItem
+              label={t('leader.recommendations.form.servedMission')}
+            >
               {item.servedMission ? t('common.yes') : t('common.no')}
             </DetailsGridItem>
           )}
@@ -1084,10 +1226,14 @@ const LeaderRecommendations = () => {
           title={t('leader.recommendations.details.additionalInfo')}
           className={styles.reviewCardNotes}
         >
-          {item.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
+          {item.moreInfo ||
+            t('leader.recommendations.details.noAdditionalInfo')}
         </DetailsNotes>
         <div className={styles.cardActions}>
-          {'canEdit' in item && item.canEdit && 'canDelete' in item && item.canDelete ? (
+          {'canEdit' in item &&
+          item.canEdit &&
+          'canDelete' in item &&
+          item.canDelete ? (
             <>
               <Button
                 type='button'
@@ -1096,7 +1242,8 @@ const LeaderRecommendations = () => {
               >
                 {t('leader.recommendations.actions.modify')}
               </Button>
-              {'status' in item && item.status === RecommendationStatus.DRAFT ? (
+              {'status' in item &&
+              item.status === RecommendationStatus.DRAFT ? (
                 <Button
                   type='button'
                   variant='primary'
@@ -1169,11 +1316,20 @@ const LeaderRecommendations = () => {
             if (tab.id === 'all') return true;
             if (tab.id === 'submitted') {
               if ('isApplication' in item && item.isApplication) {
-                return 'status' in item && item.status === ApplicationStatus.AWAITING;
+                return (
+                  'status' in item && item.status === ApplicationStatus.AWAITING
+                );
               }
-              return 'status' in item && item.status === RecommendationStatus.SUBMITTED;
+              return (
+                'status' in item &&
+                item.status === RecommendationStatus.SUBMITTED
+              );
             }
-            return !('isApplication' in item && item.isApplication) && 'status' in item && item.status === tab.id;
+            return (
+              !('isApplication' in item && item.isApplication) &&
+              'status' in item &&
+              item.status === tab.id
+            );
           }).length
         }
       />
@@ -1189,16 +1345,11 @@ const LeaderRecommendations = () => {
               ))}
             </ul>
           ) : (
-            <p className={styles.empty}>
-              {t('leader.recommendations.empty')}
-            </p>
+            <p className={styles.empty}>{t('leader.recommendations.empty')}</p>
           )}
         </aside>
 
-        <div
-          className={styles.details}
-          aria-live='polite'
-        >
+        <div className={styles.details} aria-live='polite'>
           {renderDesktopDetails()}
         </div>
       </div>
