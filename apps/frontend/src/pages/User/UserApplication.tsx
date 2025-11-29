@@ -137,8 +137,7 @@ const UserApplication = () => {
         servedMission: existingApplication.servedMission ?? false,
       });
       setIsEditing(
-        existingApplication.status === ApplicationStatus.DRAFT ||
-          existingApplication.status === ApplicationStatus.AWAITING
+        existingApplication.status === ApplicationStatus.DRAFT
       );
     } else if (currentUser) {
       setForm((prev) => ({
@@ -275,10 +274,11 @@ const UserApplication = () => {
       moreInfo: form.moreInfo.trim(),
       servedMission: form.servedMission,
     })
-      .then(() => {
+      .then(async () => {
         setErrors({});
         setFeedback(t('application.messages.submitted'));
         setIsEditing(false);
+        await refetchApplications();
       })
       .catch((error) => {
         setFormError(
