@@ -27,6 +27,7 @@ import {
   getStatusDisplay,
 } from '@/utils/validation';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
+import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import styles from './UserApplication.module.scss';
 
 interface ApplicationForm {
@@ -393,10 +394,10 @@ const UserApplication = () => {
                         {existingApplication.age ?? t('admin.roles.nA')}
                       </SummaryItem>
                       <SummaryItem label={t('application.overview.stake')}>
-                        {existingApplication.stake}
+                        {getStakeLabel(existingApplication.stake) || existingApplication.stake}
                       </SummaryItem>
                       <SummaryItem label={t('application.overview.ward')}>
-                        {existingApplication.ward}
+                        {getWardLabel(existingApplication.stake, existingApplication.ward) || existingApplication.ward}
                       </SummaryItem>
                       {existingApplication.servedMission !== undefined && (
                         <SummaryItem

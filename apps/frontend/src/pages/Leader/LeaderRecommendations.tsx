@@ -21,6 +21,7 @@ import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
 import { USER_ROLES } from '@/utils/constants';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
+import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import type { ValidationErrors, TabItem } from '@/types';
 import styles from './LeaderRecommendations.module.scss';
 
@@ -565,8 +566,8 @@ const LeaderRecommendations = () => {
           )}
         </div>
         <div className={styles.listBottom}>
-          <span className={styles.listMeta}>{item.stake}</span>
-          <span className={styles.listMeta}>{item.ward}</span>
+          <span className={styles.listMeta}>{getStakeLabel(item.stake) || item.stake}</span>
+          <span className={styles.listMeta}>{getWardLabel(item.stake, item.ward) || item.ward}</span>
           <span className={clsx(styles.listMeta, styles.listDate)}>
             {new Date(dateToShow).toLocaleDateString()}
           </span>
@@ -783,10 +784,10 @@ const LeaderRecommendations = () => {
                 {selectedItem.age ?? t('admin.roles.nA')}
               </DetailsGridItem>
               <DetailsGridItem label={t('common.stake')}>
-                {selectedItem.stake}
+                {getStakeLabel(selectedItem.stake) || selectedItem.stake}
               </DetailsGridItem>
               <DetailsGridItem label={t('common.ward')}>
-                {selectedItem.ward}
+                {getWardLabel(selectedItem.stake, selectedItem.ward) || selectedItem.ward}
               </DetailsGridItem>
               <DetailsGridItem label={t('leader.recommendations.form.gender')}>
                 {selectedItem.gender ?? t('admin.roles.nA')}
@@ -848,10 +849,10 @@ const LeaderRecommendations = () => {
               {selectedItem.age ?? t('admin.roles.nA')}
             </DetailsGridItem>
             <DetailsGridItem label={t('common.stake')}>
-              {selectedItem.stake}
+              {getStakeLabel(selectedItem.stake) || selectedItem.stake}
             </DetailsGridItem>
             <DetailsGridItem label={t('common.ward')}>
-              {selectedItem.ward}
+              {getWardLabel(selectedItem.stake, selectedItem.ward) || selectedItem.ward}
             </DetailsGridItem>
             <DetailsGridItem label={t('leader.recommendations.form.gender')}>
               {selectedItem.gender ?? t('admin.roles.nA')}
@@ -947,10 +948,10 @@ const LeaderRecommendations = () => {
               {item.age ?? t('admin.roles.nA')}
             </DetailsGridItem>
             <DetailsGridItem label={t('common.stake')}>
-              {item.stake}
+              {getStakeLabel(item.stake) || item.stake}
             </DetailsGridItem>
             <DetailsGridItem label={t('common.ward')}>
-              {item.ward}
+              {getWardLabel(item.stake, item.ward) || item.ward}
             </DetailsGridItem>
             <DetailsGridItem label={t('leader.recommendations.form.gender')}>
               {item.gender ?? t('admin.roles.nA')}
@@ -1018,10 +1019,10 @@ const LeaderRecommendations = () => {
             {item.age ?? t('admin.roles.nA')}
           </DetailsGridItem>
           <DetailsGridItem label={t('common.stake')}>
-            {item.stake}
+            {getStakeLabel(item.stake) || item.stake}
           </DetailsGridItem>
           <DetailsGridItem label={t('common.ward')}>
-            {item.ward}
+            {getWardLabel(item.stake, item.ward) || item.ward}
           </DetailsGridItem>
           <DetailsGridItem label={t('leader.recommendations.form.gender')}>
             {item.gender ?? t('admin.roles.nA')}
