@@ -113,7 +113,11 @@ export class ApplicationsController {
     @Body() updateApplicationDto: UpdateApplicationDto,
     @CurrentUser() user: JwtPayload,
   ): Promise<Application> {
-    return this.applicationsService.update(id, updateApplicationDto, user.role);
+    return this.applicationsService.update(
+      id,
+      updateApplicationDto,
+      user.role || undefined,
+    );
   }
 
   @Patch(':id/status')
