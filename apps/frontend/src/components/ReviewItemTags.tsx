@@ -18,17 +18,12 @@ export const ReviewItemTags = ({
 }: ReviewItemTagsProps) => {
   return (
     <div className={styles.listTags}>
-      {type === 'application' && (
-        <span className={clsx(styles.listTag, styles.listTagApplication)}>
-          Applied
-        </span>
-      )}
-      {type === 'recommendation' && (
+      {type === 'application' && hasRecommendation && (
         <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
           Recommended
         </span>
       )}
-      {type === 'application' && hasRecommendation && (
+      {type === 'recommendation' && (
         <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
           Recommended
         </span>

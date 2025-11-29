@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { Application, LeaderRecommendation, ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { Button, ComboBox, DetailsGrid, DetailsGridItem, DetailsNotes, StatusChip, Tabs } from '@/components/ui';
@@ -8,6 +9,7 @@ import { ReviewItemTags } from '@/components';
 import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { normalizeRecommendationStatus, remapStatusForRecommendation } from '@/utils/statusHelpers';
 import { exportApprovedApplicationsToCSV } from '@/utils/exportData';
+import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import type { TabItem, StatusOption, ReviewItem } from '@/types';
 import styles from './AdminReview.module.scss';
 
@@ -16,20 +18,27 @@ interface LocationState {
   focus?: string;
 }
 
-const TABS: TabItem[] = [
-  { id: 'all', label: 'All' },
-  { id: 'awaiting', label: 'Awaiting' },
-  { id: 'approved', label: 'Approved' },
-  { id: 'rejected', label: 'Rejected' },
-];
-
-const STATUS_OPTIONS: StatusOption[] = [
-  { value: 'awaiting', label: 'Awaiting' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
-];
-
 const AdminReview = () => {
+  const { t } = useTranslation();
+  
+  const TABS: TabItem[] = useMemo(
+    () => [
+      { id: 'all', label: t('admin.review.tabs.all') },
+      { id: 'awaiting', label: t('admin.review.tabs.awaiting') },
+      { id: 'approved', label: t('admin.review.tabs.approved') },
+      { id: 'rejected', label: t('admin.review.tabs.rejected') },
+    ],
+    [t]
+  );
+
+  const STATUS_OPTIONS: StatusOption[] = useMemo(
+    () => [
+      { value: 'awaiting', label: t('admin.review.status.awaiting') },
+      { value: 'approved', label: t('admin.review.status.approved') },
+      { value: 'rejected', label: t('admin.review.status.rejected') },
+    ],
+    [t]
+  );
   const {
     applications,
     leaderRecommendations,
@@ -75,6 +84,14 @@ const AdminReview = () => {
 
   const getStatusLabel = (status: string) =>
     STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
+  
+  const getStakeDisplay = (stakeValue: string) => {
+    return getStakeLabel(stakeValue) || stakeValue;
+  };
+  
+  const getWardDisplay = (stakeValue: string, wardValue: string) => {
+    return getWardLabel(stakeValue, wardValue) || wardValue;
+  };
 
   const reviewItems = useMemo(() => {
     const applicationById = new Map<string, Application>();
@@ -292,9 +309,9 @@ const AdminReview = () => {
     <section className={styles.review}>
       <div className={styles.header}>
         <div className={styles.headerCopy}>
-          <h1>Review Applications</h1>
+          <h1>{t('admin.review.title')}</h1>
           <p className={styles.subtitle}>
-            Manage incoming applications and update their statuses.
+            {t('admin.review.subtitle')}
           </p>
         </div>
         {activeTab === 'approved' && (
@@ -305,7 +322,7 @@ const AdminReview = () => {
             onClick={handleExportApproved}
             disabled={!approvedApplications.length}
           >
-            Export as CSV
+            {t('admin.review.export')}
           </Button>
         )}
       </div>
@@ -319,7 +336,7 @@ const AdminReview = () => {
         activeTabClassName={styles.tabActive}
         labelClassName={styles.tabLabel}
         badgeClassName={styles.tabPill}
-        ariaLabel='Application status filters'
+        ariaLabel={t('admin.review.tabs.ariaLabel')}
         getBadge={(tab) =>
           tab.id === 'all'
             ? statusCounts.all
@@ -329,9 +346,9 @@ const AdminReview = () => {
 
       {showTodayOnly && (
         <div className={styles.filterChip}>
-          Showing submissions from today
+          {t('admin.review.filterToday')}
           <button type='button' onClick={() => setShowTodayOnly(false)}>
-            Clear
+            {t('common.clear')}
           </button>
         </div>
       )}
@@ -360,8 +377,8 @@ const AdminReview = () => {
                       />
                     </div>
                     <div className={styles.listBottom}>
-                      <span className={styles.listMeta}>{item.stake}</span>
-                      <span className={styles.listMeta}>{item.ward}</span>
+                      <span className={styles.listMeta}>{getStakeDisplay(item.stake)}</span>
+                      <span className={styles.listMeta}>{getWardDisplay(item.stake, item.ward)}</span>
                       <span className={`${styles.listMeta} ${styles.listDate}`}>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
@@ -376,7 +393,7 @@ const AdminReview = () => {
               ))}
             </ul>
           ) : (
-            <p className={styles.empty}>No applications found for this tab.</p>
+            <p className={styles.empty}>{t('admin.review.empty')}</p>
           )}
         </aside>
 
@@ -388,30 +405,25 @@ const AdminReview = () => {
                   <div className={styles.detailsHeading}>
                     <h2>{selectedItem.name}</h2>
                     <div className={styles.detailsTags}>
-                      {selectedItem.type === 'application' && (
-                        <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
-                          Applied
+                      {selectedItem.type === 'application' && selectedItem.hasRecommendation && (
+                        <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
+                          {t('admin.review.tags.recommended')}
                         </span>
                       )}
                       {selectedItem.type === 'recommendation' && (
                         <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
-                          Recommended
-                        </span>
-                      )}
-                      {selectedItem.type === 'application' && selectedItem.hasRecommendation && (
-                        <span className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}>
-                          Recommended
+                          {t('admin.review.tags.recommended')}
                         </span>
                       )}
                       {selectedItem.type === 'recommendation' && selectedItem.hasApplication && (
                         <span className={`${styles.detailsTag} ${styles.detailsTagApplication}`}>
-                          Applied
+                          {t('admin.review.tags.applied')}
                         </span>
                       )}
                     </div>
                   </div>
                   <p className={styles.detailsMeta}>
-                    Submitted{' '}
+                    {t('admin.review.submitted')}{' '}
                     {new Date(selectedItem.createdAt).toLocaleString()}
                   </p>
                 </div>
@@ -420,7 +432,7 @@ const AdminReview = () => {
                   <ComboBox
                     id={statusSelectId}
                     name='status'
-                    label='Status'
+                    label={t('admin.review.statusLabel')}
                     value={currentStatus ?? 'awaiting'}
                     onChange={handleStatusSelect}
                     tone={currentStatus ?? 'awaiting'}
@@ -429,40 +441,40 @@ const AdminReview = () => {
                     labelClassName={styles.statusText}
                   />
                   <span className={styles.statusHint}>
-                    Selecting updates instantly.
+                    {t('admin.review.statusHint')}
                   </span>
                 </div>
               </header>
 
               <DetailsGrid className={styles.grid}>
-                <DetailsGridItem label='Email'>
+                <DetailsGridItem label={t('common.email')}>
                   {selectedItem.email}
                 </DetailsGridItem>
-                <DetailsGridItem label='Phone'>
+                <DetailsGridItem label={t('common.phone')}>
                   {selectedItem.phone}
                 </DetailsGridItem>
-                <DetailsGridItem label='Age'>
-                  {selectedItem.age ?? 'N/A'}
+                <DetailsGridItem label={t('admin.review.age')}>
+                  {selectedItem.age ?? t('admin.roles.nA')}
                 </DetailsGridItem>
-                <DetailsGridItem label='Stake'>
-                  {selectedItem.stake}
+                <DetailsGridItem label={t('common.stake')}>
+                  {getStakeDisplay(selectedItem.stake)}
                 </DetailsGridItem>
-                <DetailsGridItem label='Ward'>
-                  {selectedItem.ward}
+                <DetailsGridItem label={t('common.ward')}>
+                  {getWardDisplay(selectedItem.stake, selectedItem.ward)}
                 </DetailsGridItem>
-                <DetailsGridItem label='Gender'>
-                  {selectedItem.gender ?? 'N/A'}
+                <DetailsGridItem label={t('admin.review.gender')}>
+                  {selectedItem.gender ?? t('admin.roles.nA')}
                 </DetailsGridItem>
               </DetailsGrid>
 
-              <DetailsNotes title='Additional Information' className={styles.notes}>
+              <DetailsNotes title={t('admin.review.additionalInfo')} className={styles.notes}>
                 {selectedItem.moreInfo ||
-                  'No additional information provided.'}
+                  t('admin.review.noAdditionalInfo')}
               </DetailsNotes>
             </div>
           ) : (
             <div className={styles.placeholder}>
-              Select an application to review its details.
+              {t('admin.review.selectPlaceholder')}
             </div>
           )}
         </div>
@@ -476,12 +488,12 @@ const AdminReview = () => {
                 <div>
                   <h2>{item.name}</h2>
                   <p className={styles.reviewCardMeta}>
-                    Submitted {new Date(item.createdAt).toLocaleString()}
+                    {t('admin.review.submitted')} {new Date(item.createdAt).toLocaleString()}
                   </p>
                 </div>
                 <ComboBox
                   name={`mobile-status-${item.key}`}
-                  label='Status'
+                  label={t('admin.review.statusLabel')}
                   value={item.status}
                   onChange={(event) =>
                     handleInlineStatusChange(item.key, event.target.value)
@@ -490,68 +502,63 @@ const AdminReview = () => {
                   tone={item.status}
                   wrapperClassName={styles.reviewCardStatus}
                   labelClassName={styles.reviewCardStatusLabel}
-                  ariaLabel={`Update status for ${item.name}`}
+                  ariaLabel={t('admin.review.updateStatus', { name: item.name })}
                 />
               </div>
 
               <div className={styles.reviewCardTags}>
-                {item.type === 'application' && (
-                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
-                    Applied
+                {item.type === 'application' && item.hasRecommendation && (
+                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
+                    {t('admin.review.tags.recommended')}
                   </span>
                 )}
                 {item.type === 'recommendation' && (
                   <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
-                    Recommended
-                  </span>
-                )}
-                {item.type === 'application' && item.hasRecommendation && (
-                  <span className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}>
-                    Recommended
+                    {t('admin.review.tags.recommended')}
                   </span>
                 )}
                 {item.type === 'recommendation' && item.hasApplication && (
                   <span className={`${styles.reviewCardTag} ${styles.reviewCardTagApplication}`}>
-                    Applied
+                    {t('admin.review.tags.applied')}
                   </span>
                 )}
               </div>
 
               <dl className={styles.reviewCardGrid}>
                 <div>
-                  <dt>Email</dt>
+                  <dt>{t('common.email')}</dt>
                   <dd>{item.email}</dd>
                 </div>
                 <div>
-                  <dt>Phone</dt>
+                  <dt>{t('common.phone')}</dt>
                   <dd>{item.phone}</dd>
                 </div>
                 <div>
-                  <dt>Age</dt>
-                  <dd>{item.age ?? 'N/A'}</dd>
+                  <dt>{t('admin.review.age')}</dt>
+                  <dd>{item.age ?? t('admin.roles.nA')}</dd>
                 </div>
                 <div>
-                  <dt>Stake</dt>
-                  <dd>{item.stake}</dd>
+                  <dt>{t('common.stake')}</dt>
+                  <dd>{getStakeDisplay(item.stake)}</dd>
                 </div>
                 <div>
-                  <dt>Ward</dt>
-                  <dd>{item.ward}</dd>
+                  <dt>{t('common.ward')}</dt>
+                  <dd>{getWardDisplay(item.stake, item.ward)}</dd>
                 </div>
                 <div>
-                  <dt>Gender</dt>
-                  <dd>{item.gender ?? 'N/A'}</dd>
+                  <dt>{t('admin.review.gender')}</dt>
+                  <dd>{item.gender ?? t('admin.roles.nA')}</dd>
                 </div>
               </dl>
 
               <div className={styles.reviewCardNotes}>
-                <h3>Additional Information</h3>
-                <p>{item.moreInfo || 'No additional information provided.'}</p>
+                <h3>{t('admin.review.additionalInfo')}</h3>
+                <p>{item.moreInfo || t('admin.review.noAdditionalInfo')}</p>
               </div>
             </article>
           ))
         ) : (
-          <p className={styles.empty}>No applications found for this tab.</p>
+          <p className={styles.empty}>{t('admin.review.empty')}</p>
         )}
       </div>
     </section>

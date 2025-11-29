@@ -177,6 +177,38 @@
         "approved": "Approved",
         "today": "Today"
       }
+    },
+    "review": {
+      "title": "Review Applications",
+      "subtitle": "Manage incoming applications and update their statuses.",
+      "export": "Export as CSV",
+      "filterToday": "Showing submissions from today",
+      "empty": "No applications found for this tab.",
+      "selectPlaceholder": "Select an application to review its details.",
+      "submitted": "Submitted",
+      "statusLabel": "Status",
+      "statusHint": "Selecting updates instantly.",
+      "updateStatus": "Update status for {{name}}",
+      "age": "Age",
+      "gender": "Gender",
+      "additionalInfo": "Additional Information",
+      "noAdditionalInfo": "No additional information provided.",
+      "tabs": {
+        "all": "All",
+        "awaiting": "Awaiting",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "ariaLabel": "Application status filters"
+      },
+      "status": {
+        "awaiting": "Awaiting",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "tags": {
+        "applied": "Applied",
+        "recommended": "Recommended"
+      }
     }
   },
   "leader": {

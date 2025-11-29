@@ -177,6 +177,38 @@
         "approved": "승인됨",
         "today": "오늘"
       }
+    },
+    "review": {
+      "title": "신청서 검토",
+      "subtitle": "들어오는 신청서를 관리하고 상태를 업데이트하세요.",
+      "export": "CSV로 내보내기",
+      "filterToday": "오늘 제출된 항목만 표시",
+      "empty": "이 탭에 해당하는 신청서가 없습니다.",
+      "selectPlaceholder": "세부 정보를 검토하려면 신청서를 선택하세요.",
+      "submitted": "제출됨",
+      "statusLabel": "상태",
+      "statusHint": "선택하면 즉시 업데이트됩니다.",
+      "updateStatus": "{{name}}의 상태 업데이트",
+      "age": "나이",
+      "gender": "성별",
+      "additionalInfo": "추가 정보",
+      "noAdditionalInfo": "추가 정보가 제공되지 않았습니다.",
+      "tabs": {
+        "all": "전체",
+        "awaiting": "대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨",
+        "ariaLabel": "신청서 상태 필터"
+      },
+      "status": {
+        "awaiting": "대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨"
+      },
+      "tags": {
+        "applied": "신청됨",
+        "recommended": "추천됨"
+      }
     }
   },
   "leader": {
