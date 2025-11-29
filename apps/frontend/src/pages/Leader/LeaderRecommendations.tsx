@@ -336,7 +336,11 @@ const LeaderRecommendations = () => {
         item.id === application.id
     );
 
-    if (applicationItem && 'hasRecommendation' in applicationItem && applicationItem.hasRecommendation) {
+    if (
+      applicationItem &&
+      'hasRecommendation' in applicationItem &&
+      applicationItem.hasRecommendation
+    ) {
       setFormError(t('leader.recommendations.messages.alreadyRecommended'));
       return;
     }
@@ -396,10 +400,7 @@ const LeaderRecommendations = () => {
 
         // Immediately refetch both to get the latest state with linkedApplicationId
         // This ensures the UI updates correctly and the button becomes disabled
-        await Promise.all([
-          refetchRecommendations(),
-          refetchApplications(),
-        ]);
+        await Promise.all([refetchRecommendations(), refetchApplications()]);
 
         // Select the newly created recommendation if it exists
         if (recommendation?.id) {
