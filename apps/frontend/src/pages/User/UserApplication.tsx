@@ -311,7 +311,7 @@ const UserApplication = () => {
       servedMission: form.servedMission,
     })
       .then(() => {
-        setFeedback(t('application.messages.draftSaved'));
+        setFeedback(t('application.messages.draftSavedWithSubmitReminder'));
       })
       .catch((error) => {
         setFormError(

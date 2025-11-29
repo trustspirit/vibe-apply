@@ -391,6 +391,7 @@
     "messages": {
       "submitted": "Your application has been submitted and is awaiting review.",
       "draftSaved": "Draft saved. You can return anytime to complete and submit your application.",
+      "draftSavedWithSubmitReminder": "Draft saved. Please click the 'Submit' button to complete your application.",
       "fixFields": "Please fix the highlighted fields before submitting.",
       "failedToSubmit": "Failed to submit application.",
       "failedToSave": "Failed to save draft.",
