@@ -35,7 +35,7 @@ interface RecommendationPayload {
 
 interface RecommendationsContextValue {
   leaderRecommendations: LeaderRecommendation[];
-  submitLeaderRecommendation: (leaderId: string, payload: RecommendationPayload) => Promise<void>;
+  submitLeaderRecommendation: (leaderId: string, payload: RecommendationPayload) => Promise<LeaderRecommendation>;
   updateLeaderRecommendationStatus: (recommendationId: string, status: RecommendationStatus) => Promise<void>;
   deleteLeaderRecommendation: (leaderId: string, recommendationId: string) => Promise<void>;
   refetchRecommendations: () => Promise<void>;
@@ -94,7 +94,7 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
   }, [currentUser?.role, currentUser?.id]);
 
   const submitLeaderRecommendation = useCallback(
-    async (leaderId: string, payload: RecommendationPayload) => {
+    async (leaderId: string, payload: RecommendationPayload): Promise<LeaderRecommendation> => {
       const { id, leaderId: payloadLeaderId, ...formData } = payload;
       void payloadLeaderId;
       if (id) {
@@ -102,9 +102,11 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
         setLeaderRecommendations((prev) =>
           prev.map((rec) => (rec.id === id ? recommendation : rec))
         );
+        return recommendation;
       } else {
         const recommendation = await recommendationsApi.submit(formData);
         setLeaderRecommendations((prev) => [recommendation, ...prev]);
+        return recommendation;
       }
     },
     []

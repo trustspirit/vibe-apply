@@ -70,7 +70,18 @@ export class RecommendationsService {
 
     await this.linkMatchingApplication(recommendation);
 
-    return recommendation;
+    // Return the updated recommendation with linkedApplicationId
+    const updatedDoc = await this.firebaseService
+      .getFirestore()
+      .collection('recommendations')
+      .doc(docRef.id)
+      .get();
+
+    const updatedData = updatedDoc.data() as Record<string, unknown>;
+    return {
+      id: updatedDoc.id,
+      ...updatedData,
+    } as LeaderRecommendation;
   }
 
   private async linkMatchingApplication(

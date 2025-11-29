@@ -86,7 +86,7 @@ interface AppContextValue {
   submitLeaderRecommendation: (
     leaderId: string,
     payload: RecommendationPayload
-  ) => Promise<void>;
+  ) => Promise<LeaderRecommendation>;
   updateLeaderRecommendationStatus: (
     recommendationId: string,
     status: RecommendationStatus

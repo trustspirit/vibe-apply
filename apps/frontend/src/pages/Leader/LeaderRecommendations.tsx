@@ -343,15 +343,19 @@ const LeaderRecommendations = () => {
       moreInfo: application.moreInfo ?? '',
       servedMission: application.servedMission,
     })
-      .then(async () => {
+      .then(async (recommendation) => {
         setFeedback(
           t('leader.recommendations.messages.recommended', {
             name: application.name,
           })
         );
-        // Refetch to get the updated recommendation with linkedApplicationId
+        // Refetch to ensure all data is up to date
         await refetchRecommendations();
         await refetchApplications();
+        // Select the newly created recommendation
+        if (recommendation?.id) {
+          setSelectedId(recommendation.id);
+        }
       })
       .catch((error) => {
         setFormError(
