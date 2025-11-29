@@ -371,6 +371,12 @@ const UserApplication = () => {
                           const status = existingApplication.status;
                           let statusLabel: string;
                           let statusValue: string;
+                          let toneValue:
+                            | 'draft'
+                            | 'awaiting'
+                            | 'reviewed'
+                            | 'rejected'
+                            | 'approved';
 
                           if (
                             status === ApplicationStatus.APPROVED ||
@@ -381,19 +387,21 @@ const UserApplication = () => {
                               status === ApplicationStatus.APPROVED
                                 ? ApplicationStatus.APPROVED
                                 : ApplicationStatus.REJECTED;
+                            toneValue = 'reviewed';
                           } else if (status === ApplicationStatus.AWAITING) {
                             statusLabel = t('application.status.submitted');
                             statusValue = ApplicationStatus.AWAITING;
+                            toneValue = 'awaiting';
                           } else {
                             statusLabel = t('application.status.notSubmitted');
                             statusValue = ApplicationStatus.DRAFT;
+                            toneValue = 'draft';
                           }
 
-                          const display = getStatusDisplay(statusValue);
                           return (
                             <StatusChip
                               status={statusValue}
-                              tone={display.tone}
+                              tone={toneValue}
                               label={statusLabel}
                             />
                           );
