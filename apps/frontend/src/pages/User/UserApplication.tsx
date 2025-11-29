@@ -25,7 +25,6 @@ import {
   validateRequired,
   validateGender,
   validatePhone,
-  getStatusDisplay,
 } from '@/utils/validation';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
