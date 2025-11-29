@@ -336,10 +336,11 @@
       "age": "Age",
       "email": "Email",
       "phone": "Phone",
-      "gender": "Gender (optional)",
+      "gender": "Gender",
       "genderSelect": "Select gender",
       "genderMale": "Male",
       "genderFemale": "Female",
+      "servedMission": "Served a Mission",
       "additionalInfo": "Additional Information",
       "additionalInfoPlaceholder": "Share any relevant experience or context."
     },

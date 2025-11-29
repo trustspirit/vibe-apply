@@ -20,6 +20,7 @@ import {
 import { AGE_MIN, AGE_MAX, AGE_ERROR_MESSAGE } from '@/utils/validationConstants';
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
 import { USER_ROLES } from '@/utils/constants';
+import { formatPhoneNumber } from '@/utils/phoneFormatter';
 import type { ValidationErrors, TabItem } from '@/types';
 import styles from './LeaderRecommendations.module.scss';
 
@@ -294,7 +295,8 @@ const LeaderRecommendations = () => {
 
   const handleFormChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const formattedValue = name === 'phone' ? formatPhoneNumber(value) : value;
+    setForm((prev) => ({ ...prev, [name]: formattedValue }));
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev };

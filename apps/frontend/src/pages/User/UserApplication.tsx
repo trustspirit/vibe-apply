@@ -26,6 +26,7 @@ import {
   validatePhone,
   getStatusDisplay,
 } from '@/utils/validation';
+import { formatPhoneNumber } from '@/utils/phoneFormatter';
 import styles from './UserApplication.module.scss';
 
 interface ApplicationForm {
@@ -152,7 +153,8 @@ const UserApplication = () => {
     >
   ) => {
     const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const formattedValue = name === 'phone' ? formatPhoneNumber(value) : value;
+    setForm((prev) => ({ ...prev, [name]: formattedValue }));
     setErrors((prev) => {
       if (!prev[name]) {
         return prev;

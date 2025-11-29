@@ -21,7 +21,7 @@ const CompleteProfile = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState<ProfileForm>({
-    stake: '',
+    stake: 'seoul-stake',
     ward: '',
     role: USER_ROLES.APPLICANT as UserRole,
   });

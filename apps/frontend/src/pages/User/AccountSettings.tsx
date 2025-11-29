@@ -19,6 +19,7 @@ import {
 import { authApi, usersApi } from '@/services/api';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
+import { formatPhoneNumber } from '@/utils/phoneFormatter';
 import styles from './AccountSettings.module.scss';
 
 interface AccountForm {
@@ -174,7 +175,8 @@ const AccountSettings = () => {
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const formattedValue = name === 'phone' ? formatPhoneNumber(value) : value;
+    setForm((prev) => ({ ...prev, [name]: formattedValue }));
     setError('');
     setSuccess('');
   };
