@@ -136,9 +136,7 @@ const UserApplication = () => {
         moreInfo: existingApplication.moreInfo ?? '',
         servedMission: existingApplication.servedMission ?? false,
       });
-      setIsEditing(
-        existingApplication.status === ApplicationStatus.DRAFT
-      );
+      setIsEditing(existingApplication.status === ApplicationStatus.DRAFT);
     } else if (currentUser) {
       setForm((prev) => ({
         ...prev,
