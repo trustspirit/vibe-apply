@@ -182,13 +182,12 @@ const LeaderRecommendations = () => {
 
   const combinedItems = useMemo(() => {
     const applicationById = new Map<string, Application>();
-    applications
-      .filter(
-        (app) => app.stake.toLowerCase() === currentUser?.stake.toLowerCase()
-      )
-      .forEach((app) => {
-        applicationById.set(app.id, app);
-      });
+    const stakeApplications = applications.filter(
+      (app) => app.stake.toLowerCase() === currentUser?.stake.toLowerCase()
+    );
+    stakeApplications.forEach((app) => {
+      applicationById.set(app.id, app);
+    });
 
     // Create a map of applications that have recommendations
     const applicationsWithRecommendations = new Set(
@@ -213,7 +212,9 @@ const LeaderRecommendations = () => {
       }
     );
 
-    const mappedApplications: ExtendedApplication[] = applicantsInStake.map(
+    // Include all stake applications (both recommended and not recommended)
+    // to show "Recommended" badge for recommended ones
+    const mappedApplications: ExtendedApplication[] = stakeApplications.map(
       (app) => ({
         ...app,
         isApplication: true,
@@ -226,7 +227,7 @@ const LeaderRecommendations = () => {
         new Date(b.updatedAt || b.createdAt).getTime() -
         new Date(a.updatedAt || a.createdAt).getTime()
     );
-  }, [recommendations, applicantsInStake, applications, currentUser]);
+  }, [recommendations, applications, currentUser]);
 
   const filteredRecommendations = useMemo(() => {
     if (activeTab === 'all') {
@@ -369,9 +370,11 @@ const LeaderRecommendations = () => {
             name: application.name,
           })
         );
-        // Refetch to ensure all data is up to date
-        await refetchRecommendations();
-        await refetchApplications();
+        // Refetch to ensure all data is up to date, including linkedApplicationId
+        await Promise.all([
+          refetchRecommendations(),
+          refetchApplications(),
+        ]);
         // Select the newly created recommendation
         if (recommendation?.id) {
           setSelectedId(recommendation.id);
