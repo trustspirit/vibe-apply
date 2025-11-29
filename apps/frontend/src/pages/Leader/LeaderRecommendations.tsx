@@ -55,6 +55,7 @@ interface ExtendedRecommendation extends LeaderRecommendation {
 
 interface ExtendedApplication extends Application {
   isApplication: boolean;
+  hasRecommendation?: boolean;
 }
 
 type CombinedItem = ExtendedRecommendation | ExtendedApplication;
@@ -189,6 +190,13 @@ const LeaderRecommendations = () => {
         applicationById.set(app.id, app);
       });
 
+    // Create a map of applications that have recommendations
+    const applicationsWithRecommendations = new Set(
+      recommendations
+        .filter((rec) => rec.linkedApplicationId)
+        .map((rec) => rec.linkedApplicationId)
+    );
+
     const mappedRecommendations: ExtendedRecommendation[] = recommendations.map(
       (rec) => {
         const canModify =
@@ -209,6 +217,7 @@ const LeaderRecommendations = () => {
       (app) => ({
         ...app,
         isApplication: true,
+        hasRecommendation: applicationsWithRecommendations.has(app.id),
       })
     );
 
@@ -331,6 +340,17 @@ const LeaderRecommendations = () => {
     if (!leaderId) {
       return;
     }
+
+    // Check if already recommended
+    const alreadyRecommended = recommendations.some(
+      (rec) => rec.linkedApplicationId === application.id
+    );
+
+    if (alreadyRecommended) {
+      setFormError(t('leader.recommendations.messages.alreadyRecommended'));
+      return;
+    }
+
     submitLeaderRecommendation(leaderId, {
       id: null,
       name: application.name,
@@ -696,9 +716,19 @@ const LeaderRecommendations = () => {
               </span>
             )}
             {'isApplication' in item && item.isApplication && (
-              <span className={clsx(styles.listTag, styles.listTagApplication)}>
-                {t('leader.recommendations.tags.applied')}
-              </span>
+              <>
+                {item.hasRecommendation ? (
+                  <span
+                    className={clsx(styles.listTag, styles.listTagRecommendation)}
+                  >
+                    {t('leader.recommendations.tags.recommended')}
+                  </span>
+                ) : (
+                  <span className={clsx(styles.listTag, styles.listTagApplication)}>
+                    {t('leader.recommendations.tags.applied')}
+                  </span>
+                )}
+              </>
             )}
             {!('isApplication' in item && item.isApplication) &&
               'hasApplication' in item &&
@@ -950,16 +980,30 @@ const LeaderRecommendations = () => {
               }
             })() && (
               <div className={styles.detailActions}>
-                <Button
-                  type='button'
-                  variant='primary'
-                  onClick={() =>
-                    handleRecommendApplicant(selectedItem as Application)
+                {(() => {
+                  if (
+                    'isApplication' in selectedItem &&
+                    selectedItem.isApplication
+                  ) {
+                    const hasRecommendation = selectedItem.hasRecommendation ?? false;
+                    return (
+                      <Button
+                        type='button'
+                        variant='primary'
+                        onClick={() =>
+                          handleRecommendApplicant(selectedItem as Application)
+                        }
+                        disabled={hasRecommendation}
+                        className={styles.btn}
+                      >
+                        {hasRecommendation
+                          ? t('leader.recommendations.actions.recommended')
+                          : t('leader.recommendations.actions.recommend')}
+                      </Button>
+                    );
                   }
-                  className={styles.btn}
-                >
-                  {t('leader.recommendations.actions.recommend')}
-                </Button>
+                  return null;
+                })()}
               </div>
             )}
           </div>
@@ -980,15 +1024,41 @@ const LeaderRecommendations = () => {
               <div className={styles.detailsHeading}>
                 <h2>{selectedItem.name}</h2>
                 <div className={styles.detailsTags}>
-                  <span
-                    className={clsx(
-                      styles.detailsTag,
-                      styles.detailsTagRecommendation
-                    )}
-                  >
-                    {t('leader.recommendations.tags.recommended')}
-                  </span>
-                  {'hasApplication' in selectedItem &&
+                  {!('isApplication' in selectedItem && selectedItem.isApplication) && (
+                    <span
+                      className={clsx(
+                        styles.detailsTag,
+                        styles.detailsTagRecommendation
+                      )}
+                    >
+                      {t('leader.recommendations.tags.recommended')}
+                    </span>
+                  )}
+                  {'isApplication' in selectedItem && selectedItem.isApplication && (
+                    <>
+                      {selectedItem.hasRecommendation ? (
+                        <span
+                          className={clsx(
+                            styles.detailsTag,
+                            styles.detailsTagRecommendation
+                          )}
+                        >
+                          {t('leader.recommendations.tags.recommended')}
+                        </span>
+                      ) : (
+                        <span
+                          className={clsx(
+                            styles.detailsTag,
+                            styles.detailsTagApplication
+                          )}
+                        >
+                          {t('leader.recommendations.tags.applied')}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {!('isApplication' in selectedItem && selectedItem.isApplication) &&
+                    'hasApplication' in selectedItem &&
                     selectedItem.hasApplication && (
                       <span
                         className={clsx(
@@ -1164,14 +1234,25 @@ const LeaderRecommendations = () => {
             }
           })() && (
             <div className={styles.cardActions}>
-              <Button
-                type='button'
-                variant='primary'
-                onClick={() => handleRecommendApplicant(item as Application)}
-                className={styles.btn}
-              >
-                {t('leader.recommendations.actions.recommend')}
-              </Button>
+              {(() => {
+                if ('isApplication' in item && item.isApplication) {
+                  const hasRecommendation = item.hasRecommendation ?? false;
+                  return (
+                    <Button
+                      type='button'
+                      variant='primary'
+                      onClick={() => handleRecommendApplicant(item as Application)}
+                      disabled={hasRecommendation}
+                      className={styles.btn}
+                    >
+                      {hasRecommendation
+                        ? t('leader.recommendations.actions.recommended')
+                        : t('leader.recommendations.actions.recommend')}
+                    </Button>
+                  );
+                }
+                return null;
+              })()}
             </div>
           )}
         </article>
@@ -1205,24 +1286,51 @@ const LeaderRecommendations = () => {
           )}
         </div>
         <div className={styles.reviewCardTags}>
-          <span
-            className={clsx(
-              styles.reviewCardTag,
-              styles.reviewCardTagRecommendation
-            )}
-          >
-            {t('leader.recommendations.tags.recommended')}
-          </span>
-          {'hasApplication' in item && item.hasApplication && (
+          {!('isApplication' in item && item.isApplication) && (
             <span
               className={clsx(
                 styles.reviewCardTag,
-                styles.reviewCardTagApplication
+                styles.reviewCardTagRecommendation
               )}
             >
-              {t('leader.recommendations.tags.applied')}
+              {t('leader.recommendations.tags.recommended')}
             </span>
           )}
+          {'isApplication' in item && item.isApplication && (
+            <>
+              {item.hasRecommendation ? (
+                <span
+                  className={clsx(
+                    styles.reviewCardTag,
+                    styles.reviewCardTagRecommendation
+                  )}
+                >
+                  {t('leader.recommendations.tags.recommended')}
+                </span>
+              ) : (
+                <span
+                  className={clsx(
+                    styles.reviewCardTag,
+                    styles.reviewCardTagApplication
+                  )}
+                >
+                  {t('leader.recommendations.tags.applied')}
+                </span>
+              )}
+            </>
+          )}
+          {!('isApplication' in item && item.isApplication) &&
+            'hasApplication' in item &&
+            item.hasApplication && (
+              <span
+                className={clsx(
+                  styles.reviewCardTag,
+                  styles.reviewCardTagApplication
+                )}
+              >
+                {t('leader.recommendations.tags.applied')}
+              </span>
+            )}
         </div>
         <DetailsGrid className={styles.reviewCardGrid}>
           <DetailsGridItem label={t('common.email')}>

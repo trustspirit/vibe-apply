@@ -293,6 +293,7 @@
       },
       "actions": {
         "recommend": "Recommend",
+        "recommended": "Recommended",
         "modify": "Modify",
         "submit": "Submit",
         "cancelSubmission": "Cancel Submission",
@@ -308,7 +309,8 @@
         "failedToSave": "Failed to save recommendation.",
         "failedToDelete": "Failed to delete recommendation.",
         "failedToSubmit": "Failed to submit recommendation.",
-        "failedToCancel": "Failed to cancel submission."
+        "failedToCancel": "Failed to cancel submission.",
+        "alreadyRecommended": "This applicant has already been recommended."
       },
       "empty": "No recommendations in this view yet.",
       "mobileEditingNote": "Editing this recommendation above. Submit or save your changes when ready."
