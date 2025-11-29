@@ -79,6 +79,37 @@ export class RecommendationsService {
       );
     }
 
+    // Also check if there's already a recommendation linked to the same application
+    // by checking if any application with matching email/name/stake/ward exists
+    // and if there's already a recommendation with that linkedApplicationId
+    const applicationsSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection('applications')
+      .where('email', '==', normalizedEmail)
+      .where('stake', '==', normalizedStake)
+      .where('ward', '==', normalizedWard)
+      .get();
+
+    for (const appDoc of applicationsSnapshot.docs) {
+      const appData = appDoc.data();
+      const appName = (appData.name as string)?.trim().toLowerCase();
+      if (appName === normalizedName) {
+        // Check if there's already a recommendation linked to this application
+        const linkedRecommendations = await this.firebaseService
+          .getFirestore()
+          .collection('recommendations')
+          .where('leaderId', '==', leaderId)
+          .where('linkedApplicationId', '==', appDoc.id)
+          .get();
+
+        if (!linkedRecommendations.empty) {
+          throw new BadRequestException(
+            'A recommendation for this applicant already exists',
+          );
+        }
+      }
+    }
+
     const recommendationData = {
       ...createRecommendationDto,
       stake: normalizedStake,

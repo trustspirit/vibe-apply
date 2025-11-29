@@ -328,18 +328,35 @@ const LeaderRecommendations = () => {
       return;
     }
 
-    // Check if already recommended by linkedApplicationId
+    // Check if already recommended using combinedItems which has the most up-to-date hasRecommendation flag
+    const applicationItem = combinedItems.find(
+      (item) =>
+        'isApplication' in item &&
+        item.isApplication &&
+        item.id === application.id
+    );
+
+    if (applicationItem && 'hasRecommendation' in applicationItem && applicationItem.hasRecommendation) {
+      setFormError(t('leader.recommendations.messages.alreadyRecommended'));
+      return;
+    }
+
+    // Also check by linkedApplicationId in recommendations (double-check)
     const alreadyRecommendedById = recommendations.some(
       (rec) => rec.linkedApplicationId === application.id
     );
 
-    // Also check by email, name, stake, ward (in case linkedApplicationId is not set yet)
+    // Also check by email, name, stake, ward, and leaderId (in case linkedApplicationId is not set yet)
     const normalizedEmail = application.email.toLowerCase();
     const normalizedName = application.name.trim().toLowerCase();
     const normalizedStake = application.stake.toLowerCase();
     const normalizedWard = application.ward.toLowerCase();
 
     const alreadyRecommendedByMatch = recommendations.some((rec) => {
+      // Only check recommendations from the same leader
+      if (rec.leaderId !== leaderId) {
+        return false;
+      }
       const recEmail = rec.email.toLowerCase();
       const recName = rec.name.trim().toLowerCase();
       const recStake = rec.stake.toLowerCase();
@@ -376,49 +393,18 @@ const LeaderRecommendations = () => {
             name: application.name,
           })
         );
-        // submitLeaderRecommendation already updates local state with the new recommendation
-        // The UI should update immediately because combinedItems will recalculate
-        // with the new recommendation in the recommendations array
-        // The matching logic in applicationsWithRecommendations will detect the new recommendation
-        // by email/name/stake/ward even before linkedApplicationId is set
 
-        // Select the newly created recommendation
+        // Immediately refetch both to get the latest state with linkedApplicationId
+        // This ensures the UI updates correctly and the button becomes disabled
+        await Promise.all([
+          refetchRecommendations(),
+          refetchApplications(),
+        ]);
+
+        // Select the newly created recommendation if it exists
         if (recommendation?.id) {
           setSelectedId(recommendation.id);
         }
-
-        // Don't refetch recommendations immediately - it will overwrite the local state
-        // and may not include the newly created recommendation or linkedApplicationId yet
-        // Only refetch applications to ensure they're up to date
-        await refetchApplications();
-
-        // Optionally refetch recommendations after a delay to get linkedApplicationId
-        // But only if the recommendation doesn't already have it
-        if (!recommendation.linkedApplicationId) {
-          setTimeout(async () => {
-            try {
-              await refetchRecommendations();
-            } catch (error) {
-              // Silently fail - local state already has the recommendation
-              void error;
-            }
-          }, 3000);
-        }
-
-        // Refetch after a delay to get linkedApplicationId from backend
-        // This ensures the link is properly established
-        // Use a longer delay to ensure backend has processed the link
-        setTimeout(async () => {
-          try {
-            await Promise.all([
-              refetchRecommendations(),
-              refetchApplications(),
-            ]);
-          } catch (error) {
-            // Silently fail - local state already has the recommendation
-            void error;
-          }
-        }, 2000);
       })
       .catch((error) => {
         setFormError(
