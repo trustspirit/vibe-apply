@@ -422,16 +422,43 @@ const LeaderRecommendations = () => {
         // The matching logic in applicationsWithRecommendations will detect the new recommendation
         // by email/name/stake/ward even before linkedApplicationId is set
 
-        // Refetch after a delay to get linkedApplicationId from backend
-        // This ensures the link is properly established
-        setTimeout(async () => {
-          await Promise.all([refetchRecommendations(), refetchApplications()]);
-        }, 1500);
-
         // Select the newly created recommendation
         if (recommendation?.id) {
           setSelectedId(recommendation.id);
         }
+
+        // Don't refetch recommendations immediately - it will overwrite the local state
+        // and may not include the newly created recommendation or linkedApplicationId yet
+        // Only refetch applications to ensure they're up to date
+        await refetchApplications();
+
+        // Optionally refetch recommendations after a delay to get linkedApplicationId
+        // But only if the recommendation doesn't already have it
+        if (!recommendation.linkedApplicationId) {
+          setTimeout(async () => {
+            try {
+              await refetchRecommendations();
+            } catch (error) {
+              // Silently fail - local state already has the recommendation
+              void error;
+            }
+          }, 3000);
+        }
+
+        // Refetch after a delay to get linkedApplicationId from backend
+        // This ensures the link is properly established
+        // Use a longer delay to ensure backend has processed the link
+        setTimeout(async () => {
+          try {
+            await Promise.all([
+              refetchRecommendations(),
+              refetchApplications(),
+            ]);
+          } catch (error) {
+            // Silently fail - local state already has the recommendation
+            void error;
+          }
+        }, 2000);
       })
       .catch((error) => {
         setFormError(
