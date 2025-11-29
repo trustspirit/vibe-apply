@@ -64,6 +64,13 @@ export class ApplicationsService {
     userId: string,
     createApplicationDto: CreateApplicationDto,
   ): Promise<Application> {
+    // Check if user already has an application
+    const existingApplication = await this.findByUserId(userId);
+    if (existingApplication) {
+      // If application exists, update it instead of creating a new one
+      return this.update(existingApplication.id, createApplicationDto, UserRole.APPLICANT);
+    }
+
     const normalizedEmail = createApplicationDto.email.toLowerCase();
     const normalizedStake = createApplicationDto.stake.trim().toLowerCase();
     const normalizedWard = createApplicationDto.ward.trim().toLowerCase();

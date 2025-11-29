@@ -319,7 +319,10 @@ const AdminReview = () => {
 
     try {
       if (item.type === 'application') {
-        await updateApplicationStatus(item.entityId, status as ApplicationStatus);
+        await updateApplicationStatus(
+          item.entityId,
+          status as ApplicationStatus
+        );
       } else {
         await updateLeaderRecommendationStatus(
           item.entityId,

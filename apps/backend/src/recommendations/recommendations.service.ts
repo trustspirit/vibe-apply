@@ -76,22 +76,31 @@ export class RecommendationsService {
   private async linkMatchingApplication(
     recommendation: LeaderRecommendation,
   ): Promise<void> {
+    const normalizedEmail = recommendation.email.toLowerCase();
+    const normalizedName = recommendation.name.trim().toLowerCase();
+
     const applicationsSnapshot = await this.firebaseService
       .getFirestore()
       .collection('applications')
-      .where('email', '==', recommendation.email.toLowerCase())
+      .where('email', '==', normalizedEmail)
       .where('stake', '==', recommendation.stake)
       .where('ward', '==', recommendation.ward)
       .get();
 
-    if (!applicationsSnapshot.empty) {
-      const applicationDoc = applicationsSnapshot.docs[0];
+    // Find application that matches email, stake, ward, AND name
+    const matchingApplication = applicationsSnapshot.docs.find((doc) => {
+      const data = doc.data();
+      const applicationName = (data.name as string)?.trim().toLowerCase();
+      return applicationName === normalizedName;
+    });
+
+    if (matchingApplication) {
       await this.firebaseService
         .getFirestore()
         .collection('recommendations')
         .doc(recommendation.id)
         .update({
-          linkedApplicationId: applicationDoc.id,
+          linkedApplicationId: matchingApplication.id,
           updatedAt: new Date().toISOString(),
         });
     }
@@ -216,9 +225,15 @@ export class RecommendationsService {
 
     const updateData = {
       ...updateRecommendationDto,
-      ...(updateRecommendationDto.stake && { stake: updateRecommendationDto.stake.trim().toLowerCase() }),
-      ...(updateRecommendationDto.ward && { ward: updateRecommendationDto.ward.trim().toLowerCase() }),
-      ...(updateRecommendationDto.email && { email: updateRecommendationDto.email.toLowerCase() }),
+      ...(updateRecommendationDto.stake && {
+        stake: updateRecommendationDto.stake.trim().toLowerCase(),
+      }),
+      ...(updateRecommendationDto.ward && {
+        ward: updateRecommendationDto.ward.trim().toLowerCase(),
+      }),
+      ...(updateRecommendationDto.email && {
+        email: updateRecommendationDto.email.toLowerCase(),
+      }),
       updatedAt: new Date().toISOString(),
     };
 
