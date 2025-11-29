@@ -256,16 +256,30 @@ export class ApplicationsService {
   async update(
     id: string,
     updateApplicationDto: UpdateApplicationDto,
+    userRole?: UserRole,
   ): Promise<Application> {
     const existing = await this.findOne(id);
 
-    if (
-      existing.status === ApplicationStatus.APPROVED ||
-      existing.status === ApplicationStatus.REJECTED
-    ) {
-      throw new BadRequestException(
-        'Cannot modify an application that has been reviewed',
-      );
+    // If user is an applicant, they can only modify DRAFT or AWAITING applications
+    if (userRole === UserRole.APPLICANT) {
+      if (
+        existing.status === ApplicationStatus.APPROVED ||
+        existing.status === ApplicationStatus.REJECTED
+      ) {
+        throw new BadRequestException(
+          'Cannot modify an application that has been reviewed',
+        );
+      }
+    } else {
+      // For other roles (leaders, admins), they cannot modify APPROVED or REJECTED applications
+      if (
+        existing.status === ApplicationStatus.APPROVED ||
+        existing.status === ApplicationStatus.REJECTED
+      ) {
+        throw new BadRequestException(
+          'Cannot modify an application that has been reviewed',
+        );
+      }
     }
 
     const updateData = {
@@ -338,7 +352,20 @@ export class ApplicationsService {
     id: string,
     status: ApplicationStatus,
   ): Promise<Application> {
-    return this.update(id, { status });
+    const existing = await this.findOne(id);
+
+    const updateData = {
+      status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.firebaseService
+      .getFirestore()
+      .collection('applications')
+      .doc(id)
+      .update(updateData);
+
+    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {

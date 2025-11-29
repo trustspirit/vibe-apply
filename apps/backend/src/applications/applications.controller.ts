@@ -111,18 +111,14 @@ export class ApplicationsController {
   async update(
     @Param('id') id: string,
     @Body() updateApplicationDto: UpdateApplicationDto,
+    @CurrentUser() user: JwtPayload,
   ): Promise<Application> {
-    return this.applicationsService.update(id, updateApplicationDto);
+    return this.applicationsService.update(id, updateApplicationDto, user.role);
   }
 
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(
-    UserRole.ADMIN,
-    UserRole.SESSION_LEADER,
-    UserRole.STAKE_PRESIDENT,
-    UserRole.BISHOP,
-  )
+  @Roles(UserRole.ADMIN, UserRole.SESSION_LEADER)
   async updateStatus(
     @Param('id') id: string,
     @Body() body: { status: ApplicationStatus },

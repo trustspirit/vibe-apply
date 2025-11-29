@@ -269,7 +269,7 @@ const AdminReview = () => {
     } else {
       setStatusSelection(null);
     }
-  }, [selectedItem]);
+  }, [selectedItem?.key, selectedItem?.status]);
 
   const currentStatus = selectedItem
     ? (statusSelection ?? selectedItem.status)
@@ -278,22 +278,28 @@ const AdminReview = () => {
     ? `review-status-${selectedItem.key}`
     : 'review-status-select';
 
-  const handleStatusSelect = (event: ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusSelect = async (event: ChangeEvent<HTMLSelectElement>) => {
     if (!selectedItem) {
       return;
     }
     const nextStatus = event.target.value;
     setStatusSelection(nextStatus);
-    if (selectedItem.type === 'application') {
-      updateApplicationStatus(
-        selectedItem.entityId,
-        nextStatus as ApplicationStatus
-      );
-    } else {
-      updateLeaderRecommendationStatus(
-        selectedItem.entityId,
-        remapStatusForRecommendation(nextStatus)
-      );
+    try {
+      if (selectedItem.type === 'application') {
+        await updateApplicationStatus(
+          selectedItem.entityId,
+          nextStatus as ApplicationStatus
+        );
+      } else {
+        await updateLeaderRecommendationStatus(
+          selectedItem.entityId,
+          remapStatusForRecommendation(nextStatus)
+        );
+      }
+    } catch (error) {
+      // Revert status selection on error
+      setStatusSelection(selectedItem.status);
+      void error;
     }
   };
 
@@ -302,7 +308,7 @@ const AdminReview = () => {
     setShowTodayOnly(false);
   };
 
-  const handleInlineStatusChange = (entryKey: string, status: string) => {
+  const handleInlineStatusChange = async (entryKey: string, status: string) => {
     if (!status) {
       return;
     }
@@ -311,19 +317,23 @@ const AdminReview = () => {
       return;
     }
 
-    if (item.type === 'application') {
-      updateApplicationStatus(item.entityId, status as ApplicationStatus);
-    } else {
-      updateLeaderRecommendationStatus(
-        item.entityId,
-        remapStatusForRecommendation(status)
-      );
-    }
+    try {
+      if (item.type === 'application') {
+        await updateApplicationStatus(item.entityId, status as ApplicationStatus);
+      } else {
+        await updateLeaderRecommendationStatus(
+          item.entityId,
+          remapStatusForRecommendation(status)
+        );
+      }
 
-    if (selectedItem?.key === entryKey) {
-      setStatusSelection(status);
+      if (selectedItem?.key === entryKey) {
+        setStatusSelection(status);
+      }
+      setSelectedId(entryKey);
+    } catch (error) {
+      void error;
     }
-    setSelectedId(entryKey);
   };
 
   const handleExportApproved = () => {

@@ -86,6 +86,42 @@ const LeaderRecommendations = () => {
   } = useApp();
   const leaderId = currentUser?.id ?? null;
 
+  const getStatusLabel = (
+    status: string,
+    isApplication: boolean
+  ): string | undefined => {
+    if (isApplication) {
+      const appStatus = status as unknown as ApplicationStatus;
+      if (appStatus === ApplicationStatus.REJECTED) {
+        return t('leader.recommendations.tabs.rejected');
+      }
+      if (appStatus === ApplicationStatus.APPROVED) {
+        return t('status.approved');
+      }
+      if (appStatus === ApplicationStatus.AWAITING) {
+        return t('status.awaiting');
+      }
+      if (appStatus === ApplicationStatus.DRAFT) {
+        return t('status.draft');
+      }
+    } else {
+      const recStatus = status as unknown as RecommendationStatus;
+      if (recStatus === RecommendationStatus.REJECTED) {
+        return t('leader.recommendations.tabs.rejected');
+      }
+      if (recStatus === RecommendationStatus.APPROVED) {
+        return t('status.approved');
+      }
+      if (recStatus === RecommendationStatus.SUBMITTED) {
+        return t('status.submitted');
+      }
+      if (recStatus === RecommendationStatus.DRAFT) {
+        return t('status.draft');
+      }
+    }
+    return undefined;
+  };
+
   const TAB_DEFS: TabItem[] = [
     { id: 'all', label: t('leader.recommendations.tabs.all') },
     { id: 'draft', label: t('leader.recommendations.tabs.draft') },
@@ -618,9 +654,7 @@ const LeaderRecommendations = () => {
                 'status' in item ? item.status : ApplicationStatus.AWAITING
               }
               label={
-                'status' in item && item.status === ApplicationStatus.REJECTED
-                  ? t('leader.recommendations.tabs.rejected')
-                  : undefined
+                'status' in item ? getStatusLabel(item.status, true) : undefined
               }
             />
           ) : (
@@ -629,9 +663,8 @@ const LeaderRecommendations = () => {
                 'status' in item ? item.status : RecommendationStatus.DRAFT
               }
               label={
-                'status' in item &&
-                item.status === RecommendationStatus.REJECTED
-                  ? t('leader.recommendations.tabs.rejected')
+                'status' in item
+                  ? getStatusLabel(item.status, false)
                   : undefined
               }
             />
@@ -858,9 +891,8 @@ const LeaderRecommendations = () => {
                     : ApplicationStatus.AWAITING
                 }
                 label={
-                  'status' in selectedItem &&
-                  selectedItem.status === ApplicationStatus.REJECTED
-                    ? t('leader.recommendations.tabs.rejected')
+                  'status' in selectedItem
+                    ? getStatusLabel(selectedItem.status, true)
                     : undefined
                 }
               />
@@ -967,11 +999,7 @@ const LeaderRecommendations = () => {
             {'status' in selectedItem && selectedItem.status && (
               <StatusChip
                 status={selectedItem.status}
-                label={
-                  selectedItem.status === RecommendationStatus.REJECTED
-                    ? t('leader.recommendations.tabs.rejected')
-                    : undefined
-                }
+                label={getStatusLabel(selectedItem.status, false)}
               />
             )}
           </header>
@@ -1088,9 +1116,7 @@ const LeaderRecommendations = () => {
                 'status' in item ? item.status : ApplicationStatus.AWAITING
               }
               label={
-                'status' in item && item.status === ApplicationStatus.REJECTED
-                  ? t('leader.recommendations.tabs.rejected')
-                  : undefined
+                'status' in item ? getStatusLabel(item.status, true) : undefined
               }
             />
           </div>
@@ -1167,11 +1193,7 @@ const LeaderRecommendations = () => {
           {'status' in item && (
             <StatusChip
               status={item.status}
-              label={
-                item.status === RecommendationStatus.REJECTED
-                  ? t('leader.recommendations.tabs.rejected')
-                  : undefined
-              }
+              label={getStatusLabel(item.status, false)}
             />
           )}
         </div>

@@ -235,7 +235,20 @@ export class RecommendationsService {
     id: string,
     status: RecommendationStatus,
   ): Promise<LeaderRecommendation> {
-    return this.update(id, { status });
+    const existing = await this.findOne(id);
+
+    const updateData = {
+      status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.firebaseService
+      .getFirestore()
+      .collection('recommendations')
+      .doc(id)
+      .update(updateData);
+
+    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
