@@ -719,12 +719,17 @@ const LeaderRecommendations = () => {
               <>
                 {item.hasRecommendation ? (
                   <span
-                    className={clsx(styles.listTag, styles.listTagRecommendation)}
+                    className={clsx(
+                      styles.listTag,
+                      styles.listTagRecommendation
+                    )}
                   >
                     {t('leader.recommendations.tags.recommended')}
                   </span>
                 ) : (
-                  <span className={clsx(styles.listTag, styles.listTagApplication)}>
+                  <span
+                    className={clsx(styles.listTag, styles.listTagApplication)}
+                  >
                     {t('leader.recommendations.tags.applied')}
                   </span>
                 )}
@@ -985,7 +990,8 @@ const LeaderRecommendations = () => {
                     'isApplication' in selectedItem &&
                     selectedItem.isApplication
                   ) {
-                    const hasRecommendation = selectedItem.hasRecommendation ?? false;
+                    const hasRecommendation =
+                      selectedItem.hasRecommendation ?? false;
                     return (
                       <Button
                         type='button'
@@ -1024,7 +1030,10 @@ const LeaderRecommendations = () => {
               <div className={styles.detailsHeading}>
                 <h2>{selectedItem.name}</h2>
                 <div className={styles.detailsTags}>
-                  {!('isApplication' in selectedItem && selectedItem.isApplication) && (
+                  {!(
+                    'isApplication' in selectedItem &&
+                    selectedItem.isApplication
+                  ) && (
                     <span
                       className={clsx(
                         styles.detailsTag,
@@ -1034,30 +1043,34 @@ const LeaderRecommendations = () => {
                       {t('leader.recommendations.tags.recommended')}
                     </span>
                   )}
-                  {'isApplication' in selectedItem && selectedItem.isApplication && (
-                    <>
-                      {selectedItem.hasRecommendation ? (
-                        <span
-                          className={clsx(
-                            styles.detailsTag,
-                            styles.detailsTagRecommendation
-                          )}
-                        >
-                          {t('leader.recommendations.tags.recommended')}
-                        </span>
-                      ) : (
-                        <span
-                          className={clsx(
-                            styles.detailsTag,
-                            styles.detailsTagApplication
-                          )}
-                        >
-                          {t('leader.recommendations.tags.applied')}
-                        </span>
-                      )}
-                    </>
-                  )}
-                  {!('isApplication' in selectedItem && selectedItem.isApplication) &&
+                  {'isApplication' in selectedItem &&
+                    selectedItem.isApplication && (
+                      <>
+                        {selectedItem.hasRecommendation ? (
+                          <span
+                            className={clsx(
+                              styles.detailsTag,
+                              styles.detailsTagRecommendation
+                            )}
+                          >
+                            {t('leader.recommendations.tags.recommended')}
+                          </span>
+                        ) : (
+                          <span
+                            className={clsx(
+                              styles.detailsTag,
+                              styles.detailsTagApplication
+                            )}
+                          >
+                            {t('leader.recommendations.tags.applied')}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  {!(
+                    'isApplication' in selectedItem &&
+                    selectedItem.isApplication
+                  ) &&
                     'hasApplication' in selectedItem &&
                     selectedItem.hasApplication && (
                       <span
@@ -1241,7 +1254,9 @@ const LeaderRecommendations = () => {
                     <Button
                       type='button'
                       variant='primary'
-                      onClick={() => handleRecommendApplicant(item as Application)}
+                      onClick={() =>
+                        handleRecommendApplicant(item as Application)
+                      }
                       disabled={hasRecommendation}
                       className={styles.btn}
                     >
