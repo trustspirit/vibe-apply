@@ -46,11 +46,39 @@ export class RecommendationsService {
     const timestamp = new Date().toISOString();
     const status = createRecommendationDto.status || RecommendationStatus.DRAFT;
 
+    const normalizedEmail = createRecommendationDto.email.toLowerCase();
+    const normalizedName = createRecommendationDto.name.trim().toLowerCase();
+    const normalizedStake = createRecommendationDto.stake.trim().toLowerCase();
+    const normalizedWard = createRecommendationDto.ward.trim().toLowerCase();
+
+    // Check for existing recommendation with same leaderId, email, name, stake, ward
+    const existingRecommendations = await this.firebaseService
+      .getFirestore()
+      .collection('recommendations')
+      .where('leaderId', '==', leaderId)
+      .where('email', '==', normalizedEmail)
+      .where('stake', '==', normalizedStake)
+      .where('ward', '==', normalizedWard)
+      .get();
+
+    // Check if any existing recommendation matches the name as well
+    const duplicateRecommendation = existingRecommendations.docs.find((doc) => {
+      const data = doc.data();
+      const existingName = (data.name as string)?.trim().toLowerCase();
+      return existingName === normalizedName;
+    });
+
+    if (duplicateRecommendation) {
+      throw new BadRequestException(
+        'A recommendation for this applicant already exists',
+      );
+    }
+
     const recommendationData = {
       ...createRecommendationDto,
-      stake: createRecommendationDto.stake.trim().toLowerCase(),
-      ward: createRecommendationDto.ward.trim().toLowerCase(),
-      email: createRecommendationDto.email.toLowerCase(),
+      stake: normalizedStake,
+      ward: normalizedWard,
+      email: normalizedEmail,
       moreInfo: createRecommendationDto.moreInfo || '',
       leaderId,
       status,

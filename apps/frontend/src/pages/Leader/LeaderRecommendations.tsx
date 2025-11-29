@@ -190,11 +190,37 @@ const LeaderRecommendations = () => {
     });
 
     // Create a map of applications that have recommendations
-    const applicationsWithRecommendations = new Set(
-      recommendations
-        .filter((rec) => rec.linkedApplicationId)
-        .map((rec) => rec.linkedApplicationId)
-    );
+    // Check both by linkedApplicationId and by matching email/name/stake/ward
+    const applicationsWithRecommendations = new Set<string>();
+
+    recommendations.forEach((rec) => {
+      // Add by linkedApplicationId if available
+      if (rec.linkedApplicationId) {
+        applicationsWithRecommendations.add(rec.linkedApplicationId);
+      }
+
+      // Also check by matching email/name/stake/ward for applications
+      const normalizedRecEmail = rec.email.toLowerCase();
+      const normalizedRecName = rec.name.trim().toLowerCase();
+      const normalizedRecStake = rec.stake.toLowerCase();
+      const normalizedRecWard = rec.ward.toLowerCase();
+
+      stakeApplications.forEach((app) => {
+        const normalizedAppEmail = app.email.toLowerCase();
+        const normalizedAppName = app.name.trim().toLowerCase();
+        const normalizedAppStake = app.stake.toLowerCase();
+        const normalizedAppWard = app.ward.toLowerCase();
+
+        if (
+          normalizedRecEmail === normalizedAppEmail &&
+          normalizedRecName === normalizedAppName &&
+          normalizedRecStake === normalizedAppStake &&
+          normalizedRecWard === normalizedAppWard
+        ) {
+          applicationsWithRecommendations.add(app.id);
+        }
+      });
+    });
 
     const mappedRecommendations: ExtendedRecommendation[] = recommendations.map(
       (rec) => {
@@ -342,12 +368,32 @@ const LeaderRecommendations = () => {
       return;
     }
 
-    // Check if already recommended
-    const alreadyRecommended = recommendations.some(
+    // Check if already recommended by linkedApplicationId
+    const alreadyRecommendedById = recommendations.some(
       (rec) => rec.linkedApplicationId === application.id
     );
 
-    if (alreadyRecommended) {
+    // Also check by email, name, stake, ward (in case linkedApplicationId is not set yet)
+    const normalizedEmail = application.email.toLowerCase();
+    const normalizedName = application.name.trim().toLowerCase();
+    const normalizedStake = application.stake.toLowerCase();
+    const normalizedWard = application.ward.toLowerCase();
+
+    const alreadyRecommendedByMatch = recommendations.some((rec) => {
+      const recEmail = rec.email.toLowerCase();
+      const recName = rec.name.trim().toLowerCase();
+      const recStake = rec.stake.toLowerCase();
+      const recWard = rec.ward.toLowerCase();
+
+      return (
+        recEmail === normalizedEmail &&
+        recName === normalizedName &&
+        recStake === normalizedStake &&
+        recWard === normalizedWard
+      );
+    });
+
+    if (alreadyRecommendedById || alreadyRecommendedByMatch) {
       setFormError(t('leader.recommendations.messages.alreadyRecommended'));
       return;
     }
@@ -370,11 +416,18 @@ const LeaderRecommendations = () => {
             name: application.name,
           })
         );
-        // Refetch to ensure all data is up to date, including linkedApplicationId
-        await Promise.all([
-          refetchRecommendations(),
-          refetchApplications(),
-        ]);
+        // submitLeaderRecommendation already updates local state with the new recommendation
+        // The UI should update immediately because combinedItems will recalculate
+        // with the new recommendation in the recommendations array
+        // The matching logic in applicationsWithRecommendations will detect the new recommendation
+        // by email/name/stake/ward even before linkedApplicationId is set
+
+        // Refetch after a delay to get linkedApplicationId from backend
+        // This ensures the link is properly established
+        setTimeout(async () => {
+          await Promise.all([refetchRecommendations(), refetchApplications()]);
+        }, 1500);
+
         // Select the newly created recommendation
         if (recommendation?.id) {
           setSelectedId(recommendation.id);
