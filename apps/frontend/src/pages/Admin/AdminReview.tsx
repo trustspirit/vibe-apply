@@ -190,6 +190,7 @@ const AdminReview = () => {
           stake: recommendation.stake,
           ward: recommendation.ward,
           moreInfo: recommendation.moreInfo,
+          comments: recommendation.comments || [],
           createdAt: recommendation.createdAt,
           updatedAt: recommendation.updatedAt,
           hasApplication: !!linkedApp,
@@ -531,6 +532,26 @@ const AdminReview = () => {
               >
                 {selectedItem.moreInfo || t('admin.review.noAdditionalInfo')}
               </DetailsNotes>
+              {selectedItem.type === 'recommendation' &&
+                selectedItem.comments &&
+                selectedItem.comments.length > 0 && (
+                  <div className={styles.notes}>
+                    <h3>{t('admin.review.leaderComment')}</h3>
+                    {selectedItem.comments.map((comment) => (
+                      <div key={comment.id} className={styles.commentItem}>
+                        <div className={styles.commentHeader}>
+                          <span className={styles.commentAuthor}>
+                            {comment.authorName} ({comment.authorRole})
+                          </span>
+                          <span className={styles.commentDate}>
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                        </span>
+                        </div>
+                        <p className={styles.commentContent}>{comment.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
           ) : (
             <div className={styles.placeholder}>
@@ -636,6 +657,26 @@ const AdminReview = () => {
                 <h3>{t('admin.review.additionalInfo')}</h3>
                 <p>{item.moreInfo || t('admin.review.noAdditionalInfo')}</p>
               </div>
+              {item.type === 'recommendation' &&
+                item.comments &&
+                item.comments.length > 0 && (
+                  <div className={styles.reviewCardNotes}>
+                    <h3>{t('admin.review.leaderComment')}</h3>
+                    {item.comments.map((comment) => (
+                      <div key={comment.id} className={styles.commentItem}>
+                        <div className={styles.commentHeader}>
+                          <span className={styles.commentAuthor}>
+                            {comment.authorName} ({comment.authorRole})
+                          </span>
+                          <span className={styles.commentDate}>
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className={styles.commentContent}>{comment.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
             </article>
           ))
         ) : (

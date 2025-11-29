@@ -10,11 +10,16 @@ import {
   UpdateRecommendationDto,
   RecommendationStatus,
   UserRole,
+  RecommendationComment,
 } from '@vibe-apply/shared';
+import { RecommendationCommentsService } from '../recommendation-comments/recommendation-comments.service';
 
 @Injectable()
 export class RecommendationsService {
-  constructor(private firebaseService: FirebaseService) {}
+  constructor(
+    private firebaseService: FirebaseService,
+    private recommendationCommentsService: RecommendationCommentsService,
+  ) {}
 
   async getUserData(userId: string): Promise<{
     email?: string;
@@ -225,7 +230,10 @@ export class RecommendationsService {
       );
   }
 
-  async findOne(id: string): Promise<LeaderRecommendation> {
+  async findOne(
+    id: string,
+    userRole?: UserRole,
+  ): Promise<LeaderRecommendation> {
     const doc = await this.firebaseService
       .getFirestore()
       .collection('recommendations')
@@ -241,6 +249,17 @@ export class RecommendationsService {
       throw new NotFoundException('Recommendation data not found');
     }
 
+    const comments =
+      userRole === UserRole.ADMIN ||
+      userRole === UserRole.SESSION_LEADER ||
+      userRole === UserRole.STAKE_PRESIDENT ||
+      userRole === UserRole.BISHOP
+        ? await this.recommendationCommentsService.findByRecommendationId(
+            id,
+            userRole,
+          )
+        : [];
+
     return {
       id: doc.id,
       ...data,
@@ -250,8 +269,9 @@ export class RecommendationsService {
   async update(
     id: string,
     updateRecommendationDto: UpdateRecommendationDto,
+    userRole?: UserRole,
   ): Promise<LeaderRecommendation> {
-    const existing = await this.findOne(id);
+    const existing = await this.findOne(id, userRole);
 
     if (
       existing.status === RecommendationStatus.APPROVED ||
@@ -282,7 +302,7 @@ export class RecommendationsService {
       .doc(id)
       .update(updateData);
 
-    return this.findOne(id);
+    return this.findOne(id, userRole);
   }
 
   async updateStatus(

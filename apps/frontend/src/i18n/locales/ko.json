@@ -36,7 +36,8 @@
     "next": "다음",
     "previous": "이전",
     "yes": "예",
-    "no": "아니오"
+    "no": "아니오",
+    "add": "추가"
   },
   "auth": {
     "signIn": {
@@ -265,6 +266,21 @@
         "servedMissionSelect": "선택",
         "additionalInfo": "추가 정보",
         "additionalInfoPlaceholder": "이 지원자가 적합한 이유에 대한 맥락이나 강점을 공유해주세요.",
+        "leaderComment": "지도자 코멘트",
+        "leaderCommentPlaceholder": "대회 지도자와 관리자에게 전달할 추가 코멘트나 메모를 작성하세요 (지원자에게는 표시되지 않습니다).",
+        "messages": {
+          "submitted": "추천서가 성공적으로 제출되었습니다.",
+          "draftSaved": "초안이 성공적으로 저장되었습니다.",
+          "movedToDraft": "추천서가 초안으로 이동되었습니다.",
+          "failedToSubmit": "추천서 제출에 실패했습니다.",
+          "failedToSave": "초안 저장에 실패했습니다.",
+          "failedToCancel": "제출 취소에 실패했습니다.",
+          "alreadyRecommended": "이 지원자는 이미 추천되었습니다.",
+          "failedToAddComment": "코멘트 추가에 실패했습니다.",
+          "failedToUpdateComment": "코멘트 수정에 실패했습니다.",
+          "failedToDeleteComment": "코멘트 삭제에 실패했습니다.",
+          "confirmDeleteComment": "이 코멘트를 삭제하시겠습니까?"
+        },
         "submitRecommendation": "추천서 제출",
         "saveDraft": "초안 저장",
         "cancel": "취소",
@@ -363,7 +379,8 @@
         "ward": "와드/지부",
         "servedMission": "선교사로 봉사",
         "additionalInfo": "추가 정보",
-        "noAdditionalInfo": "추가 세부 정보가 제공되지 않았습니다."
+        "noAdditionalInfo": "추가 세부 정보가 제공되지 않았습니다.",
+        "leaderComment": "지도자 코멘트"
       },
     "form": {
       "name": "이름",

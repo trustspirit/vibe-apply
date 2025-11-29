@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { MemosModule } from './memos/memos.module';
+import { RecommendationCommentsModule } from './recommendation-comments/recommendation-comments.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MemosModule } from './memos/memos.module';
     ApplicationsModule,
     RecommendationsModule,
     MemosModule,
+    RecommendationCommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

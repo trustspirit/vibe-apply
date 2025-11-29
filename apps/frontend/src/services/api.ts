@@ -7,6 +7,7 @@ import type {
   ApplicationStatus,
   LeaderRecommendation,
   RecommendationStatus,
+  RecommendationComment,
   TokenResponse,
   StakeWardChangeRequest,
   CreateStakeWardChangeRequestDto,
@@ -435,5 +436,37 @@ export const recommendationsApi = {
 
   delete: async (recommendationId: string): Promise<void> => {
     return api.delete(`/recommendations/${recommendationId}`) as Promise<void>;
+  },
+};
+
+export const recommendationCommentsApi = {
+  getAll: async (
+    recommendationId: string
+  ): Promise<RecommendationComment[]> => {
+    return api.get(
+      `/recommendation-comments/recommendation/${recommendationId}`
+    ) as Promise<RecommendationComment[]>;
+  },
+
+  create: async (
+    recommendationId: string,
+    content: string
+  ): Promise<RecommendationComment> => {
+    return api.post(`/recommendation-comments/recommendation/${recommendationId}`, {
+      content,
+    }) as Promise<RecommendationComment>;
+  },
+
+  update: async (
+    commentId: string,
+    content: string
+  ): Promise<RecommendationComment> => {
+    return api.patch(`/recommendation-comments/${commentId}`, {
+      content,
+    }) as Promise<RecommendationComment>;
+  },
+
+  delete: async (commentId: string): Promise<void> => {
+    return api.delete(`/recommendation-comments/${commentId}`) as Promise<void>;
   },
 };

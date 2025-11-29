@@ -2,22 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
-import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
+import type { Application } from '@vibe-apply/shared';
 import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
-import {
-  Button,
-  ComboBox,
-  DetailsGrid,
-  DetailsGridItem,
-  DetailsNotes,
-  StakeWardSelector,
-  StatusChip,
-  Tabs,
-  TextField,
-  ToggleButton,
-} from '@/components/ui';
+import { Button, Tabs } from '@/components/ui';
+import { RecommendationForm } from './components/RecommendationForm';
+import { RecommendationDetails } from './components/RecommendationDetails';
+import { RecommendationMobileCard } from './components/RecommendationMobileCard';
+import { RecommendationListItem } from './components/RecommendationListItem';
 import {
   AGE_MIN,
   AGE_MAX,
@@ -26,41 +18,20 @@ import {
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
 import { USER_ROLES } from '@/utils/constants';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
-import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
-import type { ValidationErrors, TabItem } from '@/types';
+import type { TabItem } from '@/types';
+import type {
+  RecommendationFormData,
+  ExtendedRecommendation,
+  ExtendedApplication,
+  ValidationErrors,
+} from './types';
 import styles from './LeaderRecommendations.module.scss';
-
-interface RecommendationForm {
-  id: string | null;
-  name: string;
-  age: string;
-  email: string;
-  phone: string;
-  gender: string;
-  stake: string;
-  ward: string;
-  moreInfo: string;
-  servedMission: boolean;
-}
 
 interface LocationState {
   action?: string;
 }
 
-interface ExtendedRecommendation extends LeaderRecommendation {
-  hasApplication?: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}
-
-interface ExtendedApplication extends Application {
-  isApplication: boolean;
-  hasRecommendation?: boolean;
-}
-
-type CombinedItem = ExtendedRecommendation | ExtendedApplication;
-
-const emptyForm: RecommendationForm = {
+const emptyForm: RecommendationFormData = {
   id: null,
   name: '',
   age: '',
@@ -143,7 +114,7 @@ const LeaderRecommendations = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingOriginStatus, setEditingOriginStatus] =
     useState<RecommendationStatus | null>(null);
-  const [form, setForm] = useState<RecommendationForm>(emptyForm);
+  const [form, setForm] = useState<RecommendationFormData>(emptyForm);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [formError, setFormError] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -161,24 +132,6 @@ const LeaderRecommendations = () => {
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   }, [leaderRecommendations]);
-
-  const applicantsInStake = useMemo(() => {
-    const linkedApplicationIds = new Set(
-      recommendations
-        .filter((rec) => rec.linkedApplicationId)
-        .map((rec) => rec.linkedApplicationId)
-    );
-
-    const filtered = applications.filter((app) => {
-      const notRecommended = !linkedApplicationIds.has(app.id);
-      return notRecommended;
-    });
-
-    return filtered.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }, [applications, recommendations]);
 
   const combinedItems = useMemo(() => {
     const applicationById = new Map<string, Application>();
@@ -224,7 +177,14 @@ const LeaderRecommendations = () => {
 
     const mappedRecommendations: ExtendedRecommendation[] = recommendations.map(
       (rec) => {
+        // If recommendation is linked to an application, it cannot be modified or deleted
+        // because it was created from an existing application
+        const isLinkedToApplication = !!rec.linkedApplicationId;
+        // Only the leader who created the recommendation can modify it
+        const isOwner = rec.leaderId === currentUser?.id;
         const canModify =
+          !isLinkedToApplication &&
+          isOwner &&
           rec.status !== RecommendationStatus.APPROVED &&
           rec.status !== RecommendationStatus.REJECTED;
         return {
@@ -739,786 +699,44 @@ const LeaderRecommendations = () => {
     setEditingOriginStatus(null);
   };
 
-  const renderListItem = (item: CombinedItem) => {
-    const isSelected = selectedId === item.id;
-    const isActive = currentFormId === item.id;
-    const listItemClassName = clsx(
-      styles.listItem,
-      (isSelected || isActive) && styles.listItemActive
-    );
-
-    const dateToShow = item.updatedAt || item.createdAt;
-
-    return (
-      <button
-        type='button'
-        className={listItemClassName}
-        onClick={() => handleSelect(item.id)}
-        aria-current={isSelected ? 'true' : 'false'}
-      >
-        <div className={styles.listTop}>
-          <span className={styles.listName}>{item.name}</span>
-          {'isApplication' in item && item.isApplication ? (
-            <StatusChip
-              status={
-                'status' in item ? item.status : ApplicationStatus.AWAITING
-              }
-              label={
-                'status' in item ? getStatusLabel(item.status, true) : undefined
-              }
-            />
-          ) : (
-            <StatusChip
-              status={
-                'status' in item ? item.status : RecommendationStatus.DRAFT
-              }
-              label={
-                'status' in item
-                  ? getStatusLabel(item.status, false)
-                  : undefined
-              }
-            />
-          )}
-        </div>
-        <div className={styles.listBottom}>
-          <span className={styles.listMeta}>
-            {getStakeLabel(item.stake) || item.stake}
-          </span>
-          <span className={styles.listMeta}>
-            {getWardLabel(item.stake, item.ward) || item.ward}
-          </span>
-          <span className={clsx(styles.listMeta, styles.listDate)}>
-            {new Date(dateToShow).toLocaleDateString()}
-          </span>
-          <div className={styles.listTags}>
-            {!('isApplication' in item && item.isApplication) && (
-              <span
-                className={clsx(styles.listTag, styles.listTagRecommendation)}
-              >
-                {t('leader.recommendations.tags.recommended')}
-              </span>
-            )}
-            {'isApplication' in item && item.isApplication && (
-              <>
-                {item.hasRecommendation ? (
-                  <span
-                    className={clsx(
-                      styles.listTag,
-                      styles.listTagRecommendation
-                    )}
-                  >
-                    {t('leader.recommendations.tags.recommended')}
-                  </span>
-                ) : (
-                  <span
-                    className={clsx(styles.listTag, styles.listTagApplication)}
-                  >
-                    {t('leader.recommendations.tags.applied')}
-                  </span>
-                )}
-              </>
-            )}
-            {!('isApplication' in item && item.isApplication) &&
-              'hasApplication' in item &&
-              item.hasApplication && (
-                <span
-                  className={clsx(styles.listTag, styles.listTagApplication)}
-                >
-                  {t('leader.recommendations.tags.applied')}
-                </span>
-              )}
-          </div>
-        </div>
-      </button>
-    );
-  };
-
   const renderForm = (variant: 'desktop' | 'mobile' = 'desktop') => (
-    <form
-      className={clsx(
-        'leader-recommendations__form',
-        variant === 'mobile' && 'leader-recommendations__form--mobile'
-      )}
+    <RecommendationForm
+      form={form}
+      errors={errors}
+      formError={formError}
+      editingOriginStatus={editingOriginStatus}
+      variant={variant}
+      currentUserRole={currentUser?.role}
+      onFormChange={handleFormChange}
+      onStakeChange={(stake) => setForm((prev) => ({ ...prev, stake }))}
+      onWardChange={(ward) => setForm((prev) => ({ ...prev, ward }))}
+      onServedMissionChange={(value) =>
+        setForm((prev) => ({ ...prev, servedMission: value }))
+      }
       onSubmit={(event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         handleSubmitDraft(RecommendationStatus.SUBMITTED);
       }}
-    >
-      {editingOriginStatus === RecommendationStatus.SUBMITTED && (
-        <p className={styles.alert}>
-          {t('leader.recommendations.form.editingAlert')}
-        </p>
-      )}
-      {formError && (
-        <p className={`${styles.alert} ${styles.alertError}`}>{formError}</p>
-      )}
-      <div className={styles.grid}>
-        <TextField
-          name='name'
-          label={t('leader.recommendations.form.applicantName')}
-          value={form.name}
-          onChange={handleFormChange}
-          required
-          error={errors.name}
-        />
-        <TextField
-          name='age'
-          label={t('leader.recommendations.form.age')}
-          type='number'
-          value={form.age}
-          onChange={handleFormChange}
-          required
-          error={errors.age}
-          min={16}
-          max={120}
-        />
-        <TextField
-          name='email'
-          label={t('leader.recommendations.form.email')}
-          type='email'
-          value={form.email}
-          onChange={handleFormChange}
-          required
-          error={errors.email}
-        />
-        <TextField
-          name='phone'
-          label={t('leader.recommendations.form.phone')}
-          type='tel'
-          value={form.phone}
-          onChange={handleFormChange}
-          required
-          error={errors.phone}
-        />
-        <StakeWardSelector
-          stake={form.stake}
-          ward={form.ward}
-          onStakeChange={(stake) => setForm((prev) => ({ ...prev, stake }))}
-          onWardChange={(ward) => setForm((prev) => ({ ...prev, ward }))}
-          stakeError={errors.stake}
-          wardError={errors.ward}
-          stakeDisabled={true}
-          wardDisabled={
-            currentUser?.role === USER_ROLES.BISHOP ||
-            currentUser?.role === USER_ROLES.APPLICANT
-          }
-          stakeLabel={t('leader.recommendations.form.stake')}
-          wardLabel={t('leader.recommendations.form.ward')}
-        />
-        <ComboBox
-          name='gender'
-          label={t('leader.recommendations.form.gender')}
-          value={form.gender}
-          onChange={handleFormChange}
-          required
-          error={errors.gender}
-          options={[
-            {
-              value: '',
-              label: t('leader.recommendations.form.genderSelect'),
-              disabled: true,
-            },
-            {
-              value: 'male',
-              label: t('leader.recommendations.form.genderMale'),
-            },
-            {
-              value: 'female',
-              label: t('leader.recommendations.form.genderFemale'),
-            },
-          ]}
-          variant='default'
-        />
-        <div className={styles.toggleWrapper}>
-          <label className={styles.toggleLabel}>
-            {t('leader.recommendations.form.servedMission')}
-            <span className={styles.requiredIndicator}>*</span>
-          </label>
-          <ToggleButton
-            checked={form.servedMission}
-            onChange={(value) =>
-              setForm((prev) => ({ ...prev, servedMission: value }))
-            }
-            labelOn={t('common.yes')}
-            labelOff={t('common.no')}
-          />
-          {errors.servedMission && (
-            <span className={styles.errorText}>{errors.servedMission}</span>
-          )}
-        </div>
-      </div>
-      <TextField
-        name='moreInfo'
-        label={t('leader.recommendations.form.additionalInfo')}
-        value={form.moreInfo}
-        onChange={handleFormChange}
-        placeholder={t('leader.recommendations.form.additionalInfoPlaceholder')}
-        multiline
-        rows={4}
-        wrapperClassName='leader-recommendations__form-full'
-        showRequiredIndicator={false}
-      />
-      <div
-        className={clsx(
-          'leader-recommendations__actions',
-          variant === 'mobile' && 'leader-recommendations__actions--mobile'
-        )}
-      >
-        <Button type='submit' variant='primary' className={styles.btn}>
-          {t('leader.recommendations.form.submitRecommendation')}
-        </Button>
-        <Button
-          type='button'
-          onClick={() => handleSubmitDraft(RecommendationStatus.DRAFT)}
-          className={styles.btn}
-        >
-          {t('leader.recommendations.form.saveDraft')}
-        </Button>
-        <Button
-          type='button'
-          variant='danger'
-          onClick={handleCancelEdit}
-          className={styles.btn}
-        >
-          {t('leader.recommendations.form.cancel')}
-        </Button>
-      </div>
-    </form>
+      onSaveDraft={() => handleSubmitDraft(RecommendationStatus.DRAFT)}
+      onCancel={handleCancelEdit}
+    />
   );
 
-  const renderDesktopDetails = () => {
-    if (isEditing) {
-      return (
-        <div className={`${styles.detailsCard} ${styles.formCard}`}>
-          {renderForm()}
-        </div>
-      );
-    }
-
-    if (selectedItem) {
-      if ('isApplication' in selectedItem && selectedItem.isApplication) {
-        return (
-          <div className={styles.detailsCard}>
-            <header className={styles.detailsHeader}>
-              <div className={styles.detailsInfo}>
-                <div className={styles.detailsHeading}>
-                  <h2>{selectedItem.name}</h2>
-                </div>
-                <p className={styles.detailsMeta}>
-                  {t('leader.recommendations.details.applicationSubmitted')}{' '}
-                  {new Date(selectedItem.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <StatusChip
-                status={
-                  'status' in selectedItem
-                    ? selectedItem.status
-                    : ApplicationStatus.AWAITING
-                }
-                label={
-                  'status' in selectedItem
-                    ? getStatusLabel(selectedItem.status, true)
-                    : undefined
-                }
-              />
-            </header>
-            <DetailsGrid>
-              <DetailsGridItem label={t('common.email')}>
-                {selectedItem.email}
-              </DetailsGridItem>
-              <DetailsGridItem label={t('common.phone')}>
-                {selectedItem.phone}
-              </DetailsGridItem>
-              <DetailsGridItem label={t('leader.recommendations.form.age')}>
-                {selectedItem.age ?? t('admin.roles.nA')}
-              </DetailsGridItem>
-              <DetailsGridItem label={t('common.stake')}>
-                {getStakeLabel(selectedItem.stake) || selectedItem.stake}
-              </DetailsGridItem>
-              <DetailsGridItem label={t('common.ward')}>
-                {getWardLabel(selectedItem.stake, selectedItem.ward) ||
-                  selectedItem.ward}
-              </DetailsGridItem>
-              <DetailsGridItem label={t('leader.recommendations.form.gender')}>
-                {selectedItem.gender ?? t('admin.roles.nA')}
-              </DetailsGridItem>
-              {'servedMission' in selectedItem &&
-                selectedItem.servedMission !== undefined && (
-                  <DetailsGridItem
-                    label={t('leader.recommendations.form.servedMission')}
-                  >
-                    {selectedItem.servedMission
-                      ? t('common.yes')
-                      : t('common.no')}
-                  </DetailsGridItem>
-                )}
-            </DetailsGrid>
-            {(() => {
-              if (
-                'isApplication' in selectedItem &&
-                selectedItem.isApplication
-              ) {
-                const appStatus =
-                  selectedItem.status as unknown as ApplicationStatus;
-                return appStatus !== ApplicationStatus.APPROVED;
-              } else {
-                const recStatus =
-                  selectedItem.status as unknown as RecommendationStatus;
-                return recStatus !== RecommendationStatus.APPROVED;
-              }
-            })() && (
-              <div className={styles.detailActions}>
-                {(() => {
-                  if (
-                    'isApplication' in selectedItem &&
-                    selectedItem.isApplication
-                  ) {
-                    const hasRecommendation =
-                      selectedItem.hasRecommendation ?? false;
-                    return (
-                      <Button
-                        type='button'
-                        variant='primary'
-                        onClick={() =>
-                          handleRecommendApplicant(selectedItem as Application)
-                        }
-                        disabled={hasRecommendation}
-                        className={styles.btn}
-                      >
-                        {hasRecommendation
-                          ? t('leader.recommendations.actions.recommended')
-                          : t('leader.recommendations.actions.recommend')}
-                      </Button>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      const updatedLabel = `${t('leader.recommendations.details.updated')} ${new Date(selectedItem.updatedAt).toLocaleString()}`;
-      const canModify =
-        'canEdit' in selectedItem &&
-        selectedItem.canEdit &&
-        'canDelete' in selectedItem &&
-        selectedItem.canDelete;
-
-      return (
-        <div className={styles.detailsCard}>
-          <header className={styles.detailsHeader}>
-            <div className={styles.detailsInfo}>
-              <div className={styles.detailsHeading}>
-                <h2>{selectedItem.name}</h2>
-                <div className={styles.detailsTags}>
-                  {!(
-                    'isApplication' in selectedItem &&
-                    selectedItem.isApplication
-                  ) && (
-                    <span
-                      className={clsx(
-                        styles.detailsTag,
-                        styles.detailsTagRecommendation
-                      )}
-                    >
-                      {t('leader.recommendations.tags.recommended')}
-                    </span>
-                  )}
-                  {'isApplication' in selectedItem &&
-                    selectedItem.isApplication && (
-                      <>
-                        {selectedItem.hasRecommendation ? (
-                          <span
-                            className={clsx(
-                              styles.detailsTag,
-                              styles.detailsTagRecommendation
-                            )}
-                          >
-                            {t('leader.recommendations.tags.recommended')}
-                          </span>
-                        ) : (
-                          <span
-                            className={clsx(
-                              styles.detailsTag,
-                              styles.detailsTagApplication
-                            )}
-                          >
-                            {t('leader.recommendations.tags.applied')}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  {!(
-                    'isApplication' in selectedItem &&
-                    selectedItem.isApplication
-                  ) &&
-                    'hasApplication' in selectedItem &&
-                    selectedItem.hasApplication && (
-                      <span
-                        className={clsx(
-                          styles.detailsTag,
-                          styles.detailsTagApplication
-                        )}
-                      >
-                        {t('leader.recommendations.tags.applied')}
-                      </span>
-                    )}
-                </div>
-              </div>
-              <p className={styles.detailsMeta}>{updatedLabel}</p>
-            </div>
-            {'status' in selectedItem && selectedItem.status && (
-              <StatusChip
-                status={selectedItem.status}
-                label={getStatusLabel(selectedItem.status, false)}
-              />
-            )}
-          </header>
-          <DetailsGrid>
-            <DetailsGridItem label={t('common.email')}>
-              {selectedItem.email}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('common.phone')}>
-              {selectedItem.phone}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('leader.recommendations.form.age')}>
-              {selectedItem.age ?? t('admin.roles.nA')}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('common.stake')}>
-              {getStakeLabel(selectedItem.stake) || selectedItem.stake}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('common.ward')}>
-              {getWardLabel(selectedItem.stake, selectedItem.ward) ||
-                selectedItem.ward}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('leader.recommendations.form.gender')}>
-              {selectedItem.gender ?? t('admin.roles.nA')}
-            </DetailsGridItem>
-            {'servedMission' in selectedItem &&
-              selectedItem.servedMission !== undefined && (
-                <DetailsGridItem
-                  label={t('leader.recommendations.form.servedMission')}
-                >
-                  {selectedItem.servedMission
-                    ? t('common.yes')
-                    : t('common.no')}
-                </DetailsGridItem>
-              )}
-          </DetailsGrid>
-          <DetailsNotes
-            title={t('leader.recommendations.details.additionalInfo')}
-          >
-            {selectedItem.moreInfo ||
-              t('leader.recommendations.details.noAdditionalInfo')}
-          </DetailsNotes>
-          <div className={styles.detailActions}>
-            {canModify && (
-              <>
-                <Button
-                  type='button'
-                  onClick={() => handleModify(selectedItem.id)}
-                  className={styles.btn}
-                >
-                  {t('leader.recommendations.actions.modify')}
-                </Button>
-                {'status' in selectedItem &&
-                selectedItem.status === RecommendationStatus.DRAFT ? (
-                  <Button
-                    type='button'
-                    variant='primary'
-                    onClick={() => handleQuickSubmit(selectedItem.id)}
-                    className={styles.btn}
-                  >
-                    {t('leader.recommendations.actions.submit')}
-                  </Button>
-                ) : (
-                  <Button
-                    type='button'
-                    onClick={() => handleCancelSubmission(selectedItem.id)}
-                    className={styles.btn}
-                  >
-                    {t('leader.recommendations.actions.cancelSubmission')}
-                  </Button>
-                )}
-                <Button
-                  type='button'
-                  variant='danger'
-                  onClick={() => handleDelete(selectedItem.id)}
-                  className={styles.btn}
-                >
-                  {t('leader.recommendations.actions.delete')}
-                </Button>
-              </>
-            )}
-            {!canModify && (
-              <p className={styles.lockedMessage}>
-                {t('leader.recommendations.details.lockedMessage')}
-              </p>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className={styles.placeholder}>
-        {t('leader.recommendations.details.selectRecommendation')}
-      </div>
-    );
-  };
-
-  const renderMobileCard = (item: CombinedItem) => {
-    if ('isApplication' in item && item.isApplication) {
-      return (
-        <article
-          key={item.id}
-          className={`${styles.reviewCard} ${styles.mobileCard}`}
-        >
-          <div className={styles.reviewCardHeader}>
-            <div>
-              <h2>{item.name}</h2>
-              <p className={styles.reviewCardMeta}>
-                {t('leader.recommendations.details.applicationSubmitted')}{' '}
-                {new Date(item.createdAt).toLocaleString()}
-              </p>
-            </div>
-            <StatusChip
-              status={
-                'status' in item ? item.status : ApplicationStatus.AWAITING
-              }
-              label={
-                'status' in item ? getStatusLabel(item.status, true) : undefined
-              }
-            />
-          </div>
-          <DetailsGrid className={styles.reviewCardGrid}>
-            <DetailsGridItem label={t('common.email')}>
-              {item.email}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('common.phone')}>
-              {item.phone}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('leader.recommendations.form.age')}>
-              {item.age ?? t('admin.roles.nA')}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('common.stake')}>
-              {getStakeLabel(item.stake) || item.stake}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('common.ward')}>
-              {getWardLabel(item.stake, item.ward) || item.ward}
-            </DetailsGridItem>
-            <DetailsGridItem label={t('leader.recommendations.form.gender')}>
-              {item.gender ?? t('admin.roles.nA')}
-            </DetailsGridItem>
-            {'servedMission' in item && item.servedMission !== undefined && (
-              <DetailsGridItem
-                label={t('leader.recommendations.form.servedMission')}
-              >
-                {item.servedMission ? t('common.yes') : t('common.no')}
-              </DetailsGridItem>
-            )}
-          </DetailsGrid>
-          {(() => {
-            if ('isApplication' in item && item.isApplication) {
-              const appStatus = item.status as unknown as ApplicationStatus;
-              return appStatus !== ApplicationStatus.APPROVED;
-            } else {
-              const recStatus = item.status as unknown as RecommendationStatus;
-              return recStatus !== RecommendationStatus.APPROVED;
-            }
-          })() && (
-            <div className={styles.cardActions}>
-              {(() => {
-                if ('isApplication' in item && item.isApplication) {
-                  const hasRecommendation = item.hasRecommendation ?? false;
-                  return (
-                    <Button
-                      type='button'
-                      variant='primary'
-                      onClick={() =>
-                        handleRecommendApplicant(item as Application)
-                      }
-                      disabled={hasRecommendation}
-                      className={styles.btn}
-                    >
-                      {hasRecommendation
-                        ? t('leader.recommendations.actions.recommended')
-                        : t('leader.recommendations.actions.recommend')}
-                    </Button>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-          )}
-        </article>
-      );
-    }
-
-    const isEditingThis = currentFormId === item.id;
-
-    return (
-      <article
-        key={item.id}
-        className={clsx(
-          styles.reviewCard,
-          styles.mobileCard,
-          isEditingThis && styles.mobileCardEditing
-        )}
-      >
-        <div className={styles.reviewCardHeader}>
-          <div>
-            <h2>{item.name}</h2>
-            <p className={styles.reviewCardMeta}>
-              {t('leader.recommendations.details.updated')}{' '}
-              {new Date(item.updatedAt).toLocaleString()}
-            </p>
-          </div>
-          {'status' in item && (
-            <StatusChip
-              status={item.status}
-              label={getStatusLabel(item.status, false)}
-            />
-          )}
-        </div>
-        <div className={styles.reviewCardTags}>
-          {!('isApplication' in item && item.isApplication) && (
-            <span
-              className={clsx(
-                styles.reviewCardTag,
-                styles.reviewCardTagRecommendation
-              )}
-            >
-              {t('leader.recommendations.tags.recommended')}
-            </span>
-          )}
-          {'isApplication' in item && item.isApplication && (
-            <>
-              {item.hasRecommendation ? (
-                <span
-                  className={clsx(
-                    styles.reviewCardTag,
-                    styles.reviewCardTagRecommendation
-                  )}
-                >
-                  {t('leader.recommendations.tags.recommended')}
-                </span>
-              ) : (
-                <span
-                  className={clsx(
-                    styles.reviewCardTag,
-                    styles.reviewCardTagApplication
-                  )}
-                >
-                  {t('leader.recommendations.tags.applied')}
-                </span>
-              )}
-            </>
-          )}
-          {!('isApplication' in item && item.isApplication) &&
-            'hasApplication' in item &&
-            item.hasApplication && (
-              <span
-                className={clsx(
-                  styles.reviewCardTag,
-                  styles.reviewCardTagApplication
-                )}
-              >
-                {t('leader.recommendations.tags.applied')}
-              </span>
-            )}
-        </div>
-        <DetailsGrid className={styles.reviewCardGrid}>
-          <DetailsGridItem label={t('common.email')}>
-            {item.email}
-          </DetailsGridItem>
-          <DetailsGridItem label={t('common.phone')}>
-            {item.phone}
-          </DetailsGridItem>
-          <DetailsGridItem label={t('leader.recommendations.form.age')}>
-            {item.age ?? t('admin.roles.nA')}
-          </DetailsGridItem>
-          <DetailsGridItem label={t('common.stake')}>
-            {getStakeLabel(item.stake) || item.stake}
-          </DetailsGridItem>
-          <DetailsGridItem label={t('common.ward')}>
-            {getWardLabel(item.stake, item.ward) || item.ward}
-          </DetailsGridItem>
-          <DetailsGridItem label={t('leader.recommendations.form.gender')}>
-            {item.gender ?? t('admin.roles.nA')}
-          </DetailsGridItem>
-          {'servedMission' in item && item.servedMission !== undefined && (
-            <DetailsGridItem
-              label={t('leader.recommendations.form.servedMission')}
-            >
-              {item.servedMission ? t('common.yes') : t('common.no')}
-            </DetailsGridItem>
-          )}
-        </DetailsGrid>
-        <DetailsNotes
-          title={t('leader.recommendations.details.additionalInfo')}
-          className={styles.reviewCardNotes}
-        >
-          {item.moreInfo ||
-            t('leader.recommendations.details.noAdditionalInfo')}
-        </DetailsNotes>
-        <div className={styles.cardActions}>
-          {'canEdit' in item &&
-          item.canEdit &&
-          'canDelete' in item &&
-          item.canDelete ? (
-            <>
-              <Button
-                type='button'
-                onClick={() => handleModify(item.id)}
-                className={styles.btn}
-              >
-                {t('leader.recommendations.actions.modify')}
-              </Button>
-              {'status' in item &&
-              item.status === RecommendationStatus.DRAFT ? (
-                <Button
-                  type='button'
-                  variant='primary'
-                  onClick={() => handleQuickSubmit(item.id)}
-                  className={styles.btn}
-                >
-                  {t('leader.recommendations.actions.submit')}
-                </Button>
-              ) : (
-                <Button
-                  type='button'
-                  onClick={() => handleCancelSubmission(item.id)}
-                  className={styles.btn}
-                >
-                  {t('leader.recommendations.actions.cancelSubmission')}
-                </Button>
-              )}
-              <Button
-                type='button'
-                variant='danger'
-                onClick={() => handleDelete(item.id)}
-                className={styles.btn}
-              >
-                {t('leader.recommendations.actions.delete')}
-              </Button>
-            </>
-          ) : (
-            <p className={styles.lockedMessage}>
-              {t('leader.recommendations.details.lockedMessage')}
-            </p>
-          )}
-        </div>
-        {isEditingThis && (
-          <p className={styles.mobileEditingNote}>
-            {t('leader.recommendations.mobileEditingNote')}
-          </p>
-        )}
-      </article>
-    );
-  };
+  const renderDesktopDetails = () => (
+    <RecommendationDetails
+      selectedItem={selectedItem}
+      isEditing={isEditing}
+      currentUserId={currentUser?.id}
+      getStatusLabel={getStatusLabel}
+      onRecommendApplicant={handleRecommendApplicant}
+      onModify={handleModify}
+      onQuickSubmit={handleQuickSubmit}
+      onCancelSubmission={handleCancelSubmission}
+      onDelete={handleDelete}
+      onError={setFormError}
+      renderForm={renderForm}
+    />
+  );
 
   return (
     <section className={`${styles.review} ${styles.leaderRecommendations}`}>
@@ -1575,7 +793,13 @@ const LeaderRecommendations = () => {
             <ul>
               {listRecommendations.map((recommendation) => (
                 <li key={recommendation.id}>
-                  {renderListItem(recommendation)}
+                  <RecommendationListItem
+                    item={recommendation}
+                    isSelected={selectedId === recommendation.id}
+                    isActive={currentFormId === recommendation.id}
+                    onSelect={handleSelect}
+                    getStatusLabel={getStatusLabel}
+                  />
                 </li>
               ))}
             </ul>
@@ -1596,7 +820,20 @@ const LeaderRecommendations = () => {
           </article>
         )}
         {filteredRecommendations.length ? (
-          filteredRecommendations.map((item) => renderMobileCard(item))
+          filteredRecommendations.map((item) => (
+            <RecommendationMobileCard
+              key={item.id}
+              item={item}
+              isEditingThis={currentFormId === item.id}
+              currentFormId={currentFormId}
+              getStatusLabel={getStatusLabel}
+              onRecommendApplicant={handleRecommendApplicant}
+              onModify={handleModify}
+              onQuickSubmit={handleQuickSubmit}
+              onCancelSubmission={handleCancelSubmission}
+              onDelete={handleDelete}
+            />
+          ))
         ) : (
           <p className={styles.empty}>{t('leader.recommendations.empty')}</p>
         )}

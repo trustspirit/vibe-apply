@@ -2,7 +2,11 @@
  * Shared types used across the application
  */
 
-import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
+import type {
+  Application,
+  LeaderRecommendation,
+  RecommendationComment,
+} from '@vibe-apply/shared';
 
 // Form-related types
 export interface ValidationErrors {
@@ -44,6 +48,7 @@ export interface ReviewItem {
   stake: string;
   ward: string;
   moreInfo: string;
+  comments?: RecommendationComment[];
   createdAt: string;
   updatedAt: string;
   hasRecommendation?: boolean;

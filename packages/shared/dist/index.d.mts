@@ -50,6 +50,16 @@ interface ApplicationMemo {
     createdAt: string;
     updatedAt: string;
 }
+interface RecommendationComment {
+    id: string;
+    recommendationId: string;
+    authorId: string;
+    authorName: string;
+    authorRole: UserRole;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+}
 interface Application {
     id: string;
     userId: string;
@@ -84,6 +94,7 @@ interface LeaderRecommendation {
     createdAt: string;
     updatedAt: string;
     linkedApplicationId?: string;
+    comments?: RecommendationComment[];
 }
 interface CreateUserDto {
     name: string;
@@ -187,6 +198,12 @@ interface CreateMemoDto {
 interface UpdateMemoDto {
     content: string;
 }
+interface CreateRecommendationCommentDto {
+    content: string;
+}
+interface UpdateRecommendationCommentDto {
+    content: string;
+}
 interface UpdateLeaderStatusDto {
     leaderStatus: LeaderStatus;
 }
@@ -272,4 +289,4 @@ declare function normalizeEmail(email: string | null | undefined): string;
  */
 declare function normalizeWardStakeName(name: string | null | undefined): string;
 
-export { type Application, type ApplicationMemo, ApplicationStatus, type ApproveStakeWardChangeDto, type CompleteProfileDto, type CreateApplicationDto, type CreateMemoDto, type CreateRecommendationDto, type CreateStakeWardChangeRequestDto, type CreateUserDto, type ExchangeCodeDto, Gender, type GoogleOAuthDto, type JwtPayload, LEADER_ROLES, type LeaderRecommendation, LeaderStatus, RecommendationStatus, type RefreshTokenDto, type SignInDto, type StakeWardChangeRequest, type TokenResponse, type UpdateApplicationDto, type UpdateLeaderStatusDto, type UpdateMemoDto, type UpdateRecommendationDto, type UpdateUserProfileDto, type UpdateUserRoleDto, type User, UserRole, canReviewApplications, isAdmin, isApprovedLeader, isLeaderRole, normalizeEmail, normalizeString, normalizeUserRole, normalizeWardStakeName };
+export { type Application, type ApplicationMemo, ApplicationStatus, type ApproveStakeWardChangeDto, type CompleteProfileDto, type CreateApplicationDto, type CreateMemoDto, type CreateRecommendationCommentDto, type CreateRecommendationDto, type CreateStakeWardChangeRequestDto, type CreateUserDto, type ExchangeCodeDto, Gender, type GoogleOAuthDto, type JwtPayload, LEADER_ROLES, type LeaderRecommendation, LeaderStatus, type RecommendationComment, RecommendationStatus, type RefreshTokenDto, type SignInDto, type StakeWardChangeRequest, type TokenResponse, type UpdateApplicationDto, type UpdateLeaderStatusDto, type UpdateMemoDto, type UpdateRecommendationCommentDto, type UpdateRecommendationDto, type UpdateUserProfileDto, type UpdateUserRoleDto, type User, UserRole, canReviewApplications, isAdmin, isApprovedLeader, isLeaderRole, normalizeEmail, normalizeString, normalizeUserRole, normalizeWardStakeName };

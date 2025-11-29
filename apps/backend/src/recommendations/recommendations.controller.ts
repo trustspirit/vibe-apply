@@ -79,8 +79,19 @@ export class RecommendationsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id') id: string): Promise<LeaderRecommendation> {
-    return this.recommendationsService.findOne(id);
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SESSION_LEADER,
+    UserRole.STAKE_PRESIDENT,
+    UserRole.BISHOP,
+  )
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<LeaderRecommendation> {
+    return this.recommendationsService.findOne(id, user.role || undefined);
   }
 
   @Put(':id')
@@ -89,8 +100,13 @@ export class RecommendationsController {
   async update(
     @Param('id') id: string,
     @Body() updateRecommendationDto: UpdateRecommendationDto,
+    @CurrentUser() user: JwtPayload,
   ): Promise<LeaderRecommendation> {
-    return this.recommendationsService.update(id, updateRecommendationDto);
+    return this.recommendationsService.update(
+      id,
+      updateRecommendationDto,
+      user.role || undefined,
+    );
   }
 
   @Patch(':id/status')

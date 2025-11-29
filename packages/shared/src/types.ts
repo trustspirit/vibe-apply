@@ -57,6 +57,17 @@ export interface ApplicationMemo {
   updatedAt: string;
 }
 
+export interface RecommendationComment {
+  id: string;
+  recommendationId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: UserRole;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Application {
   id: string;
   userId: string;
@@ -92,6 +103,7 @@ export interface LeaderRecommendation {
   createdAt: string;
   updatedAt: string;
   linkedApplicationId?: string;
+  comments?: RecommendationComment[];
 }
 
 export interface CreateUserDto {
@@ -207,6 +219,14 @@ export interface CreateMemoDto {
 }
 
 export interface UpdateMemoDto {
+  content: string;
+}
+
+export interface CreateRecommendationCommentDto {
+  content: string;
+}
+
+export interface UpdateRecommendationCommentDto {
   content: string;
 }
 
