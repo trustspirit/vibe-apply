@@ -36,7 +36,6 @@ export class RecommendationsService {
 
     const data = userDoc.data() as Record<string, unknown> | undefined;
     if (!data) {
-      this.logger.warn(`User ${userId} not found in database`);
       return {};
     }
 
@@ -48,10 +47,6 @@ export class RecommendationsService {
       stake: stake ? stake.trim().toLowerCase() : undefined,
       ward: ward ? ward.trim().toLowerCase() : undefined,
     };
-
-    this.logger.debug(
-      `getUserData for ${userId}: stake=${result.stake}, ward=${result.ward}`,
-    );
 
     return result;
   }
@@ -66,9 +61,15 @@ export class RecommendationsService {
     const normalizedEmail = createRecommendationDto.email
       ? createRecommendationDto.email.toLowerCase()
       : undefined;
-    const normalizedName = createRecommendationDto.name.trim().toLowerCase();
-    const normalizedStake = createRecommendationDto.stake.trim().toLowerCase();
-    const normalizedWard = createRecommendationDto.ward.trim().toLowerCase();
+    const normalizedName = (createRecommendationDto.name || '')
+      .trim()
+      .toLowerCase();
+    const normalizedStake = (createRecommendationDto.stake || '')
+      .trim()
+      .toLowerCase();
+    const normalizedWard = (createRecommendationDto.ward || '')
+      .trim()
+      .toLowerCase();
 
     if (normalizedEmail) {
       // Check for existing recommendation with same leaderId, email, name, stake, ward
@@ -151,7 +152,7 @@ export class RecommendationsService {
     const recommendation = {
       id: docRef.id,
       ...recommendationData,
-    };
+    } as LeaderRecommendation;
 
     await this.linkMatchingApplication(recommendation);
 
@@ -213,10 +214,6 @@ export class RecommendationsService {
     userWard?: string,
     userStake?: string,
   ): Promise<LeaderRecommendation[]> {
-    this.logger.debug(
-      `findAll called with role: ${userRole}, ward: ${userWard}, stake: ${userStake}`,
-    );
-
     const baseQuery = this.firebaseService
       .getFirestore()
       .collection('recommendations');
@@ -225,57 +222,32 @@ export class RecommendationsService {
 
     if (userRole === UserRole.BISHOP && userWard) {
       query = baseQuery.where('ward', '==', userWard.toLowerCase());
-      this.logger.debug(`Bishop query: ward=${userWard.toLowerCase()}`);
     } else if (userRole === UserRole.STAKE_PRESIDENT) {
       if (!userStake) {
-        this.logger.warn(
-          `Stake president has no stake data, returning empty array`,
-        );
         return [];
       }
       const normalizedStake = userStake.trim().toLowerCase();
       query = baseQuery.where('stake', '==', normalizedStake);
-      this.logger.debug(`Stake president query: stake=${normalizedStake}`);
     } else {
       query = baseQuery.orderBy('createdAt', 'desc');
-      this.logger.debug('Admin/Session leader query: orderBy createdAt');
     }
 
     const recommendationsSnapshot = await query.get();
-    this.logger.debug(
-      `Query returned ${recommendationsSnapshot.docs.length} documents`,
-    );
 
-    const recommendations = recommendationsSnapshot.docs
-      .filter((doc) => {
-        const data = doc.data() as Record<string, unknown>;
-        const status = data.status as RecommendationStatus;
-        const isDraft = status === RecommendationStatus.DRAFT;
-        if (isDraft) {
-          this.logger.debug(
-            `Filtering out DRAFT recommendation: ${doc.id}, status: ${status}`,
-          );
-        }
-        return !isDraft;
-      })
-      .map((doc) => {
-        const data = doc.data();
-        const status = data.status as RecommendationStatus;
-        const canModify =
-          status !== RecommendationStatus.APPROVED &&
-          status !== RecommendationStatus.REJECTED;
+    const recommendations = recommendationsSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const status = data.status as RecommendationStatus;
+      const canModify =
+        status !== RecommendationStatus.APPROVED &&
+        status !== RecommendationStatus.REJECTED;
 
-        return {
-          id: doc.id,
-          ...data,
-          canEdit: canModify,
-          canDelete: canModify,
-        } as unknown as LeaderRecommendation;
-      });
-
-    this.logger.debug(
-      `After filtering DRAFT: ${recommendations.length} recommendations`,
-    );
+      return {
+        id: doc.id,
+        ...data,
+        canEdit: canModify,
+        canDelete: canModify,
+      } as unknown as LeaderRecommendation;
+    });
 
     if (userRole === UserRole.BISHOP || userRole === UserRole.STAKE_PRESIDENT) {
       recommendations.sort(
@@ -284,7 +256,6 @@ export class RecommendationsService {
       );
     }
 
-    this.logger.debug(`Returning ${recommendations.length} recommendations`);
     return recommendations;
   }
 
@@ -295,7 +266,7 @@ export class RecommendationsService {
       .where('leaderId', '==', leaderId)
       .get();
 
-    return recommendationsSnapshot.docs
+    const recommendations = recommendationsSnapshot.docs
       .map((doc) => {
         const data = doc.data();
         const status = data.status as RecommendationStatus;
@@ -315,6 +286,15 @@ export class RecommendationsService {
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
+
+    const draftCount = recommendations.filter(
+      (rec) => rec.status === RecommendationStatus.DRAFT,
+    ).length;
+    this.logger.log(
+      `[findByLeaderId] leaderId=${leaderId}, total=${recommendations.length}, draft=${draftCount}, statuses=${recommendations.map((r) => r.status).join(',')}`,
+    );
+
+    return recommendations;
   }
 
   async findOne(

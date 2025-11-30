@@ -53,30 +53,17 @@ export class RecommendationsController {
   async findAll(
     @CurrentUser() user: JwtPayload,
   ): Promise<LeaderRecommendation[]> {
-    this.logger.debug(
-      `findAll called for user: ${user.sub}, role: ${user.role}`,
-    );
-
     const userData = await this.recommendationsService.getUserData(user.sub);
-    this.logger.debug(
-      `User data: stake=${userData.stake}, ward=${userData.ward}`,
-    );
 
     if (user.role === UserRole.STAKE_PRESIDENT && !userData.stake) {
-      this.logger.warn(
-        `Stake president ${user.sub} has no stake data, returning empty array`,
-      );
       return [];
     }
 
-    const result = await this.recommendationsService.findAll(
+    return this.recommendationsService.findAll(
       user.role || undefined,
       userData.ward,
       userData.stake,
     );
-
-    this.logger.debug(`Returning ${result.length} recommendations`);
-    return result;
   }
 
   @Get('my-recommendations')
@@ -85,7 +72,9 @@ export class RecommendationsController {
   async findMyRecommendations(
     @CurrentUser() user: JwtPayload,
   ): Promise<LeaderRecommendation[]> {
-    return this.recommendationsService.findByLeaderId(user.sub);
+    const result = await this.recommendationsService.findByLeaderId(user.sub);
+
+    return result;
   }
 
   @Get('leader/:leaderId')

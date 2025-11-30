@@ -79,6 +79,10 @@ export const RecommendationsProvider = ({
       const canViewAllRecommendations =
         currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
 
+      const isStakePresidentOrBishop =
+        currentUser.role === USER_ROLES.STAKE_PRESIDENT ||
+        currentUser.role === USER_ROLES.BISHOP;
+
       const canViewOwnRecommendations = isLeaderRole(currentUser.role);
 
       if (
@@ -91,17 +95,14 @@ export const RecommendationsProvider = ({
       try {
         hasFetchedRecommendations.current = true;
         let fetchedRecommendations: LeaderRecommendation[] = [];
-        if (canViewAllRecommendations) {
+        if (canViewAllRecommendations || isStakePresidentOrBishop) {
           fetchedRecommendations = await recommendationsApi.getAll();
         } else if (canViewOwnRecommendations) {
-          fetchedRecommendations = await recommendationsApi.getByLeader(
-            currentUser.id
-          );
+          fetchedRecommendations = await recommendationsApi.getMyRecommendations();
         }
 
         setLeaderRecommendations(fetchedRecommendations || []);
       } catch (error) {
-        console.error('Failed to fetch recommendations:', error);
         setLeaderRecommendations([]);
       }
     };
@@ -167,22 +168,25 @@ export const RecommendationsProvider = ({
     const canViewAllRecommendations =
       currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
 
+    const isStakePresidentOrBishop =
+      currentUser.role === USER_ROLES.STAKE_PRESIDENT ||
+      currentUser.role === USER_ROLES.BISHOP;
+
     const canViewOwnRecommendations = isLeaderRole(currentUser.role);
 
     try {
       let fetchedRecommendations: LeaderRecommendation[] = [];
 
-      if (canViewAllRecommendations) {
+      if (canViewAllRecommendations || isStakePresidentOrBishop) {
         fetchedRecommendations = await recommendationsApi.getAll();
       } else if (canViewOwnRecommendations) {
-        fetchedRecommendations = await recommendationsApi.getByLeader(
-          currentUser.id
-        );
+        console.log('[RecommendationsContext] Calling getMyRecommendations');
+        fetchedRecommendations = await recommendationsApi.getMyRecommendations();
+        console.log('[RecommendationsContext] Received recommendations:', fetchedRecommendations.length, 'DRAFT count:', fetchedRecommendations.filter((r) => r.status === 'draft').length);
       }
 
       setLeaderRecommendations(fetchedRecommendations || []);
     } catch (error) {
-      console.error('Failed to refetch recommendations:', error);
       setLeaderRecommendations([]);
     }
   }, [currentUser]);

@@ -157,7 +157,15 @@ export const RecommendationMobileCard = ({
         )}
         {'isApplication' in item && item.isApplication && (
           <>
-            {item.hasRecommendation ? (
+            <span
+              className={clsx(
+                styles.reviewCardTag,
+                styles.reviewCardTagApplication
+              )}
+            >
+              {t('leader.recommendations.tags.applied')}
+            </span>
+            {item.hasRecommendation && (
               <span
                 className={clsx(
                   styles.reviewCardTag,
@@ -165,15 +173,6 @@ export const RecommendationMobileCard = ({
                 )}
               >
                 {t('leader.recommendations.tags.recommended')}
-              </span>
-            ) : (
-              <span
-                className={clsx(
-                  styles.reviewCardTag,
-                  styles.reviewCardTagApplication
-                )}
-              >
-                {t('leader.recommendations.tags.applied')}
               </span>
             )}
           </>

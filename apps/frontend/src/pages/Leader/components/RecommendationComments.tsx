@@ -125,7 +125,7 @@ export const RecommendationComments = ({
         {t('leader.recommendations.form.leaderComment')}
       </h3>
       {isLoadingComments ? (
-        <p>{t('common.loading')}</p>
+        <p className={styles.commentsLoading}>{t('common.loading')}</p>
       ) : (
         <>
           {comments.length > 0 && (
@@ -164,12 +164,14 @@ export const RecommendationComments = ({
                   ) : (
                     <>
                       <div className={styles.commentHeader}>
-                        <span className={styles.commentAuthor}>
-                          {comment.authorName}
-                        </span>
-                        <span className={styles.commentDate}>
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </span>
+                        <div className={styles.commentHeaderInfo}>
+                          <span className={styles.commentAuthor}>
+                            {comment.authorName}
+                          </span>
+                          <span className={styles.commentDate}>
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
                         {comment.authorId === currentUserId && (
                           <div className={styles.commentActions}>
                             <Button

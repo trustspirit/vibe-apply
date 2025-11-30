@@ -108,11 +108,11 @@ export const useRecommendationForm = ({
 
   const validateForm = () => {
     const nextErrors: Record<string, string> = {};
-    const trimmedName = form.name.trim();
-    const trimmedEmail = form.email.trim();
-    const trimmedPhone = form.phone.trim();
-    const trimmedStake = form.stake.trim();
-    const trimmedWard = form.ward.trim();
+    const trimmedName = (form.name || '').trim();
+    const trimmedEmail = (form.email || '').trim();
+    const trimmedPhone = (form.phone || '').trim();
+    const trimmedStake = (form.stake || '').trim();
+    const trimmedWard = (form.ward || '').trim();
     const normalizedAge = Number.parseInt(form.age, 10);
     const normalizedGender =
       form.gender === 'male' || form.gender === 'female' ? form.gender : '';

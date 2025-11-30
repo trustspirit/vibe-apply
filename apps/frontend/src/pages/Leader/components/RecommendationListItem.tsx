@@ -75,17 +75,14 @@ export const RecommendationListItem = ({
           )}
           {'isApplication' in item && item.isApplication && (
             <>
-              {item.hasRecommendation ? (
+              <span className={clsx(styles.listTag, styles.listTagApplication)}>
+                {t('leader.recommendations.tags.applied')}
+              </span>
+              {item.hasRecommendation && (
                 <span
                   className={clsx(styles.listTag, styles.listTagRecommendation)}
                 >
                   {t('leader.recommendations.tags.recommended')}
-                </span>
-              ) : (
-                <span
-                  className={clsx(styles.listTag, styles.listTagApplication)}
-                >
-                  {t('leader.recommendations.tags.applied')}
                 </span>
               )}
             </>

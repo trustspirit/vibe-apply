@@ -208,7 +208,15 @@ export const RecommendationDetails = ({
               {'isApplication' in selectedItem &&
                 selectedItem.isApplication && (
                   <>
-                    {selectedItem.hasRecommendation ? (
+                    <span
+                      className={clsx(
+                        styles.detailsTag,
+                        styles.detailsTagApplication
+                      )}
+                    >
+                      {t('leader.recommendations.tags.applied')}
+                    </span>
+                    {selectedItem.hasRecommendation && (
                       <span
                         className={clsx(
                           styles.detailsTag,
@@ -216,15 +224,6 @@ export const RecommendationDetails = ({
                         )}
                       >
                         {t('leader.recommendations.tags.recommended')}
-                      </span>
-                    ) : (
-                      <span
-                        className={clsx(
-                          styles.detailsTag,
-                          styles.detailsTagApplication
-                        )}
-                      >
-                        {t('leader.recommendations.tags.applied')}
                       </span>
                     )}
                   </>

@@ -76,26 +76,34 @@ export class RecommendationCommentsService {
       return [];
     }
 
-    const commentsSnapshot = await this.firebaseService
-      .getFirestore()
-      .collection('recommendation-comments')
-      .where('recommendationId', '==', recommendationId)
-      .orderBy('createdAt', 'desc')
-      .get();
+    try {
+      const commentsSnapshot = await this.firebaseService
+        .getFirestore()
+        .collection('recommendation-comments')
+        .where('recommendationId', '==', recommendationId)
+        .get();
 
-    return commentsSnapshot.docs.map((doc) => {
-      const data = doc.data() as Record<string, unknown>;
-      return {
-        id: doc.id,
-        recommendationId: data.recommendationId as string,
-        authorId: data.authorId as string,
-        authorName: data.authorName as string,
-        authorRole: data.authorRole as UserRole,
-        content: data.content as string,
-        createdAt: data.createdAt as string,
-        updatedAt: data.updatedAt as string,
-      };
-    });
+      const comments = commentsSnapshot.docs.map((doc) => {
+        const data = doc.data() as Record<string, unknown>;
+        return {
+          id: doc.id,
+          recommendationId: data.recommendationId as string,
+          authorId: data.authorId as string,
+          authorName: data.authorName as string,
+          authorRole: data.authorRole as UserRole,
+          content: data.content as string,
+          createdAt: data.createdAt as string,
+          updatedAt: data.updatedAt as string,
+        };
+      });
+
+      return comments.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    } catch (error) {
+      return [];
+    }
   }
 
   async findOne(id: string): Promise<RecommendationComment> {

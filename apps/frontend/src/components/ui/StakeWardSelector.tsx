@@ -63,12 +63,16 @@ const StakeWardSelector = ({
   }, [normalizedStake, stake, onStakeChange]);
 
   useEffect(() => {
-    if (normalizedStake && ward && !wardOptions.some((w) => w.value === ward)) {
-      const foundWard = findWardValueByText(normalizedStake, ward);
-      if (foundWard) {
-        onWardChange(foundWard);
-      } else {
-        onWardChange('');
+    if (normalizedStake && wardOptions.length > 0) {
+      if (ward) {
+        if (!wardOptions.some((w) => w.value === ward)) {
+          const foundWard = findWardValueByText(normalizedStake, ward);
+          if (foundWard) {
+            onWardChange(foundWard);
+          } else {
+            onWardChange('');
+          }
+        }
       }
     }
   }, [normalizedStake, ward, wardOptions, onWardChange]);

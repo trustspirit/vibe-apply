@@ -162,6 +162,8 @@ export const useRecommendationHandlers = ({
         return;
       }
 
+      setFormError('');
+
       submitLeaderRecommendation(leaderId, {
         id: form.id,
         name: trimmedName,
@@ -176,6 +178,7 @@ export const useRecommendationHandlers = ({
         status,
       })
         .then(() => {
+          setFormError('');
           setFeedback(
             status === RecommendationStatus.SUBMITTED
               ? t('leader.recommendations.messages.submitted')
@@ -184,10 +187,11 @@ export const useRecommendationHandlers = ({
           setCurrentFormId(undefined);
         })
         .catch((error) => {
-          setFormError(
+          const errorMessage =
             (error as Error).message ||
-              t('leader.recommendations.messages.failedToSave')
-          );
+            t('leader.recommendations.messages.failedToSave');
+          setFormError(errorMessage);
+          console.error('Failed to submit recommendation:', error);
         });
     },
     [
