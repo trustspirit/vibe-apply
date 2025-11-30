@@ -63,19 +63,10 @@ const StakeWardSelector = ({
   }, [normalizedStake, stake, onStakeChange]);
 
   useEffect(() => {
-    if (normalizedStake && wardOptions.length > 0) {
-      if (ward) {
-        if (!wardOptions.some((w) => w.value === ward)) {
-          const foundWard = findWardValueByText(normalizedStake, ward);
-          if (foundWard) {
-            onWardChange(foundWard);
-          } else {
-            onWardChange('');
-          }
-        }
-      }
+    if (!normalizedStake && ward) {
+      onWardChange('');
     }
-  }, [normalizedStake, ward, wardOptions, onWardChange]);
+  }, [normalizedStake, ward, onWardChange]);
 
   const handleStakeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newStake = event.target.value;
@@ -87,14 +78,31 @@ const StakeWardSelector = ({
     onWardChange(event.target.value);
   };
 
-  const currentWardIsValid = useMemo(() => {
+  const normalizedWard = useMemo(() => {
     if (!ward || !normalizedStake) {
-      return false;
+      return ward || '';
     }
-    return wardOptions.some((w) => w.value === ward);
+    if (wardOptions.some((w) => w.value === ward)) {
+      return ward;
+    }
+    const foundWard = findWardValueByText(normalizedStake, ward);
+    return foundWard || ward;
   }, [ward, normalizedStake, wardOptions]);
 
-  const resolvedWard = currentWardIsValid ? ward : '';
+  useEffect(() => {
+    if (normalizedWard && normalizedWard !== ward && normalizedStake) {
+      onWardChange(normalizedWard);
+    }
+  }, [normalizedWard, ward, normalizedStake, onWardChange]);
+
+  const currentWardIsValid = useMemo(() => {
+    if (!normalizedWard || !normalizedStake) {
+      return false;
+    }
+    return wardOptions.some((w) => w.value === normalizedWard);
+  }, [normalizedWard, normalizedStake, wardOptions]);
+
+  const resolvedWard = normalizedWard;
   const resolvedStake = normalizedStake || stake;
 
   return (

@@ -8,6 +8,10 @@ import {
   AGE_MAX,
   AGE_ERROR_MESSAGE,
 } from '@/utils/validationConstants';
+import {
+  findStakeValueByText,
+  findWardValueByText,
+} from '@/utils/stakeWardData';
 import type {
   RecommendationFormData,
   ValidationErrors,
@@ -69,6 +73,13 @@ export const useRecommendationForm = ({
       (item) => item.id === currentFormId
     );
     if (recommendation) {
+      const normalizedStake =
+        findStakeValueByText(recommendation.stake) || recommendation.stake;
+      const normalizedWard = normalizedStake
+        ? findWardValueByText(normalizedStake, recommendation.ward) ||
+          recommendation.ward
+        : recommendation.ward;
+
       setForm({
         id: recommendation.id,
         name: recommendation.name,
@@ -76,8 +87,8 @@ export const useRecommendationForm = ({
         email: recommendation.email,
         phone: recommendation.phone,
         gender: recommendation.gender ?? '',
-        stake: recommendation.stake,
-        ward: recommendation.ward,
+        stake: normalizedStake,
+        ward: normalizedWard,
         moreInfo: recommendation.moreInfo ?? '',
         servedMission: recommendation.servedMission ?? false,
       });
