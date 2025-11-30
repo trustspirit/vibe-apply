@@ -1,0 +1,463 @@
+import { useCallback } from 'react';
+import type { Application } from '@vibe-apply/shared';
+import { RecommendationStatus } from '@vibe-apply/shared';
+import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
+import type { RecommendationFormData, CombinedItem } from '../types';
+
+interface UseRecommendationHandlersOptions {
+  leaderId: string | null;
+  recommendations: Array<{
+    id: string;
+    status: RecommendationStatus;
+    [key: string]: any;
+  }>;
+  combinedItems: CombinedItem[];
+  form: RecommendationFormData;
+  validateForm: () => {
+    nextErrors: Record<string, string>;
+    normalizedAge: number;
+    trimmedName: string;
+    trimmedEmail: string;
+    trimmedPhone: string;
+    trimmedStake: string;
+    trimmedWard: string;
+    normalizedGender: string;
+  };
+  submitLeaderRecommendation: (
+    leaderId: string,
+    data: {
+      id: string | null;
+      name: string;
+      age: number | null;
+      email: string;
+      phone: string;
+      gender: string;
+      stake: string;
+      ward: string;
+      moreInfo: string;
+      servedMission: boolean;
+      status?: RecommendationStatus;
+    }
+  ) => Promise<{ id: string } | undefined>;
+  deleteLeaderRecommendation: (
+    leaderId: string,
+    recommendationId: string
+  ) => Promise<void>;
+  refetchRecommendations: () => Promise<void>;
+  refetchApplications: () => Promise<void>;
+  setCurrentFormId: (id: string | null | undefined) => void;
+  setSelectedId: (id: string | null) => void;
+  setEditingOriginStatus: (status: RecommendationStatus | null) => void;
+  setErrors: (
+    errors:
+      | Record<string, string>
+      | ((prev: Record<string, string>) => Record<string, string>)
+  ) => void;
+  setFormError: (error: string) => void;
+  setFeedback: (feedback: string) => void;
+  currentFormId: string | null | undefined;
+  selectedId: string | null;
+  t: (key: string, params?: any) => string;
+}
+
+export const useRecommendationHandlers = ({
+  leaderId,
+  recommendations,
+  combinedItems,
+  form,
+  validateForm,
+  submitLeaderRecommendation,
+  deleteLeaderRecommendation,
+  refetchRecommendations,
+  refetchApplications,
+  setCurrentFormId,
+  setSelectedId,
+  setEditingOriginStatus,
+  setErrors,
+  setFormError,
+  setFeedback,
+  currentFormId,
+  selectedId,
+  t,
+}: UseRecommendationHandlersOptions) => {
+  const handleRecommendApplicant = useCallback(
+    (application: Application) => {
+      if (!leaderId) {
+        return;
+      }
+
+      const applicationItem = combinedItems.find(
+        (item) =>
+          'isApplication' in item &&
+          item.isApplication &&
+          item.id === application.id
+      );
+
+      if (
+        applicationItem &&
+        'hasRecommendation' in applicationItem &&
+        applicationItem.hasRecommendation
+      ) {
+        setFormError(t('leader.recommendations.messages.alreadyRecommended'));
+        return;
+      }
+
+      const alreadyRecommendedById = recommendations.some(
+        (rec) => rec.linkedApplicationId === application.id
+      );
+
+      const normalizedEmail = application.email.toLowerCase();
+      const normalizedName = application.name.trim().toLowerCase();
+      const normalizedStake = application.stake.toLowerCase();
+      const normalizedWard = application.ward.toLowerCase();
+
+      const alreadyRecommendedByMatch = recommendations.some((rec) => {
+        if (rec.leaderId !== leaderId) {
+          return false;
+        }
+        const recEmail = rec.email.toLowerCase();
+        const recName = rec.name.trim().toLowerCase();
+        const recStake = rec.stake.toLowerCase();
+        const recWard = rec.ward.toLowerCase();
+
+        return (
+          recEmail === normalizedEmail &&
+          recName === normalizedName &&
+          recStake === normalizedStake &&
+          recWard === normalizedWard
+        );
+      });
+
+      if (alreadyRecommendedById || alreadyRecommendedByMatch) {
+        setFormError(t('leader.recommendations.messages.alreadyRecommended'));
+        return;
+      }
+
+      submitLeaderRecommendation(leaderId, {
+        id: null,
+        name: application.name,
+        age: application.age ?? null,
+        email: application.email,
+        phone: application.phone,
+        gender: application.gender ?? '',
+        stake: application.stake,
+        ward: application.ward,
+        moreInfo: application.moreInfo ?? '',
+        servedMission: application.servedMission,
+      })
+        .then(async (recommendation) => {
+          setFeedback(
+            t('leader.recommendations.messages.recommended', {
+              name: application.name,
+            })
+          );
+
+          await Promise.all([refetchRecommendations(), refetchApplications()]);
+
+          if (recommendation?.id) {
+            setSelectedId(recommendation.id);
+          }
+        })
+        .catch((error) => {
+          setFormError(
+            (error as Error).message ||
+              t('leader.recommendations.messages.failedToRecommend')
+          );
+        });
+    },
+    [
+      leaderId,
+      combinedItems,
+      recommendations,
+      submitLeaderRecommendation,
+      refetchRecommendations,
+      refetchApplications,
+      setFormError,
+      setFeedback,
+      setSelectedId,
+      t,
+    ]
+  );
+
+  const handleSubmitDraft = useCallback(
+    (status: RecommendationStatus) => {
+      if (!leaderId) {
+        return;
+      }
+
+      const {
+        nextErrors,
+        normalizedAge,
+        trimmedName,
+        trimmedEmail,
+        trimmedPhone,
+        trimmedStake,
+        trimmedWard,
+        normalizedGender,
+      } = validateForm();
+
+      if (
+        status === RecommendationStatus.SUBMITTED &&
+        Object.keys(nextErrors).length
+      ) {
+        setErrors(nextErrors);
+        setFormError(t('leader.recommendations.validation.resolveFields'));
+        return;
+      }
+
+      submitLeaderRecommendation(leaderId, {
+        id: form.id,
+        name: trimmedName,
+        age: Number.isNaN(normalizedAge) ? null : normalizedAge,
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        gender: normalizedGender || form.gender,
+        stake: trimmedStake,
+        ward: trimmedWard,
+        moreInfo: form.moreInfo.trim(),
+        servedMission: form.servedMission,
+        status,
+      })
+        .then(() => {
+          setFeedback(
+            status === RecommendationStatus.SUBMITTED
+              ? t('leader.recommendations.messages.submitted')
+              : t('leader.recommendations.messages.draftSaved')
+          );
+          setCurrentFormId(undefined);
+        })
+        .catch((error) => {
+          setFormError(
+            (error as Error).message ||
+              t('leader.recommendations.messages.failedToSave')
+          );
+        });
+    },
+    [
+      leaderId,
+      form,
+      validateForm,
+      submitLeaderRecommendation,
+      setErrors,
+      setFormError,
+      setFeedback,
+      setCurrentFormId,
+      t,
+    ]
+  );
+
+  const handleDelete = useCallback(
+    (recommendationId: string) => {
+      if (!leaderId) {
+        return;
+      }
+      const recommendation = recommendations.find(
+        (item) => item.id === recommendationId
+      );
+      if (!recommendation) {
+        return;
+      }
+      if (
+        recommendation.status === RecommendationStatus.APPROVED ||
+        recommendation.status === RecommendationStatus.REJECTED
+      ) {
+        return;
+      }
+      const confirmed = window.confirm(
+        CONFIRMATION_MESSAGES.DELETE_RECOMMENDATION
+      );
+      if (!confirmed) {
+        return;
+      }
+      deleteLeaderRecommendation(leaderId, recommendationId)
+        .then(() => {
+          setFeedback(t('leader.recommendations.messages.removed'));
+          if (currentFormId === recommendationId) {
+            setCurrentFormId(undefined);
+          }
+          if (selectedId === recommendationId) {
+            setSelectedId(null);
+          }
+        })
+        .catch((error) => {
+          setFormError(
+            (error as Error).message ||
+              t('leader.recommendations.messages.failedToDelete')
+          );
+        });
+    },
+    [
+      leaderId,
+      recommendations,
+      deleteLeaderRecommendation,
+      currentFormId,
+      selectedId,
+      setFeedback,
+      setFormError,
+      setCurrentFormId,
+      setSelectedId,
+      t,
+    ]
+  );
+
+  const handleQuickSubmit = useCallback(
+    (recommendationId: string) => {
+      if (!leaderId) {
+        return;
+      }
+      const recommendation = recommendations.find(
+        (item) => item.id === recommendationId
+      );
+      if (!recommendation) {
+        return;
+      }
+      submitLeaderRecommendation(leaderId, {
+        id: recommendation.id,
+        name: recommendation.name,
+        age: recommendation.age ?? null,
+        email: recommendation.email,
+        phone: recommendation.phone,
+        gender: recommendation.gender ?? '',
+        stake: recommendation.stake,
+        ward: recommendation.ward,
+        moreInfo: recommendation.moreInfo ?? '',
+        servedMission: recommendation.servedMission,
+        status: RecommendationStatus.SUBMITTED,
+      })
+        .then(() => {
+          setFeedback(t('leader.recommendations.messages.submitted'));
+          setSelectedId(recommendationId);
+        })
+        .catch((error) => {
+          setFormError(
+            (error as Error).message ||
+              t('leader.recommendations.messages.failedToSubmit')
+          );
+        });
+    },
+    [
+      leaderId,
+      recommendations,
+      submitLeaderRecommendation,
+      setFeedback,
+      setFormError,
+      setSelectedId,
+      t,
+    ]
+  );
+
+  const handleCancelSubmission = useCallback(
+    (recommendationId: string) => {
+      if (!leaderId) {
+        return;
+      }
+      const recommendation = recommendations.find(
+        (item) => item.id === recommendationId
+      );
+      if (!recommendation) {
+        return;
+      }
+      if (
+        recommendation.status === RecommendationStatus.APPROVED ||
+        recommendation.status === RecommendationStatus.REJECTED
+      ) {
+        return;
+      }
+      const confirmed = window.confirm(CONFIRMATION_MESSAGES.CANCEL_SUBMISSION);
+      if (!confirmed) {
+        return;
+      }
+      submitLeaderRecommendation(leaderId, {
+        id: recommendation.id,
+        name: recommendation.name,
+        age: recommendation.age ?? null,
+        email: recommendation.email,
+        phone: recommendation.phone,
+        gender: recommendation.gender ?? '',
+        stake: recommendation.stake,
+        ward: recommendation.ward,
+        moreInfo: recommendation.moreInfo ?? '',
+        servedMission: recommendation.servedMission,
+        status: RecommendationStatus.DRAFT,
+      })
+        .then(() => {
+          setFeedback(t('leader.recommendations.messages.movedToDraft'));
+          setSelectedId(recommendationId);
+        })
+        .catch((error) => {
+          setFormError(
+            (error as Error).message ||
+              t('leader.recommendations.messages.failedToCancel')
+          );
+        });
+    },
+    [
+      leaderId,
+      recommendations,
+      submitLeaderRecommendation,
+      setFeedback,
+      setFormError,
+      setSelectedId,
+      t,
+    ]
+  );
+
+  const handleModify = useCallback(
+    (recommendationId: string) => {
+      const recommendation = recommendations.find(
+        (item) => item.id === recommendationId
+      );
+      if (!recommendation || !leaderId) {
+        return;
+      }
+
+      if (
+        recommendation.status === RecommendationStatus.APPROVED ||
+        recommendation.status === RecommendationStatus.REJECTED
+      ) {
+        return;
+      }
+
+      setEditingOriginStatus(recommendation.status);
+      setCurrentFormId(recommendationId);
+      setSelectedId(recommendationId);
+    },
+    [
+      recommendations,
+      leaderId,
+      setEditingOriginStatus,
+      setCurrentFormId,
+      setSelectedId,
+    ]
+  );
+
+  const handleCancelEdit = useCallback(() => {
+    setCurrentFormId(undefined);
+    setEditingOriginStatus(null);
+  }, [setCurrentFormId, setEditingOriginStatus]);
+
+  const handleSelect = useCallback(
+    (recommendationId: string) => {
+      setSelectedId(recommendationId);
+    },
+    [setSelectedId]
+  );
+
+  const handleCreate = useCallback(() => {
+    setCurrentFormId(null);
+    setSelectedId(null);
+    setFeedback('');
+  }, [setCurrentFormId, setSelectedId, setFeedback]);
+
+  return {
+    handleRecommendApplicant,
+    handleSubmitDraft,
+    handleDelete,
+    handleQuickSubmit,
+    handleCancelSubmission,
+    handleModify,
+    handleCancelEdit,
+    handleSelect,
+    handleCreate,
+  };
+};

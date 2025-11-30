@@ -17,7 +17,10 @@ interface RecommendationMobileCardProps {
   item: CombinedItem;
   isEditingThis: boolean;
   currentFormId: string | null | undefined;
-  getStatusLabel: (status: string, isApplication: boolean) => string | undefined;
+  getStatusLabel: (
+    status: string,
+    isApplication: boolean
+  ) => string | undefined;
   onRecommendApplicant: (application: Application) => void;
   onModify: (id: string) => void;
   onQuickSubmit: (id: string) => void;
@@ -28,7 +31,6 @@ interface RecommendationMobileCardProps {
 export const RecommendationMobileCard = ({
   item,
   isEditingThis,
-  currentFormId,
   getStatusLabel,
   onRecommendApplicant,
   onModify,
@@ -53,9 +55,7 @@ export const RecommendationMobileCard = ({
             </p>
           </div>
           <StatusChip
-            status={
-              'status' in item ? item.status : ApplicationStatus.AWAITING
-            }
+            status={'status' in item ? item.status : ApplicationStatus.AWAITING}
             label={
               'status' in item ? getStatusLabel(item.status, true) : undefined
             }
@@ -105,9 +105,7 @@ export const RecommendationMobileCard = ({
                   <Button
                     type='button'
                     variant='primary'
-                    onClick={() =>
-                      onRecommendApplicant(item as Application)
-                    }
+                    onClick={() => onRecommendApplicant(item as Application)}
                     disabled={hasRecommendation}
                     className={styles.btn}
                   >
@@ -227,8 +225,7 @@ export const RecommendationMobileCard = ({
         title={t('leader.recommendations.details.additionalInfo')}
         className={styles.reviewCardNotes}
       >
-        {item.moreInfo ||
-          t('leader.recommendations.details.noAdditionalInfo')}
+        {item.moreInfo || t('leader.recommendations.details.noAdditionalInfo')}
       </DetailsNotes>
       <div className={styles.cardActions}>
         {'canEdit' in item &&
@@ -243,8 +240,7 @@ export const RecommendationMobileCard = ({
             >
               {t('leader.recommendations.actions.modify')}
             </Button>
-            {'status' in item &&
-            item.status === RecommendationStatus.DRAFT ? (
+            {'status' in item && item.status === RecommendationStatus.DRAFT ? (
               <Button
                 type='button'
                 variant='primary'
@@ -285,4 +281,3 @@ export const RecommendationMobileCard = ({
     </article>
   );
 };
-
