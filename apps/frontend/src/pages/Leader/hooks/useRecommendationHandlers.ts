@@ -30,6 +30,48 @@ export const useRecommendationHandlers = ({
         return;
       }
 
+      const normalizedEmail = application.email
+        ? application.email.toLowerCase()
+        : undefined;
+      const normalizedName = application.name.trim().toLowerCase();
+      const normalizedStake = application.stake.toLowerCase();
+      const normalizedWard = application.ward.toLowerCase();
+
+      const alreadyRecommendedById = recommendations.some(
+        (rec) => rec.linkedApplicationId === application.id
+      );
+
+      const alreadyRecommendedByMatch = recommendations.some((rec) => {
+        if (rec.leaderId !== leaderId) {
+          return false;
+        }
+        const recName = rec.name.trim().toLowerCase();
+        const recStake = rec.stake.toLowerCase();
+        const recWard = rec.ward.toLowerCase();
+
+        if (normalizedEmail) {
+          const recEmail = rec.email ? rec.email.toLowerCase() : undefined;
+          return (
+            recEmail === normalizedEmail &&
+            recName === normalizedName &&
+            recStake === normalizedStake &&
+            recWard === normalizedWard
+          );
+        } else {
+          return (
+            !rec.email &&
+            recName === normalizedName &&
+            recStake === normalizedStake &&
+            recWard === normalizedWard
+          );
+        }
+      });
+
+      if (alreadyRecommendedById || alreadyRecommendedByMatch) {
+        setFormError(t('leader.recommendations.messages.alreadyRecommended'));
+        return;
+      }
+
       const applicationItem = combinedItems.find(
         (item) =>
           'isApplication' in item &&
@@ -46,36 +88,7 @@ export const useRecommendationHandlers = ({
         return;
       }
 
-      const alreadyRecommendedById = recommendations.some(
-        (rec) => rec.linkedApplicationId === application.id
-      );
-
-      const normalizedEmail = application.email.toLowerCase();
-      const normalizedName = application.name.trim().toLowerCase();
-      const normalizedStake = application.stake.toLowerCase();
-      const normalizedWard = application.ward.toLowerCase();
-
-      const alreadyRecommendedByMatch = recommendations.some((rec) => {
-        if (rec.leaderId !== leaderId) {
-          return false;
-        }
-        const recEmail = rec.email.toLowerCase();
-        const recName = rec.name.trim().toLowerCase();
-        const recStake = rec.stake.toLowerCase();
-        const recWard = rec.ward.toLowerCase();
-
-        return (
-          recEmail === normalizedEmail &&
-          recName === normalizedName &&
-          recStake === normalizedStake &&
-          recWard === normalizedWard
-        );
-      });
-
-      if (alreadyRecommendedById || alreadyRecommendedByMatch) {
-        setFormError(t('leader.recommendations.messages.alreadyRecommended'));
-        return;
-      }
+      setFormError('');
 
       submitLeaderRecommendation(leaderId, {
         id: null,
@@ -88,8 +101,10 @@ export const useRecommendationHandlers = ({
         ward: application.ward,
         moreInfo: application.moreInfo ?? '',
         servedMission: application.servedMission,
+        status: RecommendationStatus.SUBMITTED,
       })
-        .then(async (recommendation) => {
+        .then(async () => {
+          setFormError('');
           setFeedback(
             t('leader.recommendations.messages.recommended', {
               name: application.name,
@@ -98,9 +113,7 @@ export const useRecommendationHandlers = ({
 
           await Promise.all([refetchRecommendations(), refetchApplications()]);
 
-          if (recommendation?.id) {
-            setSelectedId(recommendation.id);
-          }
+          setSelectedId(application.id);
         })
         .catch((error) => {
           setFormError(
@@ -153,7 +166,7 @@ export const useRecommendationHandlers = ({
         id: form.id,
         name: trimmedName,
         age: Number.isNaN(normalizedAge) ? null : normalizedAge,
-        email: trimmedEmail,
+        email: trimmedEmail || undefined,
         phone: trimmedPhone,
         gender: normalizedGender || form.gender,
         stake: trimmedStake,
@@ -259,7 +272,7 @@ export const useRecommendationHandlers = ({
         id: recommendation.id,
         name: recommendation.name,
         age: recommendation.age ?? null,
-        email: recommendation.email,
+        email: recommendation.email || undefined,
         phone: recommendation.phone,
         gender: recommendation.gender ?? '',
         stake: recommendation.stake,
@@ -315,7 +328,7 @@ export const useRecommendationHandlers = ({
         id: recommendation.id,
         name: recommendation.name,
         age: recommendation.age ?? null,
-        email: recommendation.email,
+        email: recommendation.email || undefined,
         phone: recommendation.phone,
         gender: recommendation.gender ?? '',
         stake: recommendation.stake,

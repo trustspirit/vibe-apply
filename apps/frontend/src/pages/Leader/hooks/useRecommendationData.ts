@@ -17,44 +17,39 @@ export const useRecommendationData = ({
 }: UseRecommendationDataOptions) => {
   const combinedItems = useMemo(() => {
     const applicationById = new Map<string, Application>();
+    const userStake = currentUser?.stake?.toLowerCase() || '';
     const stakeApplications = applications.filter(
-      (app) => app.stake.toLowerCase() === currentUser?.stake.toLowerCase()
+      (app) => app.stake?.toLowerCase() === userStake
     );
     stakeApplications.forEach((app) => {
       applicationById.set(app.id, app);
+    });
+
+    const allApplicationsById = new Map<string, Application>();
+    applications.forEach((app) => {
+      allApplicationsById.set(app.id, app);
     });
 
     const applicationsWithRecommendations = new Set<string>();
 
     recommendations.forEach((rec) => {
       if (rec.linkedApplicationId) {
-        applicationsWithRecommendations.add(rec.linkedApplicationId);
-      }
-
-      const normalizedRecEmail = rec.email.toLowerCase();
-      const normalizedRecName = rec.name.trim().toLowerCase();
-      const normalizedRecStake = rec.stake.toLowerCase();
-      const normalizedRecWard = rec.ward.toLowerCase();
-
-      stakeApplications.forEach((app) => {
-        const normalizedAppEmail = app.email.toLowerCase();
-        const normalizedAppName = app.name.trim().toLowerCase();
-        const normalizedAppStake = app.stake.toLowerCase();
-        const normalizedAppWard = app.ward.toLowerCase();
-
-        if (
-          normalizedRecEmail === normalizedAppEmail &&
-          normalizedRecName === normalizedAppName &&
-          normalizedRecStake === normalizedAppStake &&
-          normalizedRecWard === normalizedAppWard
-        ) {
-          applicationsWithRecommendations.add(app.id);
+        const linkedApp = allApplicationsById.get(rec.linkedApplicationId);
+        if (linkedApp && linkedApp.stake?.toLowerCase() === userStake) {
+          applicationsWithRecommendations.add(rec.linkedApplicationId);
         }
-      });
+      }
     });
 
-    const mappedRecommendations: ExtendedRecommendation[] = recommendations.map(
-      (rec: LeaderRecommendation) => {
+    const mappedRecommendations: ExtendedRecommendation[] = recommendations
+      .filter((rec: LeaderRecommendation) => {
+        if (rec.linkedApplicationId) {
+          const linkedApp = allApplicationsById.get(rec.linkedApplicationId);
+          return !linkedApp || linkedApp.stake?.toLowerCase() !== userStake;
+        }
+        return true;
+      })
+      .map((rec: LeaderRecommendation) => {
         const isLinkedToApplication = !!rec.linkedApplicationId;
         const isOwner = rec.leaderId === currentUser?.id;
         const canModify =
@@ -65,20 +60,28 @@ export const useRecommendationData = ({
         return {
           ...rec,
           hasApplication: rec.linkedApplicationId
-            ? applicationById.has(rec.linkedApplicationId)
+            ? allApplicationsById.has(rec.linkedApplicationId)
             : false,
           canEdit: canModify,
           canDelete: canModify,
         };
-      }
-    );
+      });
 
     const mappedApplications: ExtendedApplication[] = stakeApplications.map(
-      (app) => ({
-        ...app,
-        isApplication: true,
-        hasRecommendation: applicationsWithRecommendations.has(app.id),
-      })
+      (app) => {
+        const hasRecommendation =
+          applicationsWithRecommendations.has(app.id) ||
+          recommendations.some(
+            (rec) =>
+              rec.linkedApplicationId === app.id &&
+              rec.stake?.toLowerCase() === userStake
+          );
+        return {
+          ...app,
+          isApplication: true,
+          hasRecommendation,
+        };
+      }
     );
 
     return [...mappedRecommendations, ...mappedApplications].sort(

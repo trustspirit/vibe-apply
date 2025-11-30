@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import type { Application } from '@vibe-apply/shared';
 import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import {
+  Alert,
   Button,
   DetailsGrid,
   DetailsGridItem,
@@ -27,6 +28,7 @@ export const RecommendationDetails = ({
   onDelete,
   onError,
   renderForm,
+  formError,
 }: RecommendationDetailsProps) => {
   const { t } = useTranslation();
 
@@ -49,6 +51,11 @@ export const RecommendationDetails = ({
   if ('isApplication' in selectedItem && selectedItem.isApplication) {
     return (
       <div className={styles.detailsCard}>
+        {formError && (
+          <Alert variant='error' className={`${styles.alert} ${styles.alertError}`}>
+            {formError}
+          </Alert>
+        )}
         <header className={styles.detailsHeader}>
           <div className={styles.detailsInfo}>
             <div className={styles.detailsHeading}>
@@ -125,6 +132,18 @@ export const RecommendationDetails = ({
               ) {
                 const hasRecommendation =
                   selectedItem.hasRecommendation ?? false;
+                if (hasRecommendation) {
+                  return (
+                    <Button
+                      type='button'
+                      variant='primary'
+                      disabled
+                      className={styles.btn}
+                    >
+                      {t('leader.recommendations.actions.recommended')}
+                    </Button>
+                  );
+                }
                 return (
                   <Button
                     type='button'
@@ -132,12 +151,9 @@ export const RecommendationDetails = ({
                     onClick={() =>
                       onRecommendApplicant(selectedItem as Application)
                     }
-                    disabled={hasRecommendation}
                     className={styles.btn}
                   >
-                    {hasRecommendation
-                      ? t('leader.recommendations.actions.recommended')
-                      : t('leader.recommendations.actions.recommend')}
+                    {t('leader.recommendations.actions.recommend')}
                   </Button>
                 );
               }
@@ -167,14 +183,27 @@ export const RecommendationDetails = ({
                 'isApplication' in selectedItem &&
                 selectedItem.isApplication
               ) && (
-                <span
-                  className={clsx(
-                    styles.detailsTag,
-                    styles.detailsTagRecommendation
-                  )}
-                >
-                  {t('leader.recommendations.tags.recommended')}
-                </span>
+                <>
+                  <span
+                    className={clsx(
+                      styles.detailsTag,
+                      styles.detailsTagRecommendation
+                    )}
+                  >
+                    {t('leader.recommendations.tags.recommended')}
+                  </span>
+                  {'hasApplication' in selectedItem &&
+                    selectedItem.hasApplication && (
+                      <span
+                        className={clsx(
+                          styles.detailsTag,
+                          styles.detailsTagApplication
+                        )}
+                      >
+                        {t('leader.recommendations.tags.applied')}
+                      </span>
+                    )}
+                </>
               )}
               {'isApplication' in selectedItem &&
                 selectedItem.isApplication && (
@@ -200,21 +229,6 @@ export const RecommendationDetails = ({
                     )}
                   </>
                 )}
-              {!(
-                'isApplication' in selectedItem &&
-                selectedItem.isApplication
-              ) &&
-                'hasApplication' in selectedItem &&
-                selectedItem.hasApplication && (
-                  <span
-                    className={clsx(
-                      styles.detailsTag,
-                      styles.detailsTagApplication
-                    )}
-                  >
-                    {t('leader.recommendations.tags.applied')}
-                  </span>
-                )}
             </div>
           </div>
           <p className={styles.detailsMeta}>{updatedLabel}</p>
@@ -228,7 +242,7 @@ export const RecommendationDetails = ({
       </header>
       <DetailsGrid>
         <DetailsGridItem label={t('common.email')}>
-          {selectedItem.email}
+          {selectedItem.email || t('admin.roles.nA')}
         </DetailsGridItem>
         <DetailsGridItem label={t('common.phone')}>
           {selectedItem.phone}

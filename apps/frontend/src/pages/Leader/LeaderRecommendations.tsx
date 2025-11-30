@@ -230,6 +230,7 @@ const LeaderRecommendations = () => {
         onDelete={handleDelete}
         onError={setFormError}
         renderForm={renderForm}
+        formError={formError}
       />
     </Suspense>
   );
@@ -247,9 +248,7 @@ const LeaderRecommendations = () => {
           {t('leader.recommendations.createRecommendation')}
         </Button>
       </div>
-
       {feedback && <p className={styles.banner}>{feedback}</p>}
-
       <Tabs
         items={TAB_DEFS}
         activeId={activeTab}
@@ -308,7 +307,6 @@ const LeaderRecommendations = () => {
           {renderDesktopDetails()}
         </div>
       </div>
-
       <div className={styles.mobile} aria-live='polite'>
         {isEditing && (
           <article className={`${styles.reviewCard} ${styles.mobileForm}`}>

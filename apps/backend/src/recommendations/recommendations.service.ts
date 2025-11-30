@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { FirebaseService } from '../firebase/firebase.service';
 import {
@@ -10,12 +11,13 @@ import {
   UpdateRecommendationDto,
   RecommendationStatus,
   UserRole,
-  RecommendationComment,
 } from '@vibe-apply/shared';
 import { RecommendationCommentsService } from '../recommendation-comments/recommendation-comments.service';
 
 @Injectable()
 export class RecommendationsService {
+  private readonly logger = new Logger(RecommendationsService.name);
+
   constructor(
     private firebaseService: FirebaseService,
     private recommendationCommentsService: RecommendationCommentsService,
@@ -34,14 +36,24 @@ export class RecommendationsService {
 
     const data = userDoc.data() as Record<string, unknown> | undefined;
     if (!data) {
+      this.logger.warn(`User ${userId} not found in database`);
       return {};
     }
 
-    return {
+    const stake = data.stake as string | undefined;
+    const ward = data.ward as string | undefined;
+
+    const result = {
       email: data.email as string | undefined,
-      stake: data.stake as string | undefined,
-      ward: data.ward as string | undefined,
+      stake: stake ? stake.trim().toLowerCase() : undefined,
+      ward: ward ? ward.trim().toLowerCase() : undefined,
     };
+
+    this.logger.debug(
+      `getUserData for ${userId}: stake=${result.stake}, ward=${result.ward}`,
+    );
+
+    return result;
   }
 
   async create(
@@ -51,76 +63,85 @@ export class RecommendationsService {
     const timestamp = new Date().toISOString();
     const status = createRecommendationDto.status || RecommendationStatus.DRAFT;
 
-    const normalizedEmail = createRecommendationDto.email.toLowerCase();
+    const normalizedEmail = createRecommendationDto.email
+      ? createRecommendationDto.email.toLowerCase()
+      : undefined;
     const normalizedName = createRecommendationDto.name.trim().toLowerCase();
     const normalizedStake = createRecommendationDto.stake.trim().toLowerCase();
     const normalizedWard = createRecommendationDto.ward.trim().toLowerCase();
 
-    // Check for existing recommendation with same leaderId, email, name, stake, ward
-    const existingRecommendations = await this.firebaseService
-      .getFirestore()
-      .collection('recommendations')
-      .where('leaderId', '==', leaderId)
-      .where('email', '==', normalizedEmail)
-      .where('stake', '==', normalizedStake)
-      .where('ward', '==', normalizedWard)
-      .get();
+    if (normalizedEmail) {
+      // Check for existing recommendation with same leaderId, email, name, stake, ward
+      const existingRecommendations = await this.firebaseService
+        .getFirestore()
+        .collection('recommendations')
+        .where('leaderId', '==', leaderId)
+        .where('email', '==', normalizedEmail)
+        .where('stake', '==', normalizedStake)
+        .where('ward', '==', normalizedWard)
+        .get();
 
-    // Check if any existing recommendation matches the name as well
-    const duplicateRecommendation = existingRecommendations.docs.find((doc) => {
-      const data = doc.data();
-      const existingName = (data.name as string)?.trim().toLowerCase();
-      return existingName === normalizedName;
-    });
-
-    if (duplicateRecommendation) {
-      throw new BadRequestException(
-        'A recommendation for this applicant already exists',
+      // Check if any existing recommendation matches the name as well
+      const duplicateRecommendation = existingRecommendations.docs.find(
+        (doc) => {
+          const data = doc.data();
+          const existingName = (data.name as string)?.trim().toLowerCase();
+          return existingName === normalizedName;
+        },
       );
-    }
 
-    // Also check if there's already a recommendation linked to the same application
-    // by checking if any application with matching email/name/stake/ward exists
-    // and if there's already a recommendation with that linkedApplicationId
-    const applicationsSnapshot = await this.firebaseService
-      .getFirestore()
-      .collection('applications')
-      .where('email', '==', normalizedEmail)
-      .where('stake', '==', normalizedStake)
-      .where('ward', '==', normalizedWard)
-      .get();
+      if (duplicateRecommendation) {
+        throw new BadRequestException(
+          'A recommendation for this applicant already exists',
+        );
+      }
 
-    for (const appDoc of applicationsSnapshot.docs) {
-      const appData = appDoc.data();
-      const appName = (appData.name as string)?.trim().toLowerCase();
-      if (appName === normalizedName) {
-        // Check if there's already a recommendation linked to this application
-        const linkedRecommendations = await this.firebaseService
-          .getFirestore()
-          .collection('recommendations')
-          .where('leaderId', '==', leaderId)
-          .where('linkedApplicationId', '==', appDoc.id)
-          .get();
+      // Also check if there's already a recommendation linked to the same application
+      // by checking if any application with matching email/name/stake/ward exists
+      // and if there's already a recommendation with that linkedApplicationId
+      const applicationsSnapshot = await this.firebaseService
+        .getFirestore()
+        .collection('applications')
+        .where('email', '==', normalizedEmail)
+        .where('stake', '==', normalizedStake)
+        .where('ward', '==', normalizedWard)
+        .get();
 
-        if (!linkedRecommendations.empty) {
-          throw new BadRequestException(
-            'A recommendation for this applicant already exists',
-          );
+      for (const appDoc of applicationsSnapshot.docs) {
+        const appData = appDoc.data();
+        const appName = (appData.name as string)?.trim().toLowerCase();
+        if (appName === normalizedName) {
+          // Check if there's already a recommendation linked to this application
+          const linkedRecommendations = await this.firebaseService
+            .getFirestore()
+            .collection('recommendations')
+            .where('leaderId', '==', leaderId)
+            .where('linkedApplicationId', '==', appDoc.id)
+            .get();
+
+          if (!linkedRecommendations.empty) {
+            throw new BadRequestException(
+              'A recommendation for this applicant already exists',
+            );
+          }
         }
       }
     }
 
-    const recommendationData = {
+    const recommendationData: Record<string, unknown> = {
       ...createRecommendationDto,
       stake: normalizedStake,
       ward: normalizedWard,
-      email: normalizedEmail,
       moreInfo: createRecommendationDto.moreInfo || '',
       leaderId,
       status,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
+
+    if (normalizedEmail) {
+      recommendationData.email = normalizedEmail;
+    }
 
     const docRef = await this.firebaseService
       .getFirestore()
@@ -151,15 +172,21 @@ export class RecommendationsService {
   private async linkMatchingApplication(
     recommendation: LeaderRecommendation,
   ): Promise<void> {
+    if (!recommendation.email) {
+      return;
+    }
+
     const normalizedEmail = recommendation.email.toLowerCase();
     const normalizedName = recommendation.name.trim().toLowerCase();
+    const normalizedStake = recommendation.stake.trim().toLowerCase();
+    const normalizedWard = recommendation.ward.trim().toLowerCase();
 
     const applicationsSnapshot = await this.firebaseService
       .getFirestore()
       .collection('applications')
       .where('email', '==', normalizedEmail)
-      .where('stake', '==', recommendation.stake)
-      .where('ward', '==', recommendation.ward)
+      .where('stake', '==', normalizedStake)
+      .where('ward', '==', normalizedWard)
       .get();
 
     // Find application that matches email, stake, ward, AND name
@@ -186,6 +213,10 @@ export class RecommendationsService {
     userWard?: string,
     userStake?: string,
   ): Promise<LeaderRecommendation[]> {
+    this.logger.debug(
+      `findAll called with role: ${userRole}, ward: ${userWard}, stake: ${userStake}`,
+    );
+
     const baseQuery = this.firebaseService
       .getFirestore()
       .collection('recommendations');
@@ -194,18 +225,38 @@ export class RecommendationsService {
 
     if (userRole === UserRole.BISHOP && userWard) {
       query = baseQuery.where('ward', '==', userWard.toLowerCase());
-    } else if (userRole === UserRole.STAKE_PRESIDENT && userStake) {
-      query = baseQuery.where('stake', '==', userStake.toLowerCase());
+      this.logger.debug(`Bishop query: ward=${userWard.toLowerCase()}`);
+    } else if (userRole === UserRole.STAKE_PRESIDENT) {
+      if (!userStake) {
+        this.logger.warn(
+          `Stake president has no stake data, returning empty array`,
+        );
+        return [];
+      }
+      const normalizedStake = userStake.trim().toLowerCase();
+      query = baseQuery.where('stake', '==', normalizedStake);
+      this.logger.debug(`Stake president query: stake=${normalizedStake}`);
     } else {
       query = baseQuery.orderBy('createdAt', 'desc');
+      this.logger.debug('Admin/Session leader query: orderBy createdAt');
     }
 
     const recommendationsSnapshot = await query.get();
+    this.logger.debug(
+      `Query returned ${recommendationsSnapshot.docs.length} documents`,
+    );
 
     const recommendations = recommendationsSnapshot.docs
       .filter((doc) => {
-        const data = doc.data();
-        return data.status !== RecommendationStatus.DRAFT;
+        const data = doc.data() as Record<string, unknown>;
+        const status = data.status as RecommendationStatus;
+        const isDraft = status === RecommendationStatus.DRAFT;
+        if (isDraft) {
+          this.logger.debug(
+            `Filtering out DRAFT recommendation: ${doc.id}, status: ${status}`,
+          );
+        }
+        return !isDraft;
       })
       .map((doc) => {
         const data = doc.data();
@@ -222,6 +273,10 @@ export class RecommendationsService {
         } as unknown as LeaderRecommendation;
       });
 
+    this.logger.debug(
+      `After filtering DRAFT: ${recommendations.length} recommendations`,
+    );
+
     if (userRole === UserRole.BISHOP || userRole === UserRole.STAKE_PRESIDENT) {
       recommendations.sort(
         (a, b) =>
@@ -229,6 +284,7 @@ export class RecommendationsService {
       );
     }
 
+    this.logger.debug(`Returning ${recommendations.length} recommendations`);
     return recommendations;
   }
 
@@ -294,6 +350,7 @@ export class RecommendationsService {
     return {
       id: doc.id,
       ...data,
+      comments,
     } as LeaderRecommendation;
   }
 
@@ -340,7 +397,7 @@ export class RecommendationsService {
     id: string,
     status: RecommendationStatus,
   ): Promise<LeaderRecommendation> {
-    const existing = await this.findOne(id);
+    await this.findOne(id);
 
     const updateData = {
       status,

@@ -71,7 +71,6 @@ export const RecommendationForm = ({
           type='email'
           value={form.email}
           onChange={onFormChange}
-          required
           error={errors.email}
         />
         <TextField

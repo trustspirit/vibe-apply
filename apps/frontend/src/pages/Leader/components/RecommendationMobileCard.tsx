@@ -48,7 +48,7 @@ export const RecommendationMobileCard = ({
         </div>
         <DetailsGrid className={styles.reviewCardGrid}>
           <DetailsGridItem label={t('common.email')}>
-            {item.email}
+            {item.email || t('admin.roles.nA')}
           </DetailsGridItem>
           <DetailsGridItem label={t('common.phone')}>
             {item.phone}
@@ -134,14 +134,26 @@ export const RecommendationMobileCard = ({
       </div>
       <div className={styles.reviewCardTags}>
         {!('isApplication' in item && item.isApplication) && (
-          <span
-            className={clsx(
-              styles.reviewCardTag,
-              styles.reviewCardTagRecommendation
+          <>
+            <span
+              className={clsx(
+                styles.reviewCardTag,
+                styles.reviewCardTagRecommendation
+              )}
+            >
+              {t('leader.recommendations.tags.recommended')}
+            </span>
+            {'hasApplication' in item && item.hasApplication && (
+              <span
+                className={clsx(
+                  styles.reviewCardTag,
+                  styles.reviewCardTagApplication
+                )}
+              >
+                {t('leader.recommendations.tags.applied')}
+              </span>
             )}
-          >
-            {t('leader.recommendations.tags.recommended')}
-          </span>
+          </>
         )}
         {'isApplication' in item && item.isApplication && (
           <>
@@ -166,22 +178,10 @@ export const RecommendationMobileCard = ({
             )}
           </>
         )}
-        {!('isApplication' in item && item.isApplication) &&
-          'hasApplication' in item &&
-          item.hasApplication && (
-            <span
-              className={clsx(
-                styles.reviewCardTag,
-                styles.reviewCardTagApplication
-              )}
-            >
-              {t('leader.recommendations.tags.applied')}
-            </span>
-          )}
       </div>
       <DetailsGrid className={styles.reviewCardGrid}>
         <DetailsGridItem label={t('common.email')}>
-          {item.email}
+          {item.email || t('admin.roles.nA')}
         </DetailsGridItem>
         <DetailsGridItem label={t('common.phone')}>
           {item.phone}

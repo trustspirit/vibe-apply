@@ -58,11 +58,20 @@ export const RecommendationListItem = ({
         </span>
         <div className={styles.listTags}>
           {!('isApplication' in item && item.isApplication) && (
-            <span
-              className={clsx(styles.listTag, styles.listTagRecommendation)}
-            >
-              {t('leader.recommendations.tags.recommended')}
-            </span>
+            <>
+              <span
+                className={clsx(styles.listTag, styles.listTagRecommendation)}
+              >
+                {t('leader.recommendations.tags.recommended')}
+              </span>
+              {'hasApplication' in item && item.hasApplication && (
+                <span
+                  className={clsx(styles.listTag, styles.listTagApplication)}
+                >
+                  {t('leader.recommendations.tags.applied')}
+                </span>
+              )}
+            </>
           )}
           {'isApplication' in item && item.isApplication && (
             <>
@@ -81,13 +90,6 @@ export const RecommendationListItem = ({
               )}
             </>
           )}
-          {!('isApplication' in item && item.isApplication) &&
-            'hasApplication' in item &&
-            item.hasApplication && (
-              <span className={clsx(styles.listTag, styles.listTagApplication)}>
-                {t('leader.recommendations.tags.applied')}
-              </span>
-            )}
         </div>
       </div>
     </button>

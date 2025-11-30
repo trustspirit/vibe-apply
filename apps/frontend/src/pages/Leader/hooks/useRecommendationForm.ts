@@ -127,9 +127,7 @@ export const useRecommendationForm = ({
     ) {
       nextErrors.age = AGE_ERROR_MESSAGE;
     }
-    if (!trimmedEmail) {
-      nextErrors.email = t('leader.recommendations.validation.emailRequired');
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       nextErrors.email = t('leader.recommendations.validation.emailInvalid');
     }
     if (!trimmedPhone) {

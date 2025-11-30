@@ -142,6 +142,7 @@ export interface RecommendationDetailsProps {
   onDelete: (id: string) => void;
   onError: (error: string) => void;
   renderForm: () => React.ReactElement;
+  formError?: string;
 }
 
 export interface RecommendationFormProps {

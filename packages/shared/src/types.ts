@@ -92,7 +92,7 @@ export interface LeaderRecommendation {
   leaderId: string;
   name: string;
   age: number;
-  email: string;
+  email?: string;
   phone: string;
   stake: string;
   ward: string;
@@ -148,7 +148,7 @@ export interface UpdateApplicationDto {
 export interface CreateRecommendationDto {
   name: string;
   age: number;
-  email: string;
+  email?: string;
   phone: string;
   stake: string;
   ward: string;

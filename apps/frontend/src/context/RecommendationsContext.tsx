@@ -14,7 +14,10 @@ import {
 } from 'react';
 import { recommendationsApi } from '@/services/api';
 import { useAuth } from './AuthContext';
-import type { LeaderRecommendation, RecommendationStatus } from '@vibe-apply/shared';
+import type {
+  LeaderRecommendation,
+  RecommendationStatus,
+} from '@vibe-apply/shared';
 import { isApprovedLeader, isLeaderRole } from '@vibe-apply/shared';
 import { USER_ROLES } from '@/utils/constants';
 
@@ -23,7 +26,7 @@ interface RecommendationPayload {
   leaderId?: string;
   name: string;
   age: number;
-  email: string;
+  email?: string;
   phone: string;
   stake: string;
   ward: string;
@@ -35,21 +38,35 @@ interface RecommendationPayload {
 
 interface RecommendationsContextValue {
   leaderRecommendations: LeaderRecommendation[];
-  submitLeaderRecommendation: (leaderId: string, payload: RecommendationPayload) => Promise<LeaderRecommendation>;
-  updateLeaderRecommendationStatus: (recommendationId: string, status: RecommendationStatus) => Promise<void>;
-  deleteLeaderRecommendation: (leaderId: string, recommendationId: string) => Promise<void>;
+  submitLeaderRecommendation: (
+    leaderId: string,
+    payload: RecommendationPayload
+  ) => Promise<LeaderRecommendation>;
+  updateLeaderRecommendationStatus: (
+    recommendationId: string,
+    status: RecommendationStatus
+  ) => Promise<void>;
+  deleteLeaderRecommendation: (
+    leaderId: string,
+    recommendationId: string
+  ) => Promise<void>;
   refetchRecommendations: () => Promise<void>;
 }
 
-const RecommendationsContext = createContext<RecommendationsContextValue | null>(null);
+const RecommendationsContext =
+  createContext<RecommendationsContextValue | null>(null);
 
 interface RecommendationsProviderProps {
   children: ReactNode;
 }
 
-export const RecommendationsProvider = ({ children }: RecommendationsProviderProps) => {
+export const RecommendationsProvider = ({
+  children,
+}: RecommendationsProviderProps) => {
   const { currentUser } = useAuth();
-  const [leaderRecommendations, setLeaderRecommendations] = useState<LeaderRecommendation[]>([]);
+  const [leaderRecommendations, setLeaderRecommendations] = useState<
+    LeaderRecommendation[]
+  >([]);
   const hasFetchedRecommendations = useRef(false);
 
   // Fetch recommendations based on user role
@@ -60,8 +77,7 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
       }
 
       const canViewAllRecommendations =
-        currentUser.role === USER_ROLES.ADMIN ||
-        isApprovedLeader(currentUser);
+        currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
 
       const canViewOwnRecommendations = isLeaderRole(currentUser.role);
 
@@ -75,7 +91,6 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
       try {
         hasFetchedRecommendations.current = true;
         let fetchedRecommendations: LeaderRecommendation[] = [];
-
         if (canViewAllRecommendations) {
           fetchedRecommendations = await recommendationsApi.getAll();
         } else if (canViewOwnRecommendations) {
@@ -84,17 +99,21 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
           );
         }
 
-        setLeaderRecommendations(fetchedRecommendations);
+        setLeaderRecommendations(fetchedRecommendations || []);
       } catch (error) {
-        void error;
+        console.error('Failed to fetch recommendations:', error);
+        setLeaderRecommendations([]);
       }
     };
 
     fetchRecommendations();
-  }, [currentUser?.role, currentUser?.id]);
+  }, [currentUser]);
 
   const submitLeaderRecommendation = useCallback(
-    async (leaderId: string, payload: RecommendationPayload): Promise<LeaderRecommendation> => {
+    async (
+      leaderId: string,
+      payload: RecommendationPayload
+    ): Promise<LeaderRecommendation> => {
       const { id, leaderId: payloadLeaderId, ...formData } = payload;
       void payloadLeaderId;
       if (id) {
@@ -146,8 +165,7 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
     }
 
     const canViewAllRecommendations =
-      currentUser.role === USER_ROLES.ADMIN ||
-      isApprovedLeader(currentUser);
+      currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
 
     const canViewOwnRecommendations = isLeaderRole(currentUser.role);
 
@@ -162,11 +180,12 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
         );
       }
 
-      setLeaderRecommendations(fetchedRecommendations);
+      setLeaderRecommendations(fetchedRecommendations || []);
     } catch (error) {
-      void error;
+      console.error('Failed to refetch recommendations:', error);
+      setLeaderRecommendations([]);
     }
-  }, [currentUser?.role, currentUser?.id]);
+  }, [currentUser]);
 
   // Reset when user changes
   useEffect(() => {
@@ -203,7 +222,9 @@ export const RecommendationsProvider = ({ children }: RecommendationsProviderPro
 export const useRecommendations = () => {
   const context = useContext(RecommendationsContext);
   if (!context) {
-    throw new Error('useRecommendations must be used within a RecommendationsProvider');
+    throw new Error(
+      'useRecommendations must be used within a RecommendationsProvider'
+    );
   }
   return context;
 };

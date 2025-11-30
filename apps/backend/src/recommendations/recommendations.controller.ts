@@ -8,6 +8,7 @@ import {
   Delete,
   Put,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { RecommendationsService } from './recommendations.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,6 +26,8 @@ import {
 
 @Controller('recommendations')
 export class RecommendationsController {
+  private readonly logger = new Logger(RecommendationsController.name);
+
   constructor(
     private readonly recommendationsService: RecommendationsService,
   ) {}
@@ -50,13 +53,30 @@ export class RecommendationsController {
   async findAll(
     @CurrentUser() user: JwtPayload,
   ): Promise<LeaderRecommendation[]> {
-    const userData = await this.recommendationsService.getUserData(user.sub);
+    this.logger.debug(
+      `findAll called for user: ${user.sub}, role: ${user.role}`,
+    );
 
-    return this.recommendationsService.findAll(
+    const userData = await this.recommendationsService.getUserData(user.sub);
+    this.logger.debug(
+      `User data: stake=${userData.stake}, ward=${userData.ward}`,
+    );
+
+    if (user.role === UserRole.STAKE_PRESIDENT && !userData.stake) {
+      this.logger.warn(
+        `Stake president ${user.sub} has no stake data, returning empty array`,
+      );
+      return [];
+    }
+
+    const result = await this.recommendationsService.findAll(
       user.role || undefined,
       userData.ward,
       userData.stake,
     );
+
+    this.logger.debug(`Returning ${result.length} recommendations`);
+    return result;
   }
 
   @Get('my-recommendations')
