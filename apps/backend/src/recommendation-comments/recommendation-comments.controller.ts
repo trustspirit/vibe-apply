@@ -30,13 +30,32 @@ export class RecommendationCommentsController {
   @Post('recommendation/:recommendationId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.BISHOP, UserRole.STAKE_PRESIDENT)
-  async create(
+  async createForRecommendation(
     @Param('recommendationId') recommendationId: string,
     @CurrentUser() user: JwtPayload,
     @Body() createCommentDto: CreateRecommendationCommentDto,
   ): Promise<RecommendationComment> {
     return this.recommendationCommentsService.create(
       recommendationId,
+      undefined,
+      user.sub,
+      user.name,
+      user.role!,
+      createCommentDto,
+    );
+  }
+
+  @Post('application/:applicationId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.BISHOP, UserRole.STAKE_PRESIDENT)
+  async createForApplication(
+    @Param('applicationId') applicationId: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() createCommentDto: CreateRecommendationCommentDto,
+  ): Promise<RecommendationComment> {
+    return this.recommendationCommentsService.create(
+      undefined,
+      applicationId,
       user.sub,
       user.name,
       user.role!,
@@ -58,6 +77,24 @@ export class RecommendationCommentsController {
   ): Promise<RecommendationComment[]> {
     return this.recommendationCommentsService.findByRecommendationId(
       recommendationId,
+      user.role!,
+    );
+  }
+
+  @Get('application/:applicationId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SESSION_LEADER,
+    UserRole.STAKE_PRESIDENT,
+    UserRole.BISHOP,
+  )
+  async findByApplicationId(
+    @Param('applicationId') applicationId: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<RecommendationComment[]> {
+    return this.recommendationCommentsService.findByApplicationId(
+      applicationId,
       user.role!,
     );
   }

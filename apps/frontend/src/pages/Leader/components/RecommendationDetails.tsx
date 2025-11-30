@@ -110,6 +110,11 @@ export const RecommendationDetails = ({
               </DetailsGridItem>
             )}
         </DetailsGrid>
+        <RecommendationComments
+          applicationId={selectedItem.id}
+          currentUserId={currentUserId}
+          onError={onError}
+        />
         {(() => {
           if (
             'isApplication' in selectedItem &&
@@ -276,14 +281,13 @@ export const RecommendationDetails = ({
         {selectedItem.moreInfo ||
           t('leader.recommendations.details.noAdditionalInfo')}
       </DetailsNotes>
-      {!('isApplication' in selectedItem) &&
-        !selectedItem.linkedApplicationId && (
-          <RecommendationComments
-            recommendationId={selectedItem.id}
-            currentUserId={currentUserId}
-            onError={onError}
-          />
-        )}
+      {!('isApplication' in selectedItem) && (
+        <RecommendationComments
+          recommendationId={selectedItem.id}
+          currentUserId={currentUserId}
+          onError={onError}
+        />
+      )}
       <div className={styles.detailActions}>
         {canModify && (
           <>

@@ -313,7 +313,8 @@
         "modify": "수정",
         "submit": "제출",
         "cancelSubmission": "제출 취소",
-        "delete": "삭제"
+        "delete": "삭제",
+        "viewComments": "지도자 코멘트"
       },
       "messages": {
         "recommended": "{{name}}이(가) 검토를 위해 추천되었습니다.",

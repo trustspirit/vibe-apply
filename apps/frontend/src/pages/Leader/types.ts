@@ -167,6 +167,8 @@ export interface RecommendationFormProps {
 
 export interface RecommendationMobileCardProps {
   item: CombinedItem;
+  currentUserId?: string | null;
+  onError: (error: string) => void;
   isEditingThis: boolean;
   currentFormId: string | null | undefined;
   getStatusLabel: (
@@ -189,7 +191,8 @@ export interface RecommendationListItemProps {
 }
 
 export interface RecommendationCommentsProps {
-  recommendationId: string;
+  recommendationId?: string;
+  applicationId?: string;
   currentUserId?: string;
   onError: (error: string) => void;
 }

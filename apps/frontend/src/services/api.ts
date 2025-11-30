@@ -448,11 +448,28 @@ export const recommendationCommentsApi = {
     ) as Promise<RecommendationComment[]>;
   },
 
+  getAllByApplication: async (
+    applicationId: string
+  ): Promise<RecommendationComment[]> => {
+    return api.get(
+      `/recommendation-comments/application/${applicationId}`
+    ) as Promise<RecommendationComment[]>;
+  },
+
   create: async (
     recommendationId: string,
     content: string
   ): Promise<RecommendationComment> => {
     return api.post(`/recommendation-comments/recommendation/${recommendationId}`, {
+      content,
+    }) as Promise<RecommendationComment>;
+  },
+
+  createForApplication: async (
+    applicationId: string,
+    content: string
+  ): Promise<RecommendationComment> => {
+    return api.post(`/recommendation-comments/application/${applicationId}`, {
       content,
     }) as Promise<RecommendationComment>;
   },

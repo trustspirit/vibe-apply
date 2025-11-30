@@ -8,6 +8,7 @@ import styles from '../LeaderRecommendations.module.scss';
 
 export const RecommendationComments = ({
   recommendationId,
+  applicationId,
   currentUserId,
   onError,
 }: RecommendationCommentsProps) => {
@@ -22,8 +23,16 @@ export const RecommendationComments = ({
     const loadComments = async () => {
       setIsLoadingComments(true);
       try {
-        const fetchedComments =
-          await recommendationCommentsApi.getAll(recommendationId);
+        let fetchedComments: RecommendationComment[] = [];
+        if (recommendationId) {
+          fetchedComments = await recommendationCommentsApi.getAll(
+            recommendationId
+          );
+        } else if (applicationId) {
+          fetchedComments = await recommendationCommentsApi.getAllByApplication(
+            applicationId
+          );
+        }
         setComments(fetchedComments);
       } catch (error) {
         onError(
@@ -35,10 +44,10 @@ export const RecommendationComments = ({
       }
     };
 
-    if (recommendationId) {
+    if (recommendationId || applicationId) {
       loadComments();
     }
-  }, [recommendationId, onError, t]);
+  }, [recommendationId, applicationId, onError, t]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) {
@@ -46,10 +55,20 @@ export const RecommendationComments = ({
     }
 
     try {
-      const newCommentData = await recommendationCommentsApi.create(
-        recommendationId,
-        newComment.trim()
-      );
+      let newCommentData: RecommendationComment;
+      if (recommendationId) {
+        newCommentData = await recommendationCommentsApi.create(
+          recommendationId,
+          newComment.trim()
+        );
+      } else if (applicationId) {
+        newCommentData = await recommendationCommentsApi.createForApplication(
+          applicationId,
+          newComment.trim()
+        );
+      } else {
+        return;
+      }
       setComments((prev) => [newCommentData, ...prev]);
       setNewComment('');
     } catch (error) {

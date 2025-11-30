@@ -59,7 +59,8 @@ export interface ApplicationMemo {
 
 export interface RecommendationComment {
   id: string;
-  recommendationId: string;
+  recommendationId?: string;
+  applicationId?: string;
   authorId: string;
   authorName: string;
   authorRole: UserRole;

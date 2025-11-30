@@ -327,6 +327,8 @@ const LeaderRecommendations = () => {
                 onQuickSubmit={handleQuickSubmit}
                 onCancelSubmission={handleCancelSubmission}
                 onDelete={handleDelete}
+                currentUserId={currentUser?.id}
+                onError={setFormError}
               />
             ))}
           </Suspense>

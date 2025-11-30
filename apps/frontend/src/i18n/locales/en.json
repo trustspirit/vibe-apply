@@ -313,7 +313,8 @@
         "modify": "Modify",
         "submit": "Submit",
         "cancelSubmission": "Cancel Submission",
-        "delete": "Delete"
+        "delete": "Delete",
+        "viewComments": "Leader Comments"
       },
       "messages": {
         "recommended": "{{name}} has been recommended for review.",
