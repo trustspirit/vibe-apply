@@ -3,16 +3,8 @@ import clsx from 'clsx';
 import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
 import { StatusChip } from '@/components/ui';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
-import type { CombinedItem } from '../types';
+import type { RecommendationListItemProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
-
-interface RecommendationListItemProps {
-  item: CombinedItem;
-  isSelected: boolean;
-  isActive: boolean;
-  onSelect: (id: string) => void;
-  getStatusLabel: (status: string, isApplication: boolean) => string | undefined;
-}
 
 export const RecommendationListItem = ({
   item,
@@ -40,22 +32,16 @@ export const RecommendationListItem = ({
         <span className={styles.listName}>{item.name}</span>
         {'isApplication' in item && item.isApplication ? (
           <StatusChip
-            status={
-              'status' in item ? item.status : ApplicationStatus.AWAITING
-            }
+            status={'status' in item ? item.status : ApplicationStatus.AWAITING}
             label={
               'status' in item ? getStatusLabel(item.status, true) : undefined
             }
           />
         ) : (
           <StatusChip
-            status={
-              'status' in item ? item.status : RecommendationStatus.DRAFT
-            }
+            status={'status' in item ? item.status : RecommendationStatus.DRAFT}
             label={
-              'status' in item
-                ? getStatusLabel(item.status, false)
-                : undefined
+              'status' in item ? getStatusLabel(item.status, false) : undefined
             }
           />
         )}
@@ -82,10 +68,7 @@ export const RecommendationListItem = ({
             <>
               {item.hasRecommendation ? (
                 <span
-                  className={clsx(
-                    styles.listTag,
-                    styles.listTagRecommendation
-                  )}
+                  className={clsx(styles.listTag, styles.listTagRecommendation)}
                 >
                   {t('leader.recommendations.tags.recommended')}
                 </span>
@@ -101,9 +84,7 @@ export const RecommendationListItem = ({
           {!('isApplication' in item && item.isApplication) &&
             'hasApplication' in item &&
             item.hasApplication && (
-              <span
-                className={clsx(styles.listTag, styles.listTagApplication)}
-              >
+              <span className={clsx(styles.listTag, styles.listTagApplication)}>
                 {t('leader.recommendations.tags.applied')}
               </span>
             )}
@@ -112,4 +93,3 @@ export const RecommendationListItem = ({
     </button>
   );
 };
-

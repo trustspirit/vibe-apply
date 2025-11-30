@@ -11,22 +11,11 @@ import {
   validatePhone,
 } from '@/utils/validation';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
-
-interface ApplicationForm {
-  name: string;
-  age: string;
-  email: string;
-  phone: string;
-  gender: string;
-  stake: string;
-  ward: string;
-  moreInfo: string;
-  servedMission: boolean;
-}
-
-interface ValidationErrors {
-  [key: string]: string;
-}
+import type {
+  ApplicationForm,
+  ValidationErrors,
+  UseApplicationFormOptions,
+} from '../types';
 
 const emptyForm: ApplicationForm = {
   name: '',
@@ -39,32 +28,6 @@ const emptyForm: ApplicationForm = {
   moreInfo: '',
   servedMission: false,
 };
-
-interface UseApplicationFormOptions {
-  currentUser: {
-    id: string;
-    name?: string;
-    email?: string;
-    stake?: string;
-    ward?: string;
-  } | null;
-  existingApplication:
-    | {
-        name: string;
-        age?: number | null;
-        email: string;
-        phone: string;
-        gender?: string;
-        stake: string;
-        ward: string;
-        moreInfo?: string;
-        servedMission?: boolean;
-        status: ApplicationStatus;
-      }
-    | undefined;
-  isInitializing: boolean;
-  t: (key: string) => string;
-}
 
 export const useApplicationForm = ({
   currentUser,

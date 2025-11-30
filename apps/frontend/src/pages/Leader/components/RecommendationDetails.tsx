@@ -12,22 +12,8 @@ import {
 } from '@/components/ui';
 import { RecommendationComments } from './RecommendationComments';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
-import type { CombinedItem } from '../types';
+import type { RecommendationDetailsProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
-
-interface RecommendationDetailsProps {
-  selectedItem: CombinedItem | null;
-  isEditing: boolean;
-  currentUserId?: string | null;
-  getStatusLabel: (status: string, isApplication: boolean) => string | undefined;
-  onRecommendApplicant: (application: Application) => void;
-  onModify: (id: string) => void;
-  onQuickSubmit: (id: string) => void;
-  onCancelSubmission: (id: string) => void;
-  onDelete: (id: string) => void;
-  onError: (error: string) => void;
-  renderForm: () => React.ReactElement;
-}
 
 export const RecommendationDetails = ({
   selectedItem,

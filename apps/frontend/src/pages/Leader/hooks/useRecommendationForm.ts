@@ -8,7 +8,11 @@ import {
   AGE_MAX,
   AGE_ERROR_MESSAGE,
 } from '@/utils/validationConstants';
-import type { RecommendationFormData, ValidationErrors } from '../types';
+import type {
+  RecommendationFormData,
+  ValidationErrors,
+  UseRecommendationFormOptions,
+} from '../types';
 
 const emptyForm: RecommendationFormData = {
   id: null,
@@ -22,18 +26,6 @@ const emptyForm: RecommendationFormData = {
   moreInfo: '',
   servedMission: false,
 };
-
-interface UseRecommendationFormOptions {
-  currentFormId: string | null | undefined;
-  currentUser: {
-    id: string;
-    stake?: string;
-    ward?: string;
-    role?: string;
-  } | null;
-  recommendations: Array<{ id: string; [key: string]: any }>;
-  t: (key: string) => string;
-}
 
 export const useRecommendationForm = ({
   currentFormId,

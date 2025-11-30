@@ -10,23 +10,8 @@ import {
   StatusChip,
 } from '@/components/ui';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
-import type { CombinedItem } from '../types';
+import type { RecommendationMobileCardProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
-
-interface RecommendationMobileCardProps {
-  item: CombinedItem;
-  isEditingThis: boolean;
-  currentFormId: string | null | undefined;
-  getStatusLabel: (
-    status: string,
-    isApplication: boolean
-  ) => string | undefined;
-  onRecommendApplicant: (application: Application) => void;
-  onModify: (id: string) => void;
-  onQuickSubmit: (id: string) => void;
-  onCancelSubmission: (id: string) => void;
-  onDelete: (id: string) => void;
-}
 
 export const RecommendationMobileCard = ({
   item,

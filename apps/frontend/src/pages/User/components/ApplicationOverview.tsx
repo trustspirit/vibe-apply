@@ -1,24 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { ApplicationStatus } from '@vibe-apply/shared';
-import { Alert, Button, Card, CardContent, CardFooter, CardHeader, CardTitle, StatusChip, SummaryItem } from '@/components/ui';
+import {
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  StatusChip,
+  SummaryItem,
+} from '@/components/ui';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
+import type { ApplicationOverviewProps } from '../types';
 import styles from '../UserApplication.module.scss';
-
-interface ApplicationOverviewProps {
-  application: {
-    name: string;
-    age?: number | null;
-    email: string;
-    phone: string;
-    stake: string;
-    ward: string;
-    moreInfo?: string;
-    servedMission?: boolean;
-    status: ApplicationStatus;
-  };
-  isEditable: boolean;
-  onEdit: () => void;
-}
 
 export const ApplicationOverview = ({
   application,
@@ -31,12 +26,7 @@ export const ApplicationOverview = ({
     const status = application.status;
     let statusLabel: string;
     let statusValue: string;
-    let toneValue:
-      | 'draft'
-      | 'awaiting'
-      | 'reviewed'
-      | 'rejected'
-      | 'approved';
+    let toneValue: 'draft' | 'awaiting' | 'reviewed' | 'rejected' | 'approved';
 
     if (
       status === ApplicationStatus.APPROVED ||
@@ -102,19 +92,12 @@ export const ApplicationOverview = ({
               application.ward}
           </SummaryItem>
           {application.servedMission !== undefined && (
-            <SummaryItem
-              label={t('application.overview.servedMission')}
-            >
-              {application.servedMission
-                ? t('common.yes')
-                : t('common.no')}
+            <SummaryItem label={t('application.overview.servedMission')}>
+              {application.servedMission ? t('common.yes') : t('common.no')}
             </SummaryItem>
           )}
-          <SummaryItem
-            label={t('application.overview.additionalInfo')}
-          >
-            {application.moreInfo ||
-              t('application.overview.noAdditionalInfo')}
+          <SummaryItem label={t('application.overview.additionalInfo')}>
+            {application.moreInfo || t('application.overview.noAdditionalInfo')}
           </SummaryItem>
         </div>
       </CardContent>
@@ -132,4 +115,3 @@ export const ApplicationOverview = ({
     </Card>
   );
 };
-

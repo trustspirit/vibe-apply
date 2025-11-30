@@ -1,4 +1,3 @@
-import type { ChangeEvent, FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { RecommendationStatus } from '@vibe-apply/shared';
@@ -10,24 +9,8 @@ import {
   ToggleButton,
 } from '@/components/ui';
 import { USER_ROLES } from '@/utils/constants';
-import type { RecommendationFormData, ValidationErrors } from '../types';
+import type { RecommendationFormProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
-
-interface RecommendationFormProps {
-  form: RecommendationFormData;
-  errors: ValidationErrors;
-  formError: string;
-  editingOriginStatus: RecommendationStatus | null;
-  variant?: 'desktop' | 'mobile';
-  currentUserRole?: string;
-  onFormChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  onStakeChange: (stake: string) => void;
-  onWardChange: (ward: string) => void;
-  onServedMissionChange: (value: boolean) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onSaveDraft: () => void;
-  onCancel: () => void;
-}
 
 export const RecommendationForm = ({
   form,

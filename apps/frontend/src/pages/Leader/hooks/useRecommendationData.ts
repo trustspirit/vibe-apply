@@ -1,28 +1,11 @@
 import { useMemo } from 'react';
 import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
 import { RecommendationStatus } from '@vibe-apply/shared';
-import type { ExtendedRecommendation, ExtendedApplication } from '../types';
-
-interface UseRecommendationDataOptions {
-  recommendations: Array<{
-    id: string;
-    leaderId?: string;
-    linkedApplicationId?: string;
-    email: string;
-    name: string;
-    stake: string;
-    ward: string;
-    status: RecommendationStatus;
-    updatedAt: string;
-    createdAt: string;
-    [key: string]: any;
-  }>;
-  applications: Application[];
-  currentUser: { id: string; stake?: string } | null;
-  activeTab: string;
-  selectedId: string | null;
-  currentFormId: string | null | undefined;
-}
+import type {
+  ExtendedRecommendation,
+  ExtendedApplication,
+  UseRecommendationDataOptions,
+} from '../types';
 
 export const useRecommendationData = ({
   recommendations,

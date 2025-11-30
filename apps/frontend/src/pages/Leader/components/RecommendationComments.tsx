@@ -3,13 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button, TextField } from '@/components/ui';
 import { recommendationCommentsApi } from '@/services/api';
 import type { RecommendationComment } from '@vibe-apply/shared';
+import type { RecommendationCommentsProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
-
-interface RecommendationCommentsProps {
-  recommendationId: string;
-  currentUserId?: string;
-  onError: (error: string) => void;
-}
 
 export const RecommendationComments = ({
   recommendationId,

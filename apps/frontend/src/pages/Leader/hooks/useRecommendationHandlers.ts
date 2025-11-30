@@ -2,63 +2,7 @@ import { useCallback } from 'react';
 import type { Application } from '@vibe-apply/shared';
 import { RecommendationStatus } from '@vibe-apply/shared';
 import { CONFIRMATION_MESSAGES } from '@/utils/formConstants';
-import type { RecommendationFormData, CombinedItem } from '../types';
-
-interface UseRecommendationHandlersOptions {
-  leaderId: string | null;
-  recommendations: Array<{
-    id: string;
-    status: RecommendationStatus;
-    [key: string]: any;
-  }>;
-  combinedItems: CombinedItem[];
-  form: RecommendationFormData;
-  validateForm: () => {
-    nextErrors: Record<string, string>;
-    normalizedAge: number;
-    trimmedName: string;
-    trimmedEmail: string;
-    trimmedPhone: string;
-    trimmedStake: string;
-    trimmedWard: string;
-    normalizedGender: string;
-  };
-  submitLeaderRecommendation: (
-    leaderId: string,
-    data: {
-      id: string | null;
-      name: string;
-      age: number | null;
-      email: string;
-      phone: string;
-      gender: string;
-      stake: string;
-      ward: string;
-      moreInfo: string;
-      servedMission: boolean;
-      status?: RecommendationStatus;
-    }
-  ) => Promise<{ id: string } | undefined>;
-  deleteLeaderRecommendation: (
-    leaderId: string,
-    recommendationId: string
-  ) => Promise<void>;
-  refetchRecommendations: () => Promise<void>;
-  refetchApplications: () => Promise<void>;
-  setCurrentFormId: (id: string | null | undefined) => void;
-  setSelectedId: (id: string | null) => void;
-  setEditingOriginStatus: (status: RecommendationStatus | null) => void;
-  setErrors: (
-    errors:
-      | Record<string, string>
-      | ((prev: Record<string, string>) => Record<string, string>)
-  ) => void;
-  setFormError: (error: string) => void;
-  setFeedback: (feedback: string) => void;
-  currentFormId: string | null | undefined;
-  selectedId: string | null;
-  t: (key: string, params?: any) => string;
-}
+import type { UseRecommendationHandlersOptions } from '../types';
 
 export const useRecommendationHandlers = ({
   leaderId,
