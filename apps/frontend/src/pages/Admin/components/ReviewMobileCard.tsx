@@ -1,4 +1,5 @@
 import { ComboBox } from '@/components/ui';
+import { ITEM_TYPES } from '@/utils/constants';
 import { ReviewComments } from './ReviewComments';
 import type { ReviewMobileCardProps } from '../types';
 import styles from '../AdminReview.module.scss';
@@ -37,7 +38,7 @@ export const ReviewMobileCard = ({
       </div>
 
       <div className={styles.reviewCardTags}>
-        {item.type === 'application' && (
+        {item.type === ITEM_TYPES.APPLICATION && (
           <>
             {item.hasRecommendation ? (
               <span
@@ -54,7 +55,7 @@ export const ReviewMobileCard = ({
             )}
           </>
         )}
-        {item.type === 'recommendation' && (
+        {item.type === ITEM_TYPES.RECOMMENDATION && (
           <>
             <span
               className={`${styles.reviewCardTag} ${styles.reviewCardTagRecommendation}`}
@@ -104,7 +105,7 @@ export const ReviewMobileCard = ({
         <p>{item.moreInfo || t('admin.review.noAdditionalInfo')}</p>
       </div>
 
-      {item.type === 'recommendation' && item.comments && (
+      {item.type === ITEM_TYPES.RECOMMENDATION && item.comments && (
         <ReviewComments
           comments={item.comments}
           className={styles.reviewCardNotes}

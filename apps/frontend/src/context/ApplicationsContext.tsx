@@ -15,8 +15,7 @@ import {
 import { applicationsApi } from '@/services/api';
 import { useAuth } from './AuthContext';
 import type { Application, ApplicationStatus } from '@vibe-apply/shared';
-import { isApprovedLeader } from '@vibe-apply/shared';
-import { USER_ROLES } from '@/utils/constants';
+import { isApprovedLeader, UserRole } from '@vibe-apply/shared';
 
 interface ApplicationPayload {
   userId?: string;
@@ -60,7 +59,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
       }
 
       const canViewAllApplications =
-        currentUser.role === USER_ROLES.ADMIN ||
+        currentUser.role === UserRole.ADMIN ||
         isApprovedLeader(currentUser);
 
       if (!canViewAllApplications || hasFetchedApplications.current) {
@@ -87,7 +86,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
       }
 
       if (
-        currentUser.role !== USER_ROLES.APPLICANT ||
+        currentUser.role !== UserRole.APPLICANT ||
         hasFetchedMyApplication.current
       ) {
         return;
@@ -150,7 +149,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
     }
 
     const canViewAllApplications =
-      currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
+      currentUser.role === UserRole.ADMIN || isApprovedLeader(currentUser);
 
     if (canViewAllApplications) {
       try {
@@ -159,7 +158,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
       } catch (error) {
         void error;
       }
-    } else if (currentUser.role === USER_ROLES.APPLICANT && currentUser.id) {
+    } else if (currentUser.role === UserRole.APPLICANT && currentUser.id) {
       try {
         const application = await applicationsApi.getMyApplication();
         if (application) {

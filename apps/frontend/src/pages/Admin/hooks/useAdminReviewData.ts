@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
 import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
+import { TAB_IDS, ADMIN_REVIEW_TABS } from '@/utils/constants';
 import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { normalizeRecommendationStatus } from '@/utils/statusHelpers';
 import type { ReviewItem } from '@/types';
@@ -118,26 +119,26 @@ export const useAdminReviewData = ({
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {
-      all: reviewItems.length,
-      awaiting: 0,
-      approved: 0,
-      rejected: 0,
+      [TAB_IDS.ALL]: reviewItems.length,
+      [ADMIN_REVIEW_TABS.AWAITING]: 0,
+      [ADMIN_REVIEW_TABS.APPROVED]: 0,
+      [ADMIN_REVIEW_TABS.REJECTED]: 0,
     };
     reviewItems.forEach((item) => {
       if (item.status === ApplicationStatus.AWAITING) {
-        counts.awaiting += 1;
+        counts[ADMIN_REVIEW_TABS.AWAITING] += 1;
       }
       if (
         item.status === ApplicationStatus.APPROVED ||
         item.status === RecommendationStatus.APPROVED
       ) {
-        counts.approved += 1;
+        counts[ADMIN_REVIEW_TABS.APPROVED] += 1;
       }
       if (
         item.status === ApplicationStatus.REJECTED ||
         item.status === RecommendationStatus.REJECTED
       ) {
-        counts.rejected += 1;
+        counts[ADMIN_REVIEW_TABS.REJECTED] += 1;
       }
     });
     return counts;
@@ -145,7 +146,7 @@ export const useAdminReviewData = ({
 
   const filteredItems = useMemo(() => {
     let items =
-      activeTab === 'all'
+      activeTab === TAB_IDS.ALL
         ? reviewItems
         : reviewItems.filter((item) => item.status === activeTab);
     if (showTodayOnly) {

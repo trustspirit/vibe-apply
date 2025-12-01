@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Avatar, StatusChip } from '@/components/ui';
-import { ROUTES, USER_ROLES, ROLE_KEYS } from '@/utils/constants';
+import { ROUTES, getRoleTone } from '@/utils/constants';
 import { getRoleConfig } from '@/utils/roleConfig';
 import styles from './GlobalNav.module.scss';
 
@@ -123,17 +123,8 @@ const GlobalNav = () => {
                 let displayName =
                   currentUser.name?.trim() ||
                   (() => {
-                    const roleKey =
-                      currentUser.role === USER_ROLES.ADMIN
-                        ? ROLE_KEYS.ADMIN
-                        : currentUser.role === USER_ROLES.SESSION_LEADER
-                          ? ROLE_KEYS.SESSION_LEADER
-                          : currentUser.role === USER_ROLES.STAKE_PRESIDENT
-                            ? ROLE_KEYS.STAKE_PRESIDENT
-                            : currentUser.role === USER_ROLES.BISHOP
-                              ? ROLE_KEYS.BISHOP
-                              : ROLE_KEYS.APPLICANT;
-                    return t(`leader.greeting.${roleKey}`);
+                    const roleTone = getRoleTone(currentUser.role);
+                    return t(`leader.greeting.${roleTone}`);
                   })();
                 displayName = displayName.replace(/\s*\([^)]*\)/g, '').trim();
                 return `${hi}, ${displayName}`;
@@ -141,17 +132,7 @@ const GlobalNav = () => {
             </span>
             <StatusChip
               status={currentUser.role}
-              tone={
-                currentUser.role === USER_ROLES.ADMIN
-                  ? ROLE_KEYS.ADMIN
-                  : currentUser.role === USER_ROLES.STAKE_PRESIDENT
-                    ? ROLE_KEYS.STAKE_PRESIDENT
-                    : currentUser.role === USER_ROLES.BISHOP
-                      ? ROLE_KEYS.BISHOP
-                      : currentUser.role === USER_ROLES.SESSION_LEADER
-                        ? ROLE_KEYS.SESSION_LEADER
-                        : ROLE_KEYS.APPLICANT
-              }
+              tone={getRoleTone(currentUser.role)}
               label={roleLabel}
               className={styles.roleChip}
             />

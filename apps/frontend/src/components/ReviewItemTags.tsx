@@ -1,9 +1,10 @@
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
+import { ITEM_TYPES, type ItemType } from '@/utils/constants';
 import styles from './ReviewItemTags.module.scss';
 
 interface ReviewItemTagsProps {
-  type: 'application' | 'recommendation';
+  type: ItemType;
   hasRecommendation?: boolean;
   hasApplication?: boolean;
 }
@@ -21,7 +22,7 @@ export const ReviewItemTags = ({
 
   return (
     <div className={styles.listTags}>
-      {type === 'application' && (
+      {type === ITEM_TYPES.APPLICATION && (
         <>
           {hasRecommendation ? (
             <span
@@ -36,7 +37,7 @@ export const ReviewItemTags = ({
           )}
         </>
       )}
-      {type === 'recommendation' && (
+      {type === ITEM_TYPES.RECOMMENDATION && (
         <>
           <span className={clsx(styles.listTag, styles.listTagRecommendation)}>
             {t('admin.review.tags.recommended')}

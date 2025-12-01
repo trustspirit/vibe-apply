@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { authApi, tokenStorage } from '@/services/api';
-import { USER_ROLES, ROUTES } from '@/utils/constants';
+import { UserRole, ROUTES } from '@/utils/constants';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -37,12 +37,12 @@ const AuthCallback = () => {
         }
 
         switch (user.role) {
-          case USER_ROLES.ADMIN:
-          case USER_ROLES.SESSION_LEADER:
+          case UserRole.ADMIN:
+          case UserRole.SESSION_LEADER:
             navigate(ROUTES.ADMIN_ROOT);
             break;
-          case USER_ROLES.BISHOP:
-          case USER_ROLES.STAKE_PRESIDENT:
+          case UserRole.BISHOP:
+          case UserRole.STAKE_PRESIDENT:
             navigate(ROUTES.LEADER_DASHBOARD);
             break;
           default:

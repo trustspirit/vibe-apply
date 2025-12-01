@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
+import { TAB_IDS, RECOMMENDATION_TABS } from '@/utils/constants';
 import { useApp } from '@/context/AppContext';
 import { Button, Tabs } from '@/components/ui';
 import { RecommendationListItem } from './components/RecommendationListItem';
@@ -83,11 +84,11 @@ const LeaderRecommendations = () => {
   };
 
   const TAB_DEFS: TabItem[] = [
-    { id: 'all', label: t('leader.recommendations.tabs.all') },
-    { id: 'draft', label: t('leader.recommendations.tabs.draft') },
-    { id: 'submitted', label: t('leader.recommendations.tabs.submitted') },
-    { id: 'approved', label: t('leader.recommendations.tabs.approved') },
-    { id: 'rejected', label: t('leader.recommendations.tabs.rejected') },
+    { id: TAB_IDS.ALL, label: t('leader.recommendations.tabs.all') },
+    { id: RECOMMENDATION_TABS.DRAFT, label: t('leader.recommendations.tabs.draft') },
+    { id: RECOMMENDATION_TABS.SUBMITTED, label: t('leader.recommendations.tabs.submitted') },
+    { id: RECOMMENDATION_TABS.APPROVED, label: t('leader.recommendations.tabs.approved') },
+    { id: RECOMMENDATION_TABS.REJECTED, label: t('leader.recommendations.tabs.rejected') },
   ];
 
   useEffect(() => {
@@ -95,7 +96,7 @@ const LeaderRecommendations = () => {
     refetchRecommendations();
   }, [refetchApplications, refetchRecommendations]);
 
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<string>(TAB_IDS.ALL);
   const [currentFormId, setCurrentFormId] = useState<string | null | undefined>(
     undefined
   );
@@ -261,8 +262,8 @@ const LeaderRecommendations = () => {
         ariaLabel='Recommendation status filters'
         getBadge={(tab) =>
           combinedItems.filter((item) => {
-            if (tab.id === 'all') return true;
-            if (tab.id === 'submitted') {
+            if (tab.id === TAB_IDS.ALL) return true;
+            if (tab.id === RECOMMENDATION_TABS.SUBMITTED) {
               if ('isApplication' in item && item.isApplication) {
                 return (
                   'status' in item && item.status === ApplicationStatus.AWAITING

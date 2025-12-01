@@ -17,7 +17,11 @@ import {
   StatusChip,
 } from '@/components/ui';
 import { authApi, usersApi } from '@/services/api';
-import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
+import {
+  UserRole as UserRoleEnum,
+  LeaderStatus as LeaderStatusEnum,
+  getRoleTone,
+} from '@/utils/constants';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
 import styles from './AccountSettings.module.scss';
@@ -65,12 +69,12 @@ const AccountSettings = () => {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
-  const isAdmin = currentUser?.role === (USER_ROLES.ADMIN as UserRole);
+  const isAdmin = currentUser?.role === (UserRoleEnum.ADMIN as UserRole);
   const isSessionLeader =
-    currentUser?.role === (USER_ROLES.SESSION_LEADER as UserRole);
+    currentUser?.role === (UserRoleEnum.SESSION_LEADER as UserRole);
   const isStakePresident =
-    currentUser?.role === (USER_ROLES.STAKE_PRESIDENT as UserRole);
-  const isBishop = currentUser?.role === (USER_ROLES.BISHOP as UserRole);
+    currentUser?.role === (UserRoleEnum.STAKE_PRESIDENT as UserRole);
+  const isBishop = currentUser?.role === (UserRoleEnum.BISHOP as UserRole);
   const canChangeStakeWardDirectly = isAdmin || isSessionLeader;
   const canApprove = isAdmin || isSessionLeader || isStakePresident || isBishop;
 
@@ -101,7 +105,7 @@ const AccountSettings = () => {
     setLoadingUsers(true);
     try {
       const allUsers = await usersApi.getAll();
-      setUsers(allUsers.filter((u) => u.role !== USER_ROLES.ADMIN));
+      setUsers(allUsers.filter((u) => u.role !== UserRoleEnum.ADMIN));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -250,19 +254,19 @@ const AccountSettings = () => {
   };
 
   const getRoleLabel = () => {
-    if (currentUser?.role === (USER_ROLES.ADMIN as UserRole))
+    if (currentUser?.role === (UserRoleEnum.ADMIN as UserRole))
       return t('roles.administrator');
-    if (currentUser?.role === (USER_ROLES.SESSION_LEADER as UserRole))
+    if (currentUser?.role === (UserRoleEnum.SESSION_LEADER as UserRole))
       return t('roles.sessionLeader');
-    if (currentUser?.role === (USER_ROLES.STAKE_PRESIDENT as UserRole)) {
+    if (currentUser?.role === (UserRoleEnum.STAKE_PRESIDENT as UserRole)) {
       return currentUser?.leaderStatus ===
-        (LEADER_STATUS.APPROVED as LeaderStatus)
+        (LeaderStatusEnum.APPROVED as LeaderStatus)
         ? t('roles.stakePresidentApproved')
         : t('roles.stakePresidentPending');
     }
-    if (currentUser?.role === (USER_ROLES.BISHOP as UserRole)) {
+    if (currentUser?.role === (UserRoleEnum.BISHOP as UserRole)) {
       return currentUser?.leaderStatus ===
-        (LEADER_STATUS.APPROVED as LeaderStatus)
+        (LeaderStatusEnum.APPROVED as LeaderStatus)
         ? t('roles.bishopApproved')
         : t('roles.bishopPending');
     }
@@ -271,10 +275,10 @@ const AccountSettings = () => {
 
   const getRoleLabelForUser = (role: string | undefined): string => {
     if (!role) return t('roles.applicant');
-    if (role === USER_ROLES.ADMIN) return t('roles.admin');
-    if (role === USER_ROLES.SESSION_LEADER) return t('roles.sessionLeader');
-    if (role === USER_ROLES.STAKE_PRESIDENT) return t('roles.stakePresident');
-    if (role === USER_ROLES.BISHOP) return t('roles.bishop');
+    if (role === UserRoleEnum.ADMIN) return t('roles.admin');
+    if (role === UserRoleEnum.SESSION_LEADER) return t('roles.sessionLeader');
+    if (role === UserRoleEnum.STAKE_PRESIDENT) return t('roles.stakePresident');
+    if (role === UserRoleEnum.BISHOP) return t('roles.bishop');
     return t('roles.applicant');
   };
 
@@ -357,25 +361,15 @@ const AccountSettings = () => {
                   <div className={styles.roleFieldContent}>
                     <StatusChip
                       status={currentUser.role}
-                      tone={
-                        currentUser.role === USER_ROLES.ADMIN
-                          ? 'admin'
-                          : currentUser.role === USER_ROLES.STAKE_PRESIDENT
-                            ? 'stakePresident'
-                            : currentUser.role === USER_ROLES.BISHOP
-                              ? 'bishop'
-                              : currentUser.role === USER_ROLES.SESSION_LEADER
-                                ? 'sessionLeader'
-                                : 'applicant'
-                      }
+                      tone={getRoleTone(currentUser.role)}
                       label={getRoleLabel()}
                     />
                   </div>
-                  {(currentUser.role === (USER_ROLES.BISHOP as UserRole) ||
+                  {(currentUser.role === (UserRoleEnum.BISHOP as UserRole) ||
                     currentUser.role ===
-                      (USER_ROLES.STAKE_PRESIDENT as UserRole)) &&
+                      (UserRoleEnum.STAKE_PRESIDENT as UserRole)) &&
                     currentUser.leaderStatus ===
-                      (LEADER_STATUS.PENDING as LeaderStatus) && (
+                      (LeaderStatusEnum.PENDING as LeaderStatus) && (
                       <span className={styles.roleFieldHelp}>
                         {t(
                           'accountSettings.sections.accountRole.pendingApproval'
@@ -630,19 +624,7 @@ const AccountSettings = () => {
                           </div>
                           <StatusChip
                             status={request.userRole}
-                            tone={
-                              request.userRole === USER_ROLES.ADMIN
-                                ? 'admin'
-                                : request.userRole ===
-                                    USER_ROLES.STAKE_PRESIDENT
-                                  ? 'stakePresident'
-                                  : request.userRole === USER_ROLES.BISHOP
-                                    ? 'bishop'
-                                    : request.userRole ===
-                                        USER_ROLES.SESSION_LEADER
-                                      ? 'sessionLeader'
-                                      : 'applicant'
-                            }
+                            tone={getRoleTone(request.userRole)}
                             label={getRoleLabelForUser(request.userRole)}
                           />
                         </div>
@@ -845,18 +827,7 @@ const AccountSettings = () => {
                             <td>
                               <StatusChip
                                 status={user.role || ''}
-                                tone={
-                                  user.role === USER_ROLES.ADMIN
-                                    ? 'admin'
-                                    : user.role === USER_ROLES.STAKE_PRESIDENT
-                                      ? 'stakePresident'
-                                      : user.role === USER_ROLES.BISHOP
-                                        ? 'bishop'
-                                        : user.role ===
-                                            USER_ROLES.SESSION_LEADER
-                                          ? 'sessionLeader'
-                                          : 'applicant'
-                                }
+                                tone={getRoleTone(user.role)}
                                 label={getRoleLabelForUser(user.role)}
                               />
                             </td>
@@ -933,18 +904,7 @@ const AccountSettings = () => {
                               <div className={styles.cardName}>{user.name}</div>
                               <StatusChip
                                 status={user.role || ''}
-                                tone={
-                                  user.role === USER_ROLES.ADMIN
-                                    ? 'admin'
-                                    : user.role === USER_ROLES.STAKE_PRESIDENT
-                                      ? 'stakePresident'
-                                      : user.role === USER_ROLES.BISHOP
-                                        ? 'bishop'
-                                        : user.role ===
-                                            USER_ROLES.SESSION_LEADER
-                                          ? 'sessionLeader'
-                                          : 'applicant'
-                                }
+                                tone={getRoleTone(user.role)}
                                 label={getRoleLabelForUser(user.role)}
                                 className={styles.cardRole}
                               />

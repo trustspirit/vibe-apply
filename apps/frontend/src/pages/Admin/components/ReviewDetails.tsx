@@ -1,5 +1,6 @@
 import { ComboBox, DetailsGrid, DetailsGridItem, DetailsNotes } from '@/components/ui';
 import { ApplicationStatus } from '@vibe-apply/shared';
+import { ITEM_TYPES } from '@/utils/constants';
 import { ReviewComments } from './ReviewComments';
 import type { ReviewDetailsProps } from '../types';
 import styles from '../AdminReview.module.scss';
@@ -23,7 +24,7 @@ export const ReviewDetails = ({
           <div className={styles.detailsHeading}>
             <h2>{selectedItem.name}</h2>
             <div className={styles.detailsTags}>
-              {selectedItem.type === 'application' && (
+              {selectedItem.type === ITEM_TYPES.APPLICATION && (
                 <>
                   {selectedItem.hasRecommendation ? (
                     <span
@@ -40,7 +41,7 @@ export const ReviewDetails = ({
                   )}
                 </>
               )}
-              {selectedItem.type === 'recommendation' && (
+              {selectedItem.type === ITEM_TYPES.RECOMMENDATION && (
                 <>
                   <span
                     className={`${styles.detailsTag} ${styles.detailsTagRecommendation}`}
@@ -110,7 +111,7 @@ export const ReviewDetails = ({
         {selectedItem.moreInfo || t('admin.review.noAdditionalInfo')}
       </DetailsNotes>
 
-      {selectedItem.type === 'recommendation' && selectedItem.comments && (
+      {selectedItem.type === ITEM_TYPES.RECOMMENDATION && selectedItem.comments && (
         <ReviewComments
           comments={selectedItem.comments}
           className={styles.notes}

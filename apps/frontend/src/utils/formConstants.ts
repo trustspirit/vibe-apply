@@ -2,6 +2,8 @@
  * Form-related constants and options used across the application
  */
 
+import { Gender } from '@vibe-apply/shared';
+
 export interface GenderOption {
   value: string;
   label: string;
@@ -11,8 +13,8 @@ export interface GenderOption {
 // Gender options for form select fields
 export const GENDER_OPTIONS: GenderOption[] = [
   { value: '', label: 'Select gender', disabled: true },
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
+  { value: Gender.MALE, label: 'Male' },
+  { value: Gender.FEMALE, label: 'Female' },
 ];
 
 // Confirmation messages

@@ -11,7 +11,7 @@ import {
   TextField,
   ToggleButton,
 } from '@/components/ui';
-import { ApplicationStatus } from '@vibe-apply/shared';
+import { ApplicationStatus, Gender } from '@vibe-apply/shared';
 import { useApplicationForm } from './hooks/useApplicationForm';
 import { ApplicationOverview } from './components/ApplicationOverview';
 import styles from './UserApplication.module.scss';
@@ -172,11 +172,11 @@ const UserApplication = () => {
                               disabled: true,
                             },
                             {
-                              value: 'male',
+                              value: Gender.MALE,
                               label: t('application.form.genderMale'),
                             },
                             {
-                              value: 'female',
+                              value: Gender.FEMALE,
                               label: t('application.form.genderFemale'),
                             },
                           ]}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { RecommendationStatus } from '@vibe-apply/shared';
-import { USER_ROLES } from '@/utils/constants';
+import { RecommendationStatus, Gender } from '@vibe-apply/shared';
+import { UserRole } from '@/utils/constants';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
 import {
   AGE_MIN,
@@ -54,8 +54,8 @@ export const useRecommendationForm = ({
 
     if (currentFormId === null) {
       const initialWard =
-        currentUser?.role === USER_ROLES.BISHOP ||
-        currentUser?.role === USER_ROLES.APPLICANT
+        currentUser?.role === UserRole.BISHOP ||
+        currentUser?.role === UserRole.APPLICANT
           ? currentUser?.ward || ''
           : '';
       setForm({
@@ -126,7 +126,7 @@ export const useRecommendationForm = ({
     const trimmedWard = (form.ward || '').trim();
     const normalizedAge = Number.parseInt(form.age, 10);
     const normalizedGender =
-      form.gender === 'male' || form.gender === 'female' ? form.gender : '';
+      form.gender === Gender.MALE || form.gender === Gender.FEMALE ? form.gender : '';
 
     if (!trimmedName) {
       nextErrors.name = t('leader.recommendations.validation.nameRequired');

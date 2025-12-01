@@ -13,9 +13,8 @@ import {
   type ReactNode,
 } from 'react';
 import { authApi, ApiError } from '@/services/api';
-import { LEADER_STATUS } from '@/utils/constants';
-import type { User, UserRole, LeaderStatus } from '@vibe-apply/shared';
-import { normalizeUserRole, isLeaderRole } from '@vibe-apply/shared';
+import type { User, UserRole } from '@vibe-apply/shared';
+import { normalizeUserRole, isLeaderRole, LeaderStatus } from '@vibe-apply/shared';
 
 type UserWithoutPassword = Omit<User, 'password'>;
 
@@ -59,9 +58,9 @@ const normalizeUserRecord = (
 
   const normalizedRole: UserRole = normalizeUserRole(user.role);
   const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
-    ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
-      ? (LEADER_STATUS.APPROVED as LeaderStatus)
-      : (LEADER_STATUS.PENDING as LeaderStatus)
+    ? user.leaderStatus === LeaderStatus.APPROVED
+      ? LeaderStatus.APPROVED
+      : LeaderStatus.PENDING
     : null;
 
   return {

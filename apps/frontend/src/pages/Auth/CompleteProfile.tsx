@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { Button, ComboBox, StakeWardSelector } from '@/components/ui';
 import { getDefaultPathForUser } from '@/utils/navigation';
 import { authApi } from '@/services/api';
-import { USER_ROLES, ROUTES } from '@/utils/constants';
+import { UserRole as UserRoleEnum, ROUTES } from '@/utils/constants';
 import styles from '@/components/AuthLayout.module.scss';
 
 interface ProfileForm {
@@ -23,17 +23,17 @@ const CompleteProfile = () => {
   const [form, setForm] = useState<ProfileForm>({
     stake: 'seoul-stake',
     ward: '',
-    role: USER_ROLES.APPLICANT as UserRole,
+    role: UserRoleEnum.APPLICANT as UserRole,
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const roleOptions = useMemo(
     () => [
-      { value: USER_ROLES.APPLICANT, label: t('roles.applicant') },
-      { value: USER_ROLES.SESSION_LEADER, label: t('roles.sessionLeader') },
-      { value: USER_ROLES.BISHOP, label: t('roles.bishop') },
-      { value: USER_ROLES.STAKE_PRESIDENT, label: t('roles.stakePresident') },
+      { value: UserRoleEnum.APPLICANT, label: t('roles.applicant') },
+      { value: UserRoleEnum.SESSION_LEADER, label: t('roles.sessionLeader') },
+      { value: UserRoleEnum.BISHOP, label: t('roles.bishop') },
+      { value: UserRoleEnum.STAKE_PRESIDENT, label: t('roles.stakePresident') },
     ],
     [t]
   );

@@ -18,8 +18,7 @@ import type {
   LeaderRecommendation,
   RecommendationStatus,
 } from '@vibe-apply/shared';
-import { isApprovedLeader, isLeaderRole } from '@vibe-apply/shared';
-import { USER_ROLES } from '@/utils/constants';
+import { isApprovedLeader, isLeaderRole, UserRole } from '@vibe-apply/shared';
 
 interface RecommendationPayload {
   id?: string;
@@ -77,11 +76,11 @@ export const RecommendationsProvider = ({
       }
 
       const canViewAllRecommendations =
-        currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
+        currentUser.role === UserRole.ADMIN || isApprovedLeader(currentUser);
 
       const isStakePresidentOrBishop =
-        currentUser.role === USER_ROLES.STAKE_PRESIDENT ||
-        currentUser.role === USER_ROLES.BISHOP;
+        currentUser.role === UserRole.STAKE_PRESIDENT ||
+        currentUser.role === UserRole.BISHOP;
 
       const canViewOwnRecommendations = isLeaderRole(currentUser.role);
 
@@ -166,11 +165,11 @@ export const RecommendationsProvider = ({
     }
 
     const canViewAllRecommendations =
-      currentUser.role === USER_ROLES.ADMIN || isApprovedLeader(currentUser);
+      currentUser.role === UserRole.ADMIN || isApprovedLeader(currentUser);
 
     const isStakePresidentOrBishop =
-      currentUser.role === USER_ROLES.STAKE_PRESIDENT ||
-      currentUser.role === USER_ROLES.BISHOP;
+      currentUser.role === UserRole.STAKE_PRESIDENT ||
+      currentUser.role === UserRole.BISHOP;
 
     const canViewOwnRecommendations = isLeaderRole(currentUser.role);
 

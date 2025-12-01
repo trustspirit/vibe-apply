@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { ApplicationStatus } from '@vibe-apply/shared';
+import { ApplicationStatus, Gender } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { applicationsApi } from '@/services/api';
 import {
@@ -77,8 +77,8 @@ export const useApplicationForm = ({
         email: existingApplication.email,
         phone: existingApplication.phone,
         gender:
-          existingApplication.gender === 'male' ||
-          existingApplication.gender === 'female'
+          existingApplication.gender === Gender.MALE ||
+          existingApplication.gender === Gender.FEMALE
             ? existingApplication.gender
             : '',
         stake: existingApplication.stake,
@@ -131,7 +131,7 @@ export const useApplicationForm = ({
     const trimmedStake = form.stake.trim();
     const trimmedWard = form.ward.trim();
     const normalizedGender =
-      form.gender === 'male' || form.gender === 'female' ? form.gender : '';
+      form.gender === Gender.MALE || form.gender === Gender.FEMALE ? form.gender : '';
     const normalizedAge = Number.parseInt(form.age, 10);
 
     const nameError = validateRequired(
@@ -254,7 +254,7 @@ export const useApplicationForm = ({
         email: form.email.trim(),
         phone: form.phone.trim(),
         gender:
-          form.gender === 'male' || form.gender === 'female' ? form.gender : '',
+          form.gender === Gender.MALE || form.gender === Gender.FEMALE ? form.gender : '',
         stake: form.stake.trim(),
         ward: form.ward.trim(),
         moreInfo: form.moreInfo.trim(),

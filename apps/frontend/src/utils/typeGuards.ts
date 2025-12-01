@@ -3,13 +3,15 @@
  */
 
 import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
+import { RecommendationStatus, Gender } from '@vibe-apply/shared';
 import type { CombinedItem, ExtendedApplication, ExtendedRecommendation } from '@/types/shared';
+import { ITEM_TYPES } from '@/utils/constants';
 
 /**
  * Type guard to check if an item is an Application
  */
 export function isApplication(item: CombinedItem | Application | LeaderRecommendation): item is ExtendedApplication | Application {
-  return 'isApplication' in item ? item.isApplication === true : !('status' in item && (item.status === 'draft' || item.status === 'submitted'));
+  return 'isApplication' in item ? item.isApplication === true : !('status' in item && (item.status === RecommendationStatus.DRAFT || item.status === RecommendationStatus.SUBMITTED));
 }
 
 /**
@@ -23,14 +25,14 @@ export function isRecommendation(item: CombinedItem | Application | LeaderRecomm
  * Type guard to check if an item is an ExtendedApplication (with itemType discriminator)
  */
 export function isExtendedApplication(item: CombinedItem): item is ExtendedApplication {
-  return item.itemType === 'application';
+  return item.itemType === ITEM_TYPES.APPLICATION;
 }
 
 /**
  * Type guard to check if an item is an ExtendedRecommendation (with itemType discriminator)
  */
 export function isExtendedRecommendation(item: CombinedItem): item is ExtendedRecommendation {
-  return item.itemType === 'recommendation';
+  return item.itemType === ITEM_TYPES.RECOMMENDATION;
 }
 
 /**
@@ -44,5 +46,5 @@ export function isValidStatus(status: string): status is 'draft' | 'awaiting' | 
  * Type guard to check if a value is a valid gender
  */
 export function isValidGender(gender: string): gender is 'male' | 'female' {
-  return gender === 'male' || gender === 'female';
+  return gender === Gender.MALE || gender === Gender.FEMALE;
 }

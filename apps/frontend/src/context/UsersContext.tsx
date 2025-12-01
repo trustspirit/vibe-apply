@@ -12,9 +12,8 @@ import {
 } from 'react';
 import { usersApi } from '@/services/api';
 import { useAuth } from './AuthContext';
-import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
-import type { User, UserRole, LeaderStatus } from '@vibe-apply/shared';
-import { normalizeUserRole, isLeaderRole } from '@vibe-apply/shared';
+import type { User } from '@vibe-apply/shared';
+import { normalizeUserRole, isLeaderRole, UserRole, LeaderStatus } from '@vibe-apply/shared';
 
 type UserWithoutPassword = Omit<User, 'password'>;
 
@@ -44,9 +43,9 @@ const normalizeUserRecord = (
 
   const normalizedRole: UserRole = normalizeUserRole(user.role);
   const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
-    ? user.leaderStatus === (LEADER_STATUS.APPROVED as LeaderStatus)
-      ? (LEADER_STATUS.APPROVED as LeaderStatus)
-      : (LEADER_STATUS.PENDING as LeaderStatus)
+    ? user.leaderStatus === LeaderStatus.APPROVED
+      ? LeaderStatus.APPROVED
+      : LeaderStatus.PENDING
     : null;
 
   return {
@@ -75,7 +74,7 @@ export const UsersProvider = ({ children }: UsersProviderProps) => {
           }
           const normalizedRole = role as UserRole;
           const leaderStatus: LeaderStatus | null = isLeaderRole(normalizedRole)
-            ? (user.leaderStatus ?? (LEADER_STATUS.PENDING as LeaderStatus))
+            ? (user.leaderStatus ?? LeaderStatus.PENDING)
             : null;
           updatedUser = {
             ...user,
@@ -120,7 +119,7 @@ export const UsersProvider = ({ children }: UsersProviderProps) => {
   );
 
   const refetchUsers = useCallback(async () => {
-    if (currentUser?.role !== USER_ROLES.ADMIN) {
+    if (currentUser?.role !== UserRole.ADMIN) {
       return;
     }
 

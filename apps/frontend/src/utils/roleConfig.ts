@@ -3,31 +3,29 @@
  */
 
 import type { TFunction } from 'i18next';
-import { USER_ROLES, LEADER_STATUS, ROUTES } from './constants';
+import { UserRole, LeaderStatus, ROUTES } from './constants';
 
 export interface NavItem {
   to: string;
   label: string;
 }
 
-type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
-
 /**
  * Get role configuration for a specific user role
  */
 export const getRoleConfig = (
-  role: UserRole,
-  leaderStatus: string | undefined,
+  role: UserRole | null,
+  leaderStatus: string | undefined | null,
   t: TFunction
 ): {
   navItems: NavItem[];
   greeting: string;
   label: string;
 } => {
-  const isApprovedLeader = leaderStatus === LEADER_STATUS.APPROVED;
+  const isApprovedLeader = leaderStatus === LeaderStatus.APPROVED;
 
   switch (role) {
-    case USER_ROLES.ADMIN:
+    case UserRole.ADMIN:
       return {
         navItems: [
           { to: ROUTES.ADMIN_DASHBOARD, label: t('navigation.adminDashboard') },
@@ -37,7 +35,7 @@ export const getRoleConfig = (
         greeting: t('roles.admin'),
         label: t('roles.admin'),
       };
-    case USER_ROLES.SESSION_LEADER:
+    case UserRole.SESSION_LEADER:
       return {
         navItems: [
           { to: ROUTES.ADMIN_DASHBOARD, label: t('navigation.adminDashboard') },
@@ -48,7 +46,7 @@ export const getRoleConfig = (
           ? t('roles.sessionLeader')
           : t('roles.sessionLeader') + ' (Pending)',
       };
-    case USER_ROLES.BISHOP:
+    case UserRole.BISHOP:
       return {
         navItems: isApprovedLeader
           ? [
@@ -64,7 +62,7 @@ export const getRoleConfig = (
           ? t('roles.bishop')
           : t('roles.bishop') + ' (Pending)',
       };
-    case USER_ROLES.STAKE_PRESIDENT:
+    case UserRole.STAKE_PRESIDENT:
       return {
         navItems: isApprovedLeader
           ? [
@@ -80,7 +78,7 @@ export const getRoleConfig = (
           ? t('roles.stakePresident')
           : t('roles.stakePresident') + ' (Pending)',
       };
-    case USER_ROLES.APPLICANT:
+    case UserRole.APPLICANT:
       return {
         navItems: [{ to: ROUTES.APPLICATION, label: t('navigation.application') }],
         greeting: t('roles.applicant'),

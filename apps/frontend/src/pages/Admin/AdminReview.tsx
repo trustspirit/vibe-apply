@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/context/AppContext';
 import { Button, Tabs } from '@/components/ui';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
+import { ADMIN_REVIEW_TABS, TAB_IDS, ApplicationStatus } from '@/utils/constants';
 import type { TabItem, StatusOption } from '@/types';
 import { useAdminReviewData } from './hooks/useAdminReviewData';
 import { useAdminReviewState } from './hooks/useAdminReviewState';
@@ -18,19 +19,19 @@ const AdminReview = () => {
 
   const TABS: TabItem[] = useMemo(
     () => [
-      { id: 'all', label: t('admin.review.tabs.all') },
-      { id: 'awaiting', label: t('admin.review.tabs.awaiting') },
-      { id: 'approved', label: t('admin.review.tabs.approved') },
-      { id: 'rejected', label: t('admin.review.tabs.rejected') },
+      { id: TAB_IDS.ALL, label: t('admin.review.tabs.all') },
+      { id: ADMIN_REVIEW_TABS.AWAITING, label: t('admin.review.tabs.awaiting') },
+      { id: ADMIN_REVIEW_TABS.APPROVED, label: t('admin.review.tabs.approved') },
+      { id: ADMIN_REVIEW_TABS.REJECTED, label: t('admin.review.tabs.rejected') },
     ],
     [t]
   );
 
   const STATUS_OPTIONS: StatusOption[] = useMemo(
     () => [
-      { value: 'awaiting', label: t('admin.review.status.awaiting') },
-      { value: 'approved', label: t('admin.review.status.approved') },
-      { value: 'rejected', label: t('admin.review.status.rejected') },
+      { value: ApplicationStatus.AWAITING, label: t('admin.review.status.awaiting') },
+      { value: ApplicationStatus.APPROVED, label: t('admin.review.status.approved') },
+      { value: ApplicationStatus.REJECTED, label: t('admin.review.status.rejected') },
     ],
     [t]
   );
@@ -130,7 +131,7 @@ const AdminReview = () => {
           <h1>{t('admin.review.title')}</h1>
           <p className={styles.subtitle}>{t('admin.review.subtitle')}</p>
         </div>
-        {activeTab === 'approved' && (
+        {activeTab === ADMIN_REVIEW_TABS.APPROVED && (
           <Button
             type='button'
             variant='primary'
@@ -155,7 +156,7 @@ const AdminReview = () => {
         badgeClassName={styles.tabPill}
         ariaLabel={t('admin.review.tabs.ariaLabel')}
         getBadge={(tab) =>
-          tab.id === 'all'
+          tab.id === TAB_IDS.ALL
             ? statusCounts.all
             : (statusCounts[tab.id] ?? statusCounts.all)
         }

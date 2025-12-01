@@ -17,7 +17,7 @@ import {
 import type { Application } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui';
-import { ROUTES } from '@/utils/constants';
+import { ROUTES, Gender } from '@/utils/constants';
 import { CHART_COLORS } from '@/utils/chartConstants';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
 import { RecommendationStatus } from '@vibe-apply/shared';
@@ -175,7 +175,7 @@ const LeaderDashboard = () => {
   const genderCounts = useMemo(() => {
     const map = combinedItems.reduce<Record<string, { recommendations: number; applications: number }>>((acc, item) => {
       const key =
-        item.gender === 'male' || item.gender === 'female'
+        item.gender === Gender.MALE || item.gender === Gender.FEMALE
           ? item.gender
           : 'Unspecified';
       if (!acc[key]) {

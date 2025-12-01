@@ -2,13 +2,13 @@
  * Status normalization and mapping utilities
  */
 
-import type { RecommendationStatus } from '@vibe-apply/shared';
+import { RecommendationStatus } from '@vibe-apply/shared';
 
 /**
  * Normalizes recommendation status from 'submitted' to 'awaiting' for display
  */
 export const normalizeRecommendationStatus = (status: RecommendationStatus): string => {
-  if (status === 'submitted') {
+  if (status === RecommendationStatus.SUBMITTED) {
     return 'awaiting';
   }
   return status;
@@ -19,7 +19,7 @@ export const normalizeRecommendationStatus = (status: RecommendationStatus): str
  */
 export const remapStatusForRecommendation = (status: string): RecommendationStatus => {
   if (status === 'awaiting') {
-    return 'submitted' as RecommendationStatus;
+    return RecommendationStatus.SUBMITTED;
   }
   return status as RecommendationStatus;
 };

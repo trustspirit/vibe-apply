@@ -2,6 +2,8 @@
  * Validation constants used across the application
  */
 
+import { Gender } from '@vibe-apply/shared';
+
 // Age validation
 export const AGE_MIN = 16;
 export const AGE_MAX = 120;
@@ -20,7 +22,7 @@ export const EMAIL_INVALID_ERROR = 'Enter a valid email address.';
 export const PHONE_REQUIRED_ERROR = 'Phone number is required.';
 
 // Gender validation
-export const VALID_GENDERS = ['male', 'female'] as const;
+export const VALID_GENDERS = [Gender.MALE, Gender.FEMALE] as const;
 export const GENDER_ERROR_MESSAGE = 'Select male or female.';
 
 // Date utilities

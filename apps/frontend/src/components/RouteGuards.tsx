@@ -1,9 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
-import { isLeaderRole, isApprovedLeader, isAdmin } from '@vibe-apply/shared';
+import { isLeaderRole, isApprovedLeader, isAdmin, UserRole } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { getDefaultPathForUser } from '@/utils/navigation';
-import { USER_ROLES, ROUTES } from '@/utils/constants';
+import { ROUTES } from '@/utils/constants';
 
 interface RouteGuardProps {
   children: ReactNode;
@@ -44,7 +44,7 @@ export const RequireAdmin = ({ children }: RouteGuardProps) => {
     return children;
   }
 
-  if (currentUser.role === USER_ROLES.SESSION_LEADER) {
+  if (currentUser.role === UserRole.SESSION_LEADER) {
     if (!isApprovedLeader(currentUser)) {
       return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
     }
@@ -81,7 +81,7 @@ export const RequireUser = ({ children }: RouteGuardProps) => {
     return <Navigate to={ROUTES.SIGN_IN} replace state={{ from: location }} />;
   }
 
-  if (currentUser.role !== USER_ROLES.APPLICANT) {
+  if (currentUser.role !== UserRole.APPLICANT) {
     return <Navigate to={getDefaultPathForUser(currentUser)} replace />;
   }
 

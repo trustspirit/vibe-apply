@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import { RecommendationStatus } from '@vibe-apply/shared';
+import { RecommendationStatus, Gender } from '@vibe-apply/shared';
 import {
   Button,
   ComboBox,
@@ -8,7 +8,7 @@ import {
   TextField,
   ToggleButton,
 } from '@/components/ui';
-import { USER_ROLES } from '@/utils/constants';
+import { UserRole } from '@/utils/constants';
 import type { RecommendationFormProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
 
@@ -91,8 +91,8 @@ export const RecommendationForm = ({
           wardError={errors.ward}
           stakeDisabled={true}
           wardDisabled={
-            currentUserRole === USER_ROLES.BISHOP ||
-            currentUserRole === USER_ROLES.APPLICANT
+            currentUserRole === UserRole.BISHOP ||
+            currentUserRole === UserRole.APPLICANT
           }
           stakeLabel={t('leader.recommendations.form.stake')}
           wardLabel={t('leader.recommendations.form.ward')}
@@ -111,11 +111,11 @@ export const RecommendationForm = ({
               disabled: true,
             },
             {
-              value: 'male',
+              value: Gender.MALE,
               label: t('leader.recommendations.form.genderMale'),
             },
             {
-              value: 'female',
+              value: Gender.FEMALE,
               label: t('leader.recommendations.form.genderFemale'),
             },
           ]}

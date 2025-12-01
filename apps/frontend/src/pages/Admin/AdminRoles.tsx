@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
 import { ComboBox, ToggleButton } from '@/components/ui';
-import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
+import { UserRole as UserRoleEnum, LeaderStatus as LeaderStatusEnum, getRoleTone } from '@/utils/constants';
 import styles from './AdminRoles.module.scss';
 
 const AdminRoles = () => {
@@ -12,11 +12,11 @@ const AdminRoles = () => {
 
   const ROLE_OPTIONS = useMemo(
     () => [
-      { value: USER_ROLES.ADMIN, label: t('roles.admin') },
-      { value: USER_ROLES.SESSION_LEADER, label: t('roles.sessionLeader') },
-      { value: USER_ROLES.STAKE_PRESIDENT, label: t('roles.stakePresident') },
-      { value: USER_ROLES.BISHOP, label: t('roles.bishop') },
-      { value: USER_ROLES.APPLICANT, label: t('roles.applicant') },
+      { value: UserRoleEnum.ADMIN, label: t('roles.admin') },
+      { value: UserRoleEnum.SESSION_LEADER, label: t('roles.sessionLeader') },
+      { value: UserRoleEnum.STAKE_PRESIDENT, label: t('roles.stakePresident') },
+      { value: UserRoleEnum.BISHOP, label: t('roles.bishop') },
+      { value: UserRoleEnum.APPLICANT, label: t('roles.applicant') },
     ],
     [t]
   );
@@ -32,11 +32,11 @@ const AdminRoles = () => {
           return a.name.localeCompare(b.name);
         }
         const order: Record<string, number> = {
-          [USER_ROLES.ADMIN]: 0,
-          [USER_ROLES.SESSION_LEADER]: 1,
-          [USER_ROLES.STAKE_PRESIDENT]: 2,
-          [USER_ROLES.BISHOP]: 3,
-          [USER_ROLES.APPLICANT]: 4,
+          [UserRoleEnum.ADMIN]: 0,
+          [UserRoleEnum.SESSION_LEADER]: 1,
+          [UserRoleEnum.STAKE_PRESIDENT]: 2,
+          [UserRoleEnum.BISHOP]: 3,
+          [UserRoleEnum.APPLICANT]: 4,
         };
         return (order[a.role] ?? 5) - (order[b.role] ?? 5);
       }),
@@ -51,7 +51,7 @@ const AdminRoles = () => {
   };
 
   const handleLeaderToggle = (userId: string, isApproved: boolean) => {
-    updateLeaderStatus(userId, (isApproved ? LEADER_STATUS.APPROVED : LEADER_STATUS.PENDING) as LeaderStatus);
+    updateLeaderStatus(userId, (isApproved ? LeaderStatusEnum.APPROVED : LeaderStatusEnum.PENDING) as LeaderStatus);
   };
 
   return (
@@ -84,17 +84,7 @@ const AdminRoles = () => {
                       handleRoleChange(user.id, event.target.value)
                     }
                     options={ROLE_OPTIONS}
-                    tone={
-                      user.role === USER_ROLES.ADMIN
-                        ? 'admin'
-                        : user.role === USER_ROLES.STAKE_PRESIDENT
-                          ? 'stakePresident'
-                          : user.role === USER_ROLES.BISHOP
-                            ? 'bishop'
-                            : user.role === USER_ROLES.SESSION_LEADER
-                              ? 'sessionLeader'
-                              : 'applicant'
-                    }
+                    tone={getRoleTone(user.role)}
                     wrapperClassName={styles.combo}
                     ariaLabel={`Select role for ${user.name}`}
                     disabled={user.id === currentUser?.id}
@@ -106,9 +96,9 @@ const AdminRoles = () => {
                   )}
                 </td>
                 <td>
-                  {user.role === USER_ROLES.SESSION_LEADER || user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
+                  {user.role === UserRoleEnum.SESSION_LEADER || user.role === UserRoleEnum.STAKE_PRESIDENT || user.role === UserRoleEnum.BISHOP ? (
                     <ToggleButton
-                      checked={user.leaderStatus === LEADER_STATUS.APPROVED}
+                      checked={user.leaderStatus === LeaderStatusEnum.APPROVED}
                       onChange={(next: boolean) => handleLeaderToggle(user.id, next)}
                       labelOn={t('admin.roles.approved')}
                       labelOff={t('admin.roles.pending')}
@@ -141,13 +131,7 @@ const AdminRoles = () => {
                   handleRoleChange(user.id, event.target.value)
                 }
                 options={ROLE_OPTIONS}
-                tone={
-                  user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SESSION_LEADER
-                    ? 'admin'
-                    : user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP
-                      ? 'leader'
-                      : 'applicant'
-                }
+                tone={getRoleTone(user.role)}
                 wrapperClassName={styles.combo}
                 ariaLabel={`Select role for ${user.name}`}
                 disabled={user.id === currentUser?.id}
@@ -160,9 +144,9 @@ const AdminRoles = () => {
             </div>
             <div className={styles.cardSection}>
               <label className={styles.cardLabel}>{t('admin.roles.columns.leaderApproval')}</label>
-              {user.role === USER_ROLES.SESSION_LEADER || user.role === USER_ROLES.STAKE_PRESIDENT || user.role === USER_ROLES.BISHOP ? (
+              {user.role === UserRoleEnum.SESSION_LEADER || user.role === UserRoleEnum.STAKE_PRESIDENT || user.role === UserRoleEnum.BISHOP ? (
                 <ToggleButton
-                  checked={user.leaderStatus === LEADER_STATUS.APPROVED}
+                  checked={user.leaderStatus === LeaderStatusEnum.APPROVED}
                   onChange={(next: boolean) => handleLeaderToggle(user.id, next)}
                   labelOn={t('admin.roles.approved')}
                   labelOff={t('admin.roles.pending')}

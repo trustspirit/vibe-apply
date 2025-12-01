@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Application, LeaderRecommendation } from '@vibe-apply/shared';
-import { RecommendationStatus } from '@vibe-apply/shared';
+import { RecommendationStatus, ApplicationStatus } from '@vibe-apply/shared';
+import { TAB_IDS, RECOMMENDATION_TABS } from '@/utils/constants';
 import type {
   ExtendedRecommendation,
   ExtendedApplication,
@@ -92,13 +93,13 @@ export const useRecommendationData = ({
   }, [recommendations, applications, currentUser]);
 
   const filteredRecommendations = useMemo(() => {
-    if (activeTab === 'all') {
+    if (activeTab === TAB_IDS.ALL) {
       return combinedItems;
     }
-    if (activeTab === 'submitted') {
+    if (activeTab === RECOMMENDATION_TABS.SUBMITTED) {
       return combinedItems.filter((item) => {
         if ('isApplication' in item && item.isApplication) {
-          return 'status' in item && item.status === 'awaiting';
+          return 'status' in item && item.status === ApplicationStatus.AWAITING;
         }
         return (
           'status' in item && item.status === RecommendationStatus.SUBMITTED

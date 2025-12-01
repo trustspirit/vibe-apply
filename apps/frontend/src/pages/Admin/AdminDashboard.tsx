@@ -17,11 +17,11 @@ import {
 } from 'recharts';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, SummaryCard } from '@/components/ui';
-import { ROUTES } from '@/utils/constants';
+import { ROUTES, TAB_IDS, ADMIN_REVIEW_TABS, FOCUS_TYPES } from '@/utils/constants';
 import { GENDER_COLORS } from '@/utils/chartConstants';
 import { resetTimeToMidnight } from '@/utils/validationConstants';
 import { getStakeLabel, getWardLabel } from '@/utils/stakeWardData';
-import { ApplicationStatus, RecommendationStatus } from '@vibe-apply/shared';
+import { ApplicationStatus, RecommendationStatus, Gender } from '@vibe-apply/shared';
 import type { Application } from '@vibe-apply/shared';
 import styles from './AdminDashboard.module.scss';
 
@@ -104,11 +104,11 @@ const AdminDashboard = () => {
     const genderCounts = [...applications, ...submittedRecommendations].reduce(
       (acc, item) => {
         const key =
-          item.gender && ['male', 'female'].includes(item.gender) ? item.gender : 'other';
+          item.gender && [Gender.MALE, Gender.FEMALE].includes(item.gender as Gender) ? item.gender : 'other';
         acc[key] += 1;
         return acc;
       },
-      { male: 0, female: 0, other: 0 }
+      { [Gender.MALE]: 0, [Gender.FEMALE]: 0, other: 0 }
     );
 
     const genderSplitData: GenderData[] = Object.entries(genderCounts)
@@ -168,15 +168,15 @@ const AdminDashboard = () => {
   const pieData = genderSplit.length ? genderSplit : [{ name: 'No Data', value: 1 }];
 
   const goToAwaiting = () => {
-    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: 'awaiting' } });
+    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: ADMIN_REVIEW_TABS.AWAITING } });
   };
 
   const goToApproved = () => {
-    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: 'approved' } });
+    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: ADMIN_REVIEW_TABS.APPROVED } });
   };
 
   const goToNewToday = () => {
-    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: 'all', focus: 'today' } });
+    navigate(ROUTES.ADMIN_REVIEW, { state: { initialTab: TAB_IDS.ALL, focus: FOCUS_TYPES.TODAY } });
   };
 
   return (
