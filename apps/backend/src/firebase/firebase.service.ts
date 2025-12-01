@@ -156,4 +156,10 @@ export class FirebaseService {
       throw new Error(`Password verification failed: ${errorMessage}`);
     }
   }
+
+  async updatePassword(uid: string, newPassword: string): Promise<void> {
+    await this.auth.updateUser(uid, {
+      password: newPassword,
+    });
+  }
 }

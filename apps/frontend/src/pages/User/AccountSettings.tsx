@@ -38,9 +38,17 @@ const AccountSettings = () => {
     ward: currentUser?.ward || '',
     phone: currentUser?.phone || '',
   });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
   const [pendingStake, setPendingStake] = useState<string | undefined>(
     currentUser?.pendingStake
   );
@@ -397,10 +405,9 @@ const AccountSettings = () => {
                   {t(
                     'accountSettings.sections.churchInformation.pendingAlert',
                     {
-                      stake:
-                        pendingStake
-                          ? getStakeLabel(pendingStake) || pendingStake
-                          : '',
+                      stake: pendingStake
+                        ? getStakeLabel(pendingStake) || pendingStake
+                        : '',
                       ward:
                         pendingStake && pendingWard
                           ? getWardLabel(pendingStake, pendingWard) ||
@@ -420,6 +427,155 @@ const AccountSettings = () => {
                 />
               </div>
             </div>
+
+            {!currentUser?.googleId && (
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>
+                  {t('accountSettings.sections.password.title')}
+                </h2>
+                <p className={styles.sectionDescription}>
+                  {t('accountSettings.sections.password.description')}
+                </p>
+
+                <div className={styles.fields}>
+                  <TextField
+                    label={t(
+                      'accountSettings.sections.password.currentPassword'
+                    )}
+                    name='currentPassword'
+                    type='password'
+                    value={passwordForm.currentPassword}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setPasswordForm((prev) => ({
+                        ...prev,
+                        currentPassword: e.target.value,
+                      }));
+                      setPasswordError('');
+                      setPasswordSuccess('');
+                    }}
+                    placeholder={t(
+                      'accountSettings.sections.password.currentPassword'
+                    )}
+                  />
+
+                  <TextField
+                    label={t('accountSettings.sections.password.newPassword')}
+                    name='newPassword'
+                    type='password'
+                    value={passwordForm.newPassword}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setPasswordForm((prev) => ({
+                        ...prev,
+                        newPassword: e.target.value,
+                      }));
+                      setPasswordError('');
+                      setPasswordSuccess('');
+                    }}
+                    placeholder={t(
+                      'accountSettings.sections.password.newPassword'
+                    )}
+                  />
+
+                  <TextField
+                    label={t(
+                      'accountSettings.sections.password.confirmNewPassword'
+                    )}
+                    name='confirmNewPassword'
+                    type='password'
+                    value={passwordForm.confirmNewPassword}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setPasswordForm((prev) => ({
+                        ...prev,
+                        confirmNewPassword: e.target.value,
+                      }));
+                      setPasswordError('');
+                      setPasswordSuccess('');
+                    }}
+                    placeholder={t(
+                      'accountSettings.sections.password.confirmNewPassword'
+                    )}
+                  />
+                </div>
+
+                {passwordError && (
+                  <div className={`${styles.message} ${styles.messageError}`}>
+                    {passwordError}
+                  </div>
+                )}
+                {passwordSuccess && (
+                  <div className={`${styles.message} ${styles.messageSuccess}`}>
+                    {passwordSuccess}
+                  </div>
+                )}
+
+                <div className={styles.actions}>
+                  <Button
+                    variant='primary'
+                    disabled={isChangingPassword}
+                    onClick={async () => {
+                      setPasswordError('');
+                      setPasswordSuccess('');
+
+                      if (
+                        !passwordForm.currentPassword ||
+                        !passwordForm.newPassword ||
+                        !passwordForm.confirmNewPassword
+                      ) {
+                        setPasswordError(
+                          t('accountSettings.sections.password.fillAllFields')
+                        );
+                        return;
+                      }
+
+                      if (passwordForm.newPassword.length < 6) {
+                        setPasswordError(
+                          t(
+                            'accountSettings.sections.password.passwordTooShort'
+                          )
+                        );
+                        return;
+                      }
+
+                      if (
+                        passwordForm.newPassword !==
+                        passwordForm.confirmNewPassword
+                      ) {
+                        setPasswordError(
+                          t(
+                            'accountSettings.sections.password.passwordMismatch'
+                          )
+                        );
+                        return;
+                      }
+
+                      setIsChangingPassword(true);
+                      try {
+                        await authApi.changePassword({
+                          currentPassword: passwordForm.currentPassword,
+                          newPassword: passwordForm.newPassword,
+                        });
+                        setPasswordSuccess(
+                          t('accountSettings.sections.password.changed')
+                        );
+                        setPasswordForm({
+                          currentPassword: '',
+                          newPassword: '',
+                          confirmNewPassword: '',
+                        });
+                      } catch (err) {
+                        setPasswordError((err as Error).message);
+                      } finally {
+                        setIsChangingPassword(false);
+                      }
+                    }}
+                  >
+                    {isChangingPassword
+                      ? t('accountSettings.sections.password.changing')
+                      : t('accountSettings.sections.password.changePassword')}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {error && (
               <div className={`${styles.message} ${styles.messageError}`}>

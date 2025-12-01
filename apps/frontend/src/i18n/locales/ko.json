@@ -94,6 +94,20 @@
         "description": "시스템에서의 현재 역할 및 권한입니다.",
         "currentRole": "현재 역할",
         "pendingApproval": "리더 액세스가 관리자의 승인을 기다리고 있습니다."
+      },
+      "password": {
+        "title": "비밀번호 변경",
+        "description": "Google 로그인을 사용하지 않는 경우 비밀번호를 변경할 수 있습니다.",
+        "currentPassword": "현재 비밀번호",
+        "newPassword": "새 비밀번호",
+        "confirmNewPassword": "새 비밀번호 확인",
+        "changePassword": "비밀번호 변경",
+        "changing": "변경 중...",
+        "changed": "비밀번호가 성공적으로 변경되었습니다",
+        "notAvailable": "Google 로그인을 사용하는 계정은 비밀번호를 변경할 수 없습니다",
+        "passwordMismatch": "새 비밀번호가 일치하지 않습니다",
+        "passwordTooShort": "비밀번호는 최소 6자 이상이어야 합니다",
+        "fillAllFields": "모든 필드를 입력해주세요"
       }
     },
     "approvals": {
@@ -368,21 +382,21 @@
       "title": "이미 추천됨",
       "message": "이미 지도자에 의해 추천되었습니다. 질문이 있으시면 감독이나 스테이크 회장에게 문의하세요."
     },
-      "overview": {
-        "title": "제출 개요",
-        "draftWarning": "이 신청서는 초안으로 저장되었습니다. 필수 필드가 완성되면 제출하세요.",
-        "status": "상태",
-        "name": "이름",
-        "email": "이메일",
-        "phone": "전화번호",
-        "age": "나이",
-        "stake": "스테이크/지방부",
-        "ward": "와드/지부",
-        "servedMission": "선교사로 봉사",
-        "additionalInfo": "추가 정보",
-        "noAdditionalInfo": "추가 세부 정보가 제공되지 않았습니다.",
-        "leaderComment": "지도자 코멘트"
-      },
+    "overview": {
+      "title": "제출 개요",
+      "draftWarning": "이 신청서는 초안으로 저장되었습니다. 필수 필드가 완성되면 제출하세요.",
+      "status": "상태",
+      "name": "이름",
+      "email": "이메일",
+      "phone": "전화번호",
+      "age": "나이",
+      "stake": "스테이크/지방부",
+      "ward": "와드/지부",
+      "servedMission": "선교사로 봉사",
+      "additionalInfo": "추가 정보",
+      "noAdditionalInfo": "추가 세부 정보가 제공되지 않았습니다.",
+      "leaderComment": "지도자 코멘트"
+    },
     "form": {
       "name": "이름",
       "age": "나이",
@@ -425,4 +439,3 @@
     "notFound": "요청한 리소스를 찾을 수 없습니다."
   }
 }
-

@@ -20,6 +20,7 @@ import {
   StakeWardChangeRequest,
   CreateStakeWardChangeRequestDto,
   ApproveStakeWardChangeDto,
+  ChangePasswordDto,
 } from '@vibe-apply/shared';
 
 @Injectable()
@@ -64,6 +65,7 @@ export class AuthService {
       picture: (data.picture as string) || undefined,
       pendingStake: (data.pendingStake as string) || undefined,
       pendingWard: (data.pendingWard as string) || undefined,
+      googleId: (data.googleId as string) || undefined,
     };
   }
 
@@ -720,6 +722,35 @@ export class AuthService {
         ? 'Stake/Ward change approved successfully'
         : 'Stake/Ward change request rejected',
     };
+  }
+
+  async changePassword(
+    uid: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.getUser(uid);
+
+    // Google SSO 사용자는 비밀번호를 변경할 수 없음
+    if (user.googleId) {
+      throw new UnauthorizedException(
+        'Password change is not available for Google SSO users',
+      );
+    }
+
+    // 현재 비밀번호 확인
+    try {
+      await this.firebaseService.verifyPassword(
+        user.email,
+        changePasswordDto.currentPassword,
+      );
+    } catch (error) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    // 새 비밀번호로 업데이트
+    await this.firebaseService.updatePassword(uid, changePasswordDto.newPassword);
+
+    return { message: 'Password changed successfully' };
   }
 
   async deleteUser(

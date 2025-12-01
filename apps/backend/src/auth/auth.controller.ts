@@ -34,6 +34,7 @@ import type {
   StakeWardChangeRequest,
   CreateStakeWardChangeRequestDto,
   ApproveStakeWardChangeDto,
+  ChangePasswordDto,
 } from '@vibe-apply/shared';
 
 @Controller('auth')
@@ -157,6 +158,15 @@ export class AuthController {
     @Body() updateUserProfileDto: UpdateUserProfileDto,
   ): Promise<User> {
     return this.authService.updateUserProfile(user.sub, updateUserProfileDto);
+  }
+
+  @Put('profile/password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    return this.authService.changePassword(user.sub, changePasswordDto);
   }
 
   @Post('stake-ward-change-request')

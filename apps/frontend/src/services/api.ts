@@ -272,6 +272,15 @@ export const authApi = {
     return api.put('/auth/profile', profileData) as Promise<User>;
   },
 
+  changePassword: async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ message: string }> => {
+    return api.put('/auth/profile/password', data) as Promise<{
+      message: string;
+    }>;
+  },
+
   requestStakeWardChange: async (
     data: CreateStakeWardChangeRequestDto
   ): Promise<{ message: string; requestId: string }> => {

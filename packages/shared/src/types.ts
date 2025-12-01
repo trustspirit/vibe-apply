@@ -43,6 +43,7 @@ export interface User {
   picture?: string;
   pendingWard?: string;
   pendingStake?: string;
+  googleId?: string;
   createdAt: string;
 }
 
@@ -186,6 +187,11 @@ export interface UpdateUserProfileDto {
   ward?: string;
   stake?: string;
   phone?: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface StakeWardChangeRequest {
