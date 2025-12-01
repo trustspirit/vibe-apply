@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { RecommendationComments } from './RecommendationComments';
-import type { RecommendationCommentsProps } from '../types';
 import styles from '../LeaderRecommendations.module.scss';
 
 interface CommentsModalProps {
@@ -24,6 +23,15 @@ export const CommentsModal = ({
 }: CommentsModalProps) => {
   const { t } = useTranslation();
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -40,10 +48,20 @@ export const CommentsModal = ({
   }
 
   const modalContent = (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div
+      className={styles.modalOverlay}
+      onClick={onClose}
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         className={styles.modalContent}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('leader.recommendations.form.leaderComment')}
+        onKeyDown={handleKeyDown}
+        tabIndex={-1}
       >
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>

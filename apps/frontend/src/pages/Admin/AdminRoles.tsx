@@ -2,7 +2,7 @@ import { type ChangeEvent, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UserRole, LeaderStatus } from '@vibe-apply/shared';
 import { useApp } from '@/context/AppContext';
-import { ComboBox, StatusChip, ToggleButton } from '@/components/ui';
+import { ComboBox, ToggleButton } from '@/components/ui';
 import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
 import styles from './AdminRoles.module.scss';
 

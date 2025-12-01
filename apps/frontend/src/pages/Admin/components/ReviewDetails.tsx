@@ -9,7 +9,6 @@ export const ReviewDetails = ({
   statusSelection,
   statusOptions,
   onStatusChange,
-  getStatusLabel,
   getStakeDisplay,
   getWardDisplay,
   t,

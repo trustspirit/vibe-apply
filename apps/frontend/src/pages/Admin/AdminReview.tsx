@@ -98,13 +98,11 @@ const AdminReview = () => {
   } = useAdminReviewHandlers({
     reviewItems,
     selectedItem,
-    statusSelection,
     updateApplicationStatus,
     updateLeaderRecommendationStatus,
     setStatusSelection,
     setSelectedId,
     approvedApplications,
-    t,
   });
 
   useEffect(() => {
@@ -200,7 +198,6 @@ const AdminReview = () => {
               statusSelection={statusSelection}
               statusOptions={STATUS_OPTIONS}
               onStatusChange={handleStatusSelect}
-              getStatusLabel={getStatusLabel}
               getStakeDisplay={getStakeDisplay}
               getWardDisplay={getWardDisplay}
               t={t}

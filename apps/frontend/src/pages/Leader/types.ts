@@ -49,24 +49,12 @@ export interface UseRecommendationFormOptions {
     ward?: string;
     role?: string;
   } | null;
-  recommendations: Array<{ id: string; [key: string]: any }>;
+  recommendations: LeaderRecommendation[];
   t: (key: string) => string;
 }
 
 export interface UseRecommendationDataOptions {
-  recommendations: Array<{
-    id: string;
-    leaderId?: string;
-    linkedApplicationId?: string;
-    email: string;
-    name: string;
-    stake: string;
-    ward: string;
-    status: RecommendationStatus;
-    updatedAt: string;
-    createdAt: string;
-    [key: string]: any;
-  }>;
+  recommendations: LeaderRecommendation[];
   applications: Application[];
   currentUser: { id: string; stake?: string } | null;
   activeTab: string;
@@ -76,11 +64,7 @@ export interface UseRecommendationDataOptions {
 
 export interface UseRecommendationHandlersOptions {
   leaderId: string | null;
-  recommendations: Array<{
-    id: string;
-    status: RecommendationStatus;
-    [key: string]: any;
-  }>;
+  recommendations: LeaderRecommendation[];
   combinedItems: CombinedItem[];
   form: RecommendationFormData;
   validateForm: () => {
@@ -96,19 +80,19 @@ export interface UseRecommendationHandlersOptions {
   submitLeaderRecommendation: (
     leaderId: string,
     data: {
-      id: string | null;
+      id?: string | null;
       name: string;
       age: number | null;
-      email: string;
+      email?: string;
       phone: string;
       gender: string;
       stake: string;
       ward: string;
       moreInfo: string;
-      servedMission: boolean;
+      servedMission?: boolean;
       status?: RecommendationStatus;
     }
-  ) => Promise<{ id: string } | undefined>;
+  ) => Promise<LeaderRecommendation>;
   deleteLeaderRecommendation: (
     leaderId: string,
     recommendationId: string
@@ -127,7 +111,7 @@ export interface UseRecommendationHandlersOptions {
   setFeedback: (feedback: string) => void;
   currentFormId: string | null | undefined;
   selectedId: string | null;
-  t: (key: string, params?: any) => string;
+  t: (key: string, params?: Record<string, unknown>) => string;
 }
 
 export interface RecommendationDetailsProps {

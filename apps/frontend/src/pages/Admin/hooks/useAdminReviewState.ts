@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ApplicationStatus } from '@vibe-apply/shared';
-import type { TabItem } from '@/types';
+import { resetTimeToMidnight } from '@/utils/validationConstants';
 import type { UseAdminReviewStateOptions } from '../types';
 
 export const useAdminReviewState = ({
@@ -23,7 +23,6 @@ export const useAdminReviewState = ({
   );
 
   const todayTimestamp = useMemo(() => {
-    const { resetTimeToMidnight } = require('@/utils/validationConstants');
     return resetTimeToMidnight(new Date()).getTime();
   }, []);
 

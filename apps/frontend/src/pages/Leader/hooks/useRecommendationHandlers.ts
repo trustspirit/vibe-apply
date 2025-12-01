@@ -191,7 +191,6 @@ export const useRecommendationHandlers = ({
             (error as Error).message ||
             t('leader.recommendations.messages.failedToSave');
           setFormError(errorMessage);
-          console.error('Failed to submit recommendation:', error);
         });
     },
     [

@@ -32,7 +32,7 @@ export interface UseFormReturn<T> {
  *   }
  * });
  */
-export function useForm<T extends Record<string, any>>({
+export function useForm<T extends object>({
   initialValues,
   onSubmit,
 }: UseFormOptions<T>): UseFormReturn<T> {

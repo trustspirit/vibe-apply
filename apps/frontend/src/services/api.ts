@@ -389,12 +389,13 @@ export const applicationsApi = {
 interface RecommendationFormData {
   name: string;
   age: number;
-  email: string;
+  email?: string;
   phone: string;
   stake: string;
   ward: string;
   gender: string;
   moreInfo: string;
+  servedMission?: boolean;
   status?: 'draft' | 'submitted' | 'approved' | 'rejected';
 }
 

@@ -102,7 +102,7 @@ export const RecommendationsProvider = ({
         }
 
         setLeaderRecommendations(fetchedRecommendations || []);
-      } catch (error) {
+      } catch {
         setLeaderRecommendations([]);
       }
     };
@@ -180,13 +180,11 @@ export const RecommendationsProvider = ({
       if (canViewAllRecommendations || isStakePresidentOrBishop) {
         fetchedRecommendations = await recommendationsApi.getAll();
       } else if (canViewOwnRecommendations) {
-        console.log('[RecommendationsContext] Calling getMyRecommendations');
         fetchedRecommendations = await recommendationsApi.getMyRecommendations();
-        console.log('[RecommendationsContext] Received recommendations:', fetchedRecommendations.length, 'DRAFT count:', fetchedRecommendations.filter((r) => r.status === 'draft').length);
       }
 
       setLeaderRecommendations(fetchedRecommendations || []);
-    } catch (error) {
+    } catch {
       setLeaderRecommendations([]);
     }
   }, [currentUser]);

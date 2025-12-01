@@ -17,7 +17,6 @@ export interface UseAdminReviewStateOptions {
 export interface UseAdminReviewHandlersOptions {
   reviewItems: ReviewItem[];
   selectedItem: ReviewItem | null;
-  statusSelection: string | null;
   updateApplicationStatus: (id: string, status: string) => Promise<void>;
   updateLeaderRecommendationStatus: (
     id: string,
@@ -26,7 +25,6 @@ export interface UseAdminReviewHandlersOptions {
   setStatusSelection: (status: string | null) => void;
   setSelectedId: (id: string | null) => void;
   approvedApplications: Application[];
-  t: (key: string) => string;
 }
 
 export interface ReviewListItemProps {
@@ -43,10 +41,9 @@ export interface ReviewDetailsProps {
   statusSelection: string | null;
   statusOptions: StatusOption[];
   onStatusChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-  getStatusLabel: (status: string) => string | undefined;
   getStakeDisplay: (stake: string) => string;
   getWardDisplay: (stake: string, ward: string) => string;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, unknown>) => string;
 }
 
 export interface ReviewMobileCardProps {
@@ -55,7 +52,7 @@ export interface ReviewMobileCardProps {
   onStatusChange: (key: string, status: string) => void;
   getStakeDisplay: (stake: string) => string;
   getWardDisplay: (stake: string, ward: string) => string;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, unknown>) => string;
 }
 
 export interface ReviewCommentsProps {

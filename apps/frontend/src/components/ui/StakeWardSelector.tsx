@@ -95,13 +95,6 @@ const StakeWardSelector = ({
     }
   }, [normalizedWard, ward, normalizedStake, onWardChange]);
 
-  const currentWardIsValid = useMemo(() => {
-    if (!normalizedWard || !normalizedStake) {
-      return false;
-    }
-    return wardOptions.some((w) => w.value === normalizedWard);
-  }, [normalizedWard, normalizedStake, wardOptions]);
-
   const resolvedWard = normalizedWard;
   const resolvedStake = normalizedStake || stake;
 

@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from 'react';
 import { authApi, ApiError } from '@/services/api';
-import { USER_ROLES, LEADER_STATUS } from '@/utils/constants';
+import { LEADER_STATUS } from '@/utils/constants';
 import type { User, UserRole, LeaderStatus } from '@vibe-apply/shared';
 import { normalizeUserRole, isLeaderRole } from '@vibe-apply/shared';
 

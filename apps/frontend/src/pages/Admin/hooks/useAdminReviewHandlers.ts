@@ -9,13 +9,11 @@ import type { UseAdminReviewHandlersOptions } from '../types';
 export const useAdminReviewHandlers = ({
   reviewItems,
   selectedItem,
-  statusSelection,
   updateApplicationStatus,
   updateLeaderRecommendationStatus,
   setStatusSelection,
   setSelectedId,
   approvedApplications,
-  t,
 }: UseAdminReviewHandlersOptions) => {
   const handleStatusSelect = useCallback(
     async (event: ChangeEvent<HTMLSelectElement>) => {

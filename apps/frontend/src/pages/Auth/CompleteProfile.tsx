@@ -38,11 +38,6 @@ const CompleteProfile = () => {
     [t]
   );
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleStakeChange = (stake: string) => {
     setForm((prev) => ({ ...prev, stake }));
   };

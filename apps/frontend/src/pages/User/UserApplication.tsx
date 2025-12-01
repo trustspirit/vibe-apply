@@ -23,7 +23,6 @@ const UserApplication = () => {
     currentUser,
     isInitializing,
     isLoadingApplications,
-    refetchApplications,
   } = useApp();
   const existingApplication = useMemo(
     () =>

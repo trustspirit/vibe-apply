@@ -77,7 +77,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
     };
 
     fetchAllApplications();
-  }, [currentUser?.role]);
+  }, [currentUser]);
 
   // Fetch user's own application for applicant role
   useEffect(() => {
@@ -108,7 +108,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
     };
 
     fetchUserApplication();
-  }, [currentUser?.role, currentUser?.id]);
+  }, [currentUser]);
 
   const submitApplication = useCallback(
     async (userId: string, payload: ApplicationPayload) => {
@@ -169,7 +169,7 @@ export const ApplicationsProvider = ({ children }: ApplicationsProviderProps) =>
         void error;
       }
     }
-  }, [currentUser?.role, currentUser?.id]);
+  }, [currentUser]);
 
   // Reset fetch flags when user changes
   useEffect(() => {

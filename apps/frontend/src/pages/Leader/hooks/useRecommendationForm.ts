@@ -84,7 +84,7 @@ export const useRecommendationForm = ({
         id: recommendation.id,
         name: recommendation.name,
         age: recommendation.age?.toString() ?? '',
-        email: recommendation.email,
+        email: recommendation.email ?? '',
         phone: recommendation.phone,
         gender: recommendation.gender ?? '',
         stake: normalizedStake,
