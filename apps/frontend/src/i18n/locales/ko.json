@@ -42,7 +42,7 @@
   "auth": {
     "signIn": {
       "title": "로그인",
-      "subtitle": "포털에 접근하려면 자격 증명을 입력하세요.",
+      "subtitle": "지원서 관리를 시작하려면 로그인하세요.",
       "button": "로그인",
       "buttonLoading": "로그인 중...",
       "createAccount": "계정 만들기",

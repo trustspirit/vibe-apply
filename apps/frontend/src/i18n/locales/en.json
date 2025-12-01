@@ -42,7 +42,7 @@
   "auth": {
     "signIn": {
       "title": "Sign In",
-      "subtitle": "Enter your credentials to access the portal.",
+      "subtitle": "Sign in to start managing applications.",
       "button": "Sign In",
       "buttonLoading": "Signing In...",
       "createAccount": "Create an account",
